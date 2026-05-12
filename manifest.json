@@ -1,0 +1,18 @@
+{
+  "name": "ペット時計",
+  "short_name": "ペット時計",
+  "description": "時間帯に合わせて反応するペット時計アプリです。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8fbf4",
+  "theme_color": "#bcefed",
+  "icons": [
+    {
+      "src": "./assets/pet-reference.png",
+      "sizes": "2048x2048",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
