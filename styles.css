@@ -95,13 +95,22 @@ body {
   bottom: 108px;
   width: min(33vw, 205px);
   height: auto;
+  image-rendering: auto;
   transform: translateX(-50%);
-  transition: filter 160ms ease;
   z-index: 2;
 }
 
+.pet-photo {
+  display: none;
+  object-fit: contain;
+  object-position: center bottom;
+  background: transparent;
+  border: 0;
+  outline: 0;
+}
+
 .stage:active .pet {
-  filter: brightness(1.08);
+  opacity: 0.98;
 }
 
 .shadow {
@@ -222,8 +231,17 @@ h1 {
   }
 
   .pet {
-    width: min(51vw, 190px);
+    width: min(54vw, 210px);
     bottom: 76px;
+  }
+
+  .pet-sprite {
+    display: none;
+  }
+
+  .pet-photo {
+    display: block;
+    max-height: 300px;
   }
 
   .shadow {
@@ -253,7 +271,7 @@ h1 {
   }
 
   .pet {
-    width: min(55vw, 180px);
+    width: min(58vw, 190px);
   }
 
   .message {
