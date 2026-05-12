@@ -1,5 +1,4 @@
-const canvas = document.querySelector("#petSprite");
-const photoPet = document.querySelector("#petPhoto");
+const canvas = document.querySelector("#pet");
 const ctx = canvas.getContext("2d", { willReadFrequently: true });
 const stage = document.querySelector("#stage");
 const message = document.querySelector("#message");
@@ -158,12 +157,6 @@ function drawFrame() {
   }
 }
 
-function movePets(offsetX, offsetY) {
-  const value = `${offsetX}px ${offsetY}px`;
-  canvas.style.translate = value;
-  photoPet.style.translate = value;
-}
-
 function animate(time = 0) {
   const current = actions[action];
   if (time - lastTick > current.speed) {
@@ -181,7 +174,7 @@ function animate(time = 0) {
   }
 
   x += (targetX - x) * 0.08;
-  movePets(x, action === "cheer" ? -12 : 0);
+  canvas.style.translate = `${x}px ${action === "cheer" ? "-12px" : "0"}`;
   drawFrame();
   requestAnimationFrame(animate);
 }

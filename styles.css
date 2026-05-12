@@ -100,15 +100,6 @@ body {
   z-index: 2;
 }
 
-.pet-photo {
-  display: none;
-  object-fit: contain;
-  object-position: center bottom;
-  background: transparent;
-  border: 0;
-  outline: 0;
-}
-
 .stage:active .pet {
   opacity: 0.98;
 }
@@ -233,15 +224,6 @@ h1 {
   .pet {
     width: min(54vw, 210px);
     bottom: 76px;
-  }
-
-  .pet-sprite {
-    display: none;
-  }
-
-  .pet-photo {
-    display: block;
-    max-height: 300px;
   }
 
   .shadow {
