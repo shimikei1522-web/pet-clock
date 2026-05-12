@@ -93,9 +93,8 @@ body {
   position: absolute;
   left: 50%;
   bottom: 108px;
-  width: min(38vw, 250px);
+  width: min(33vw, 205px);
   height: auto;
-  image-rendering: pixelated;
   transform: translateX(-50%);
   transition: filter 160ms ease;
   z-index: 2;
@@ -223,7 +222,7 @@ h1 {
   }
 
   .pet {
-    width: min(56vw, 220px);
+    width: min(51vw, 190px);
     bottom: 76px;
   }
 
@@ -254,7 +253,7 @@ h1 {
   }
 
   .pet {
-    width: min(62vw, 210px);
+    width: min(55vw, 180px);
   }
 
   .message {

@@ -1,7 +1,7 @@
 {
-  "name": "ペット時計",
-  "short_name": "ペット時計",
-  "description": "時間帯に合わせて反応するペット時計アプリです。",
+  "name": "Pepaatennko",
+  "short_name": "Pepaatennko",
+  "description": "時間帯に合わせて反応する Pepaatennko アプリです。",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

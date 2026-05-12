@@ -134,6 +134,8 @@ function drawFrame() {
   const sx = frame * frameWidth;
   const sy = current.row * frameHeight;
 
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(sheet, sx, sy, frameWidth, frameHeight, 0, 0, canvas.width, canvas.height);
 
@@ -141,8 +143,11 @@ function drawFrame() {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const pixels = imageData.data;
     for (let i = 0; i < pixels.length; i += 4) {
-      if (pixels[i] < 24 && pixels[i + 1] < 24 && pixels[i + 2] < 24) {
+      const brightness = Math.max(pixels[i], pixels[i + 1], pixels[i + 2]);
+      if (brightness < 42) {
         pixels[i + 3] = 0;
+      } else if (brightness < 72) {
+        pixels[i + 3] = Math.round(pixels[i + 3] * ((brightness - 42) / 30));
       }
     }
     ctx.putImageData(imageData, 0, 0);
@@ -183,6 +188,8 @@ function registerServiceWorker() {
 sheet.addEventListener("load", () => {
   frameWidth = Math.floor(sheet.naturalWidth / columns);
   frameHeight = Math.floor(sheet.naturalHeight / rows);
+  canvas.width = Math.max(1, Math.round(frameWidth * 2));
+  canvas.height = Math.max(1, Math.round(frameHeight * 2));
   drawFrame();
   requestAnimationFrame(animate);
 });
