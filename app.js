@@ -9,6 +9,7 @@ const timerDisplay = document.querySelector("#timerDisplay");
 const stageTimerLabel = document.querySelector("#stageTimerLabel");
 const stageTimerDisplay = document.querySelector("#stageTimerDisplay");
 const dailyQuoteButton = document.querySelector("#dailyQuoteButton");
+const luckyFortuneButton = document.querySelector("#luckyFortuneButton");
 const timeChoices = document.querySelectorAll(".time-choice");
 const customMinutes = document.querySelector("#customMinutes");
 const startTimerButton = document.querySelector("#startTimer");
@@ -71,6 +72,18 @@ const dailyQuotes = [
   "今日のひと手間が、明日の自信になるよ。",
   "うまくいかない日も、生地みたいに少し休ませて大丈夫。",
 ];
+const luckySweets = ["クロワッサン", "シュークリーム", "マドレーヌ", "プリン", "ベーグル", "メロンパン", "フィナンシェ", "ロールケーキ"];
+const luckyColors = ["ミントグリーン", "いちごレッド", "クリームイエロー", "ココアブラウン", "シュガーホワイト", "ベリーピンク", "空色ブルー", "ピスタチオグリーン"];
+const luckyMessages = [
+  "今日は丁寧に進めると良い日！",
+  "ひと休みのあとに、いいアイデアが出そう。",
+  "小さく試すと、きれいな仕上がりにつながるよ。",
+  "焦らず温度を見ると、うまくいきそう。",
+  "好きな香りを思い出すと元気が戻るよ。",
+  "道具を整えると、気持ちも整う日。",
+  "今日はやさしいペースが合っているよ。",
+  "最後のひと手間がラッキーを呼びそう。",
+];
 const moodProfiles = [
   { name: "ねむい", minMood: 0, maxMood: 45, minEnergy: 0, maxEnergy: 46, messages: ["ちょっとねむいみたい。少し休もう", "今日はゆっくりめでいこう"] },
   { name: "おなかすいた", minMood: 0, maxMood: 58, minEnergy: 47, maxEnergy: 99, messages: ["おなかすいたかも。ひと息つこう", "軽く何か食べたら元気が出そう"] },
@@ -132,6 +145,35 @@ function pickDailyQuote() {
   }
 }
 
+function pickFromList(list, seed, offset = 0) {
+  const total = [...seed].reduce((sum, char) => sum + char.charCodeAt(0), offset);
+  return list[Math.abs(total) % list.length];
+}
+
+function pickLuckyFortune() {
+  const today = getTodayKey();
+  try {
+    const saved = JSON.parse(localStorage.getItem("pepaatennkoLuckyFortune") || "{}");
+    if (saved.date === today && saved.sweet && saved.color && saved.message) {
+      return saved;
+    }
+    const fortune = {
+      date: today,
+      sweet: pickFromList(luckySweets, today, 11),
+      color: pickFromList(luckyColors, today, 23),
+      message: pickFromList(luckyMessages, today, 37),
+    };
+    localStorage.setItem("pepaatennkoLuckyFortune", JSON.stringify(fortune));
+    return fortune;
+  } catch {
+    return {
+      sweet: luckySweets[new Date().getDate() % luckySweets.length],
+      color: luckyColors[new Date().getDay() % luckyColors.length],
+      message: luckyMessages[new Date().getMonth() % luckyMessages.length],
+    };
+  }
+}
+
 function showDailyQuote() {
   if (alarmRinging) return;
   const quote = pickDailyQuote();
@@ -140,6 +182,16 @@ function showDailyQuote() {
   frameIndex = 0;
   window.clearTimeout(setAction.timer);
   message.textContent = `今日のひとこと：${quote}`;
+}
+
+function showLuckyFortune() {
+  if (alarmRinging) return;
+  const fortune = pickLuckyFortune();
+  quoteHoldUntil = Date.now() + 8000;
+  action = "wave";
+  frameIndex = 0;
+  window.clearTimeout(setAction.timer);
+  message.textContent = `ラッキーお菓子：${fortune.sweet} / ラッキーカラー：${fortune.color} / ひとこと：${fortune.message}`;
 }
 
 function getMoodProfile() {
@@ -408,6 +460,7 @@ pauseTimerButton.addEventListener("click", pauseFocusTimer);
 resetTimerButton.addEventListener("click", resetFocusTimer);
 alarmToggleButton.addEventListener("click", toggleAlarm);
 dailyQuoteButton.addEventListener("click", showDailyQuote);
+luckyFortuneButton.addEventListener("click", showLuckyFortune);
 
 sheet.addEventListener("load", () => {
   frameWidth = Math.floor(sheet.naturalWidth / columns);
