@@ -5,7 +5,6 @@ const message = document.querySelector("#message");
 const moodValue = document.querySelector("#mood");
 const energyValue = document.querySelector("#energy");
 const clock = document.querySelector("#clock");
-const timerDisplay = document.querySelector("#timerDisplay");
 const stageTimerLabel = document.querySelector("#stageTimerLabel");
 const stageTimerDisplay = document.querySelector("#stageTimerDisplay");
 const dailyQuoteButton = document.querySelector("#dailyQuoteButton");
@@ -108,7 +107,6 @@ function formatDuration(totalSeconds) {
 
 function setTimerDisplays(seconds) {
   const value = formatDuration(seconds);
-  timerDisplay.textContent = value;
   stageTimerDisplay.textContent = value;
 }
 
