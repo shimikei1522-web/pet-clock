@@ -29,6 +29,7 @@ let x = 0;
 let targetX = 0;
 let mood = 72;
 let energy = 88;
+let currentMoodName = "ごきげん";
 let lastPeriod = "";
 let selectedMinutes = 5;
 let remainingSeconds = selectedMinutes * 60;
@@ -58,6 +59,13 @@ const actions = {
 };
 
 const clickActions = ["run", "wave", "cheer", "snack", "shy", "sad"];
+const moodProfiles = [
+  { name: "ねむい", minMood: 0, maxMood: 45, minEnergy: 0, maxEnergy: 46, messages: ["ちょっとねむいみたい。少し休もう", "今日はゆっくりめでいこう"] },
+  { name: "おなかすいた", minMood: 0, maxMood: 58, minEnergy: 47, maxEnergy: 99, messages: ["おなかすいたかも。ひと息つこう", "軽く何か食べたら元気が出そう"] },
+  { name: "のんびり中", minMood: 46, maxMood: 74, minEnergy: 0, maxEnergy: 62, messages: ["のんびり中。焦らず進めよう", "落ち着いたペースでいこう"] },
+  { name: "ごきげん", minMood: 59, maxMood: 84, minEnergy: 45, maxEnergy: 99, messages: ["ごきげんだよ。今日もいい感じ！", "Pepaatennkoは楽しそうにしているよ"] },
+  { name: "やる気満々", minMood: 75, maxMood: 99, minEnergy: 70, maxEnergy: 99, messages: ["やる気満々！この調子でいこう", "集中する準備ばっちりだよ"] },
+];
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -91,6 +99,26 @@ function randomItem(items) {
   return items[Math.floor(Math.random() * items.length)];
 }
 
+function getMoodProfile() {
+  if (timerRunning) {
+    return moodProfiles.find((profile) => profile.name === "やる気満々");
+  }
+  if (alarmRinging) {
+    return moodProfiles.find((profile) => profile.name === "ごきげん");
+  }
+  return (
+    moodProfiles.find((profile) => mood >= profile.minMood && mood <= profile.maxMood && energy >= profile.minEnergy && energy <= profile.maxEnergy) ||
+    moodProfiles.find((profile) => profile.name === "ごきげん")
+  );
+}
+
+function updateMoodDisplay() {
+  const profile = getMoodProfile();
+  currentMoodName = profile.name;
+  moodValue.textContent = currentMoodName;
+  return profile;
+}
+
 function updateClock() {
   const now = new Date();
   const period = getTimePeriod(now);
@@ -99,17 +127,19 @@ function updateClock() {
   clock.dateTime = now.toTimeString().slice(0, 8);
   if (period !== lastPeriod && !timerRunning && !alarmRinging) {
     lastPeriod = period;
+    updateMoodDisplay();
     message.textContent = timePeriods[period].text;
   }
 }
 
 function chooseAction() {
   const period = timePeriods[getTimePeriod()];
+  const profile = updateMoodDisplay();
   const next = Math.random() < 0.55 ? period.action : randomItem(clickActions);
-  setAction(next, randomItem(period.replies));
+  setAction(next, randomItem([...period.replies, ...profile.messages]));
   mood = clamp(mood + (next === "sad" ? -4 : 3), 0, 99);
   energy = clamp(energy + (next === "run" ? -6 : 1), 0, 99);
-  moodValue.textContent = mood;
+  updateMoodDisplay();
   energyValue.textContent = energy;
 }
 
@@ -143,6 +173,7 @@ function startFocusTimer() {
   prepareAlarm();
   if (remainingSeconds <= 0) remainingSeconds = selectedMinutes * 60;
   timerRunning = true;
+  updateMoodDisplay();
   stageTimerLabel.textContent = "FOCUS";
   timerEndAt = Date.now() + remainingSeconds * 1000;
   setAction("cheer", "集中スタート！Pepaatennkoも応援しているよ");
@@ -177,9 +208,10 @@ function finishFocusTimer() {
   setTimerDisplays(0);
   mood = clamp(mood + 8, 0, 99);
   energy = clamp(energy + 3, 0, 99);
-  moodValue.textContent = mood;
+  updateMoodDisplay();
   energyValue.textContent = energy;
   alarmRinging = true;
+  updateMoodDisplay();
   stageTimerLabel.textContent = "タップして止めてね";
   message.textContent = "おつかれさま！よくがんばったね！";
   setAction("cheer", "おつかれさま！よくがんばったね！");
@@ -237,6 +269,7 @@ function stopAlarm() {
     audioContext.suspend().catch(() => {});
   }
   if (wasRinging) {
+    updateMoodDisplay();
     message.textContent = "おつかれさま！アラームを止めたよ";
     setAction("cheer", "おつかれさま！アラームを止めたよ");
   }
@@ -358,6 +391,7 @@ stage.addEventListener("keydown", (event) => {
 stage.tabIndex = 0;
 
 updateClock();
+updateMoodDisplay();
 setTimerDisplays(remainingSeconds);
 window.setInterval(updateClock, 1000);
 registerServiceWorker();
