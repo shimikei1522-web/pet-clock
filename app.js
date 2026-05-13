@@ -88,6 +88,32 @@ const dailyQuotes = [
   "今日のひと手間が、明日の自信になるよ。",
   "うまくいかない日も、生地みたいに少し休ませて大丈夫。",
 ];
+const seasonalEvents = {
+  spring: {
+    className: "season-spring",
+    quotes: ["春の香りがするね。新しいことを始めるのにぴったり！", "いちごや桜みたいに、やさしい仕上がりを目指そう。"],
+    sweets: ["いちごタルト", "桜シフォン", "軽いクリームのロールケーキ", "苺のショートケーキ"],
+    messages: ["春は軽いクリームが似合うね。ふわっと進めよう。", "桜色の気分で、今日も一つずついこう。"],
+  },
+  summer: {
+    className: "season-summer",
+    quotes: ["暑い日は無理せず、水分補給しようね", "ゼリーやレモンみたいに、さっぱり気分でいこう。"],
+    sweets: ["レモンゼリー", "アイスサンド", "マンゴープリン", "レモンタルト"],
+    messages: ["夏は涼しさも大事だよ。少し休みながら進めよう。", "つるんとしたゼリーみたいに、軽やかにいこう。"],
+  },
+  autumn: {
+    className: "season-autumn",
+    quotes: ["栗やさつまいもがおいしい季節だね", "かぼちゃの甘さみたいに、じっくり仕上げよう。"],
+    sweets: ["モンブラン", "かぼちゃプリン", "さつまいもパイ", "栗のパウンドケーキ"],
+    messages: ["秋は焼き菓子が恋しいね。香ばしく進めよう。", "栗みたいに、こつこつ中身を育てていこう。"],
+  },
+  winter: {
+    className: "season-winter",
+    quotes: ["あたたかい飲み物と一緒に、ゆっくり進めよう", "シュトーレンやチョコの季節だね。甘く落ち着いていこう。"],
+    sweets: ["シュトーレン", "ホットチョコケーキ", "ジンジャークッキー", "焼き菓子の詰め合わせ"],
+    messages: ["冬は焼き菓子の香りがうれしいね。あたたかく進めよう。", "冷える日は無理せず、ほっと一息つこう。"],
+  },
+};
 const luckySweets = ["クロワッサン", "シュークリーム", "マドレーヌ", "プリン", "ベーグル", "メロンパン", "フィナンシェ", "ロールケーキ"];
 const luckyColors = ["ミントグリーン", "いちごレッド", "クリームイエロー", "ココアブラウン", "シュガーホワイト", "ベリーピンク", "空色ブルー", "ピスタチオグリーン"];
 const luckyMessages = [
@@ -186,11 +212,19 @@ function saveUserName() {
 }
 
 function getSeasonClass(date = new Date()) {
+  return seasonalEvents[getSeasonKey(date)].className;
+}
+
+function getSeasonKey(date = new Date()) {
   const month = date.getMonth() + 1;
-  if (month >= 3 && month <= 5) return "season-spring";
-  if (month >= 6 && month <= 8) return "season-summer";
-  if (month >= 9 && month <= 11) return "season-autumn";
-  return "season-winter";
+  if (month >= 3 && month <= 5) return "spring";
+  if (month >= 6 && month <= 8) return "summer";
+  if (month >= 9 && month <= 11) return "autumn";
+  return "winter";
+}
+
+function getSeasonEvent(date = new Date()) {
+  return seasonalEvents[getSeasonKey(date)];
 }
 
 function applyTheme(theme) {
@@ -240,12 +274,14 @@ function pickDailyQuote() {
     if (saved.date === today && typeof saved.quote === "string") {
       return saved.quote;
     }
-    const index = Math.abs([...today].reduce((total, char) => total + char.charCodeAt(0), 0)) % dailyQuotes.length;
-    const quote = dailyQuotes[index];
+    const quotePool = [...dailyQuotes, ...getSeasonEvent().quotes];
+    const index = Math.abs([...today].reduce((total, char) => total + char.charCodeAt(0), 0)) % quotePool.length;
+    const quote = quotePool[index];
     localStorage.setItem("pepaatennkoDailyQuote", JSON.stringify({ date: today, quote }));
     return quote;
   } catch {
-    return dailyQuotes[new Date().getDate() % dailyQuotes.length];
+    const quotePool = [...dailyQuotes, ...getSeasonEvent().quotes];
+    return quotePool[new Date().getDate() % quotePool.length];
   }
 }
 
@@ -263,19 +299,55 @@ function pickLuckyFortune() {
     }
     const fortune = {
       date: today,
-      sweet: pickFromList(luckySweets, today, 11),
+      sweet: pickFromList([...luckySweets, ...getSeasonEvent().sweets], today, 11),
       color: pickFromList(luckyColors, today, 23),
-      message: pickFromList(luckyMessages, today, 37),
+      message: pickFromList([...luckyMessages, ...getSeasonEvent().messages], today, 37),
     };
     localStorage.setItem("pepaatennkoLuckyFortune", JSON.stringify(fortune));
     return fortune;
   } catch {
     return {
-      sweet: luckySweets[new Date().getDate() % luckySweets.length],
+      sweet: [...luckySweets, ...getSeasonEvent().sweets][new Date().getDate() % [...luckySweets, ...getSeasonEvent().sweets].length],
       color: luckyColors[new Date().getDay() % luckyColors.length],
-      message: luckyMessages[new Date().getMonth() % luckyMessages.length],
+      message: [...luckyMessages, ...getSeasonEvent().messages][new Date().getMonth() % [...luckyMessages, ...getSeasonEvent().messages].length],
     };
   }
+}
+
+function hasShownSeasonEvent(today) {
+  try {
+    const saved = JSON.parse(localStorage.getItem("pepaatennkoSeasonEvent") || "{}");
+    return saved.date === today && saved.season === getSeasonKey();
+  } catch {
+    return false;
+  }
+}
+
+function markSeasonEventShown(today) {
+  try {
+    localStorage.setItem("pepaatennkoSeasonEvent", JSON.stringify({ date: today, season: getSeasonKey() }));
+  } catch {
+    // localStorage may be unavailable in some private browsing modes.
+  }
+}
+
+function showSeasonEvent(now) {
+  if (timerRunning || alarmRinging || Date.now() < quoteHoldUntil) return;
+  if (now.getSeconds() > 2) return;
+  const today = getTodayKey();
+  if (hasShownSeasonEvent(today)) return;
+  markSeasonEventShown(today);
+  const season = getSeasonEvent(now);
+  quoteHoldUntil = Date.now() + 8000;
+  action = "wave";
+  frameIndex = 0;
+  stage.classList.remove("season-event", "season-event-spring", "season-event-summer", "season-event-autumn", "season-event-winter");
+  stage.classList.add("season-event", `season-event-${getSeasonKey(now)}`);
+  window.setTimeout(() => {
+    stage.classList.remove("season-event", "season-event-spring", "season-event-summer", "season-event-autumn", "season-event-winter");
+  }, 2600);
+  window.clearTimeout(setAction.timer);
+  message.textContent = `${namePrefix()}${randomItem(season.messages)}`;
 }
 
 function showDailyQuote() {
@@ -360,6 +432,7 @@ function updateClock() {
   clock.textContent = value;
   clock.dateTime = now.toTimeString().slice(0, 8);
   showExactTimeEvent(now);
+  showSeasonEvent(now);
   if (period !== lastPeriod && !timerRunning && !alarmRinging && Date.now() >= quoteHoldUntil) {
     lastPeriod = period;
     updateMoodDisplay();
@@ -371,11 +444,12 @@ function chooseAction() {
   quoteHoldUntil = 0;
   const period = timePeriods[getTimePeriod()];
   const profile = updateMoodDisplay();
+  const season = getSeasonEvent();
   const next = Math.random() < 0.55 ? period.action : randomItem(clickActions);
   const namedReplies = userName
     ? [`${userName}さん、おつかれさま！`, `${userName}さん、今日も一つずつ進めよう！`, `${userName}さん、そろそろ休憩しよう`]
     : [];
-  setAction(next, randomItem([...period.replies, ...profile.messages, ...namedReplies]));
+  setAction(next, randomItem([...period.replies, ...profile.messages, ...season.messages, ...namedReplies]));
   mood = clamp(mood + (next === "sad" ? -4 : 3), 0, 99);
   energy = clamp(energy + (next === "run" ? -6 : 1), 0, 99);
   updateMoodDisplay();
