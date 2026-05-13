@@ -6,11 +6,13 @@ const moodValue = document.querySelector("#mood");
 const energyValue = document.querySelector("#energy");
 const clock = document.querySelector("#clock");
 const timerDisplay = document.querySelector("#timerDisplay");
+const stageTimerDisplay = document.querySelector("#stageTimerDisplay");
 const timeChoices = document.querySelectorAll(".time-choice");
 const customMinutes = document.querySelector("#customMinutes");
 const startTimerButton = document.querySelector("#startTimer");
 const pauseTimerButton = document.querySelector("#pauseTimer");
 const resetTimerButton = document.querySelector("#resetTimer");
+const stopAlarmButton = document.querySelector("#stopAlarm");
 const alarmToggleButton = document.querySelector("#alarmToggle");
 
 const sheet = new Image();
@@ -34,29 +36,15 @@ let timerEndAt = 0;
 let timerRunning = false;
 let timerId = 0;
 let alarmEnabled = true;
+let alarmRinging = false;
+let alarmId = 0;
 let audioContext = null;
 
 const timePeriods = {
-  morning: {
-    text: "おはようございます！今日もがんばろう！",
-    replies: ["おはようございます！今日もがんばろう！", "朝だよ！まずは深呼吸して始めよう", "今日もいい一日にしようね"],
-    action: "cheer",
-  },
-  afternoon: {
-    text: "こんにちは！少し休憩しながら進めよう",
-    replies: ["こんにちは！少し休憩しながら進めよう", "お昼の元気、まだまだあるよ", "無理しすぎず、いいペースでいこう"],
-    action: "wave",
-  },
-  evening: {
-    text: "おかえりなさい！おおつかれさまです！",
-    replies: ["おかえりなさい！おおつかれさまです！", "夕方だね。ここまでよく進めたね", "ひと息ついて、あと少しだけやろう"],
-    action: "snack",
-  },
-  night: {
-    text: "遅くまでおつかれさま。夜更かしないでね",
-    replies: ["遅くまでおつかれさま。夜更かしないでね", "夜はゆっくりモードでいこう", "そろそろ休む準備も忘れないでね"],
-    action: "shy",
-  },
+  morning: { text: "おはようございます！今日もがんばろう！", replies: ["おはようございます！今日もがんばろう！", "朝だよ！まずは深呼吸して始めよう", "今日もいい一日にしようね"], action: "cheer" },
+  afternoon: { text: "こんにちは！少し休憩しながら進めよう", replies: ["こんにちは！少し休憩しながら進めよう", "お昼の元気、まだまだあるよ", "無理しすぎず、いいペースでいこう"], action: "wave" },
+  evening: { text: "おかえりなさい！おおつかれさまです！", replies: ["おかえりなさい！おおつかれさまです！", "夕方だね。ここまでよく進めたね", "ひと息ついて、あと少しだけやろう"], action: "snack" },
+  night: { text: "遅くまでおつかれさま。夜更かしないでね", replies: ["遅くまでおつかれさま。夜更かしないでね", "夜はゆっくりモードでいこう", "そろそろ休む準備も忘れないでね"], action: "shy" },
 };
 
 const actions = {
@@ -85,6 +73,12 @@ function formatDuration(totalSeconds) {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
+function setTimerDisplays(seconds) {
+  const value = formatDuration(seconds);
+  timerDisplay.textContent = value;
+  stageTimerDisplay.textContent = value;
+}
+
 function getTimePeriod(date = new Date()) {
   const hour = date.getHours();
   if (hour >= 5 && hour <= 10) return "morning";
@@ -103,8 +97,7 @@ function updateClock() {
   const value = formatTime(now);
   clock.textContent = value;
   clock.dateTime = now.toTimeString().slice(0, 8);
-
-  if (period !== lastPeriod && !timerRunning) {
+  if (period !== lastPeriod && !timerRunning && !alarmRinging) {
     lastPeriod = period;
     message.textContent = timePeriods[period].text;
   }
@@ -125,36 +118,32 @@ function setAction(next, text = actions[next].text) {
   frameIndex = 0;
   message.textContent = text;
   window.clearTimeout(setAction.timer);
-  if (next !== "idle") {
+  if (next !== "idle" && !alarmRinging) {
     setAction.timer = window.setTimeout(() => setAction("idle", timerRunning ? "集中タイマー中だよ。いい調子！" : timePeriods[getTimePeriod()].text), next === "run" ? 1600 : 1200);
   }
 }
 
 function setSelectedMinutes(minutes) {
+  stopAlarm();
   selectedMinutes = clamp(Math.round(minutes), 1, 180);
   remainingSeconds = selectedMinutes * 60;
   timerEndAt = 0;
   timerRunning = false;
   window.clearInterval(timerId);
-  timerDisplay.textContent = formatDuration(remainingSeconds);
+  setTimerDisplays(remainingSeconds);
 }
 
 function setActiveChoice(minutes) {
-  timeChoices.forEach((button) => {
-    const isActive = Number(button.dataset.minutes) === minutes;
-    button.classList.toggle("active", isActive);
-  });
+  timeChoices.forEach((button) => button.classList.toggle("active", Number(button.dataset.minutes) === minutes));
 }
 
 function startFocusTimer() {
+  stopAlarm();
   if (timerRunning) return;
   prepareAlarm();
-  if (remainingSeconds <= 0) {
-    remainingSeconds = selectedMinutes * 60;
-  }
+  if (remainingSeconds <= 0) remainingSeconds = selectedMinutes * 60;
   timerRunning = true;
   timerEndAt = Date.now() + remainingSeconds * 1000;
-  message.textContent = "集中スタート！Pepaatennkoも応援しているよ";
   setAction("cheer", "集中スタート！Pepaatennkoも応援しているよ");
   window.clearInterval(timerId);
   timerId = window.setInterval(tickFocusTimer, 250);
@@ -166,15 +155,16 @@ function pauseFocusTimer() {
   timerRunning = false;
   remainingSeconds = Math.max(0, Math.ceil((timerEndAt - Date.now()) / 1000));
   window.clearInterval(timerId);
-  timerDisplay.textContent = formatDuration(remainingSeconds);
+  setTimerDisplays(remainingSeconds);
   message.textContent = "一時停止中。準備できたらまた始めよう";
 }
 
 function resetFocusTimer() {
+  stopAlarm();
   timerRunning = false;
   window.clearInterval(timerId);
   remainingSeconds = selectedMinutes * 60;
-  timerDisplay.textContent = formatDuration(remainingSeconds);
+  setTimerDisplays(remainingSeconds);
   message.textContent = timePeriods[getTimePeriod()].text;
 }
 
@@ -182,31 +172,24 @@ function finishFocusTimer() {
   timerRunning = false;
   window.clearInterval(timerId);
   remainingSeconds = 0;
-  timerDisplay.textContent = "00:00";
+  setTimerDisplays(0);
   mood = clamp(mood + 8, 0, 99);
   energy = clamp(energy + 3, 0, 99);
   moodValue.textContent = mood;
   energyValue.textContent = energy;
-  playAlarm();
+  alarmRinging = true;
+  stopAlarmButton.hidden = false;
+  message.textContent = "おつかれさま！よくがんばったね！";
   setAction("cheer", "おつかれさま！よくがんばったね！");
-  window.setTimeout(() => {
-    if (!timerRunning) {
-      remainingSeconds = selectedMinutes * 60;
-      timerDisplay.textContent = formatDuration(remainingSeconds);
-    }
-  }, 2400);
+  startAlarmLoop();
 }
 
 function prepareAlarm() {
   if (!alarmEnabled) return;
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
   if (!AudioContextClass) return;
-  if (!audioContext) {
-    audioContext = new AudioContextClass();
-  }
-  if (audioContext.state === "suspended") {
-    audioContext.resume().catch(() => {});
-  }
+  if (!audioContext) audioContext = new AudioContextClass();
+  if (audioContext.state === "suspended") audioContext.resume().catch(() => {});
 }
 
 function playTone(startTime, frequency, duration) {
@@ -216,69 +199,76 @@ function playTone(startTime, frequency, duration) {
   oscillator.type = "sine";
   oscillator.frequency.setValueAtTime(frequency, startTime);
   gain.gain.setValueAtTime(0.0001, startTime);
-  gain.gain.exponentialRampToValueAtTime(0.08, startTime + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.16, startTime + 0.025);
   gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
   oscillator.connect(gain);
   gain.connect(audioContext.destination);
   oscillator.start(startTime);
-  oscillator.stop(startTime + duration + 0.02);
+  oscillator.stop(startTime + duration + 0.03);
 }
 
-function playAlarm() {
+function playAlarmPattern() {
   if (!alarmEnabled) return;
   prepareAlarm();
   if (!audioContext || audioContext.state !== "running") return;
   const now = audioContext.currentTime;
-  playTone(now, 880, 0.12);
-  playTone(now + 0.18, 988, 0.12);
-  playTone(now + 0.36, 1175, 0.18);
+  playTone(now, 880, 0.14);
+  playTone(now + 0.2, 988, 0.14);
+  playTone(now + 0.4, 1175, 0.22);
+}
+
+function startAlarmLoop() {
+  window.clearInterval(alarmId);
+  playAlarmPattern();
+  alarmId = window.setInterval(() => {
+    if (!alarmRinging) return;
+    playAlarmPattern();
+  }, 1200);
+}
+
+function stopAlarm() {
+  alarmRinging = false;
+  window.clearInterval(alarmId);
+  stopAlarmButton.hidden = true;
+  if (audioContext && audioContext.state === "running") {
+    audioContext.suspend().catch(() => {});
+  }
 }
 
 function toggleAlarm() {
   alarmEnabled = !alarmEnabled;
+  if (!alarmEnabled) stopAlarm();
   alarmToggleButton.classList.toggle("active", alarmEnabled);
   alarmToggleButton.textContent = alarmEnabled ? "アラームON" : "アラームOFF";
   alarmToggleButton.setAttribute("aria-pressed", String(alarmEnabled));
-  if (alarmEnabled) {
-    prepareAlarm();
-  }
+  if (alarmEnabled) prepareAlarm();
 }
 
 function tickFocusTimer() {
   if (!timerRunning) return;
   remainingSeconds = Math.max(0, Math.ceil((timerEndAt - Date.now()) / 1000));
-  timerDisplay.textContent = formatDuration(remainingSeconds);
-  if (remainingSeconds === 0) {
-    finishFocusTimer();
-  }
+  setTimerDisplays(remainingSeconds);
+  if (remainingSeconds === 0) finishFocusTimer();
 }
 
 function drawFrame() {
   const current = actions[action];
   const frame = current.frames[frameIndex % current.frames.length];
-  const sx = frame * frameWidth;
-  const sy = current.row * frameHeight;
-
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(sheet, sx, sy, frameWidth, frameHeight, 0, 0, canvas.width, canvas.height);
-
+  ctx.drawImage(sheet, frame * frameWidth, current.row * frameHeight, frameWidth, frameHeight, 0, 0, canvas.width, canvas.height);
   try {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const pixels = imageData.data;
     for (let i = 0; i < pixels.length; i += 4) {
       const brightness = Math.max(pixels[i], pixels[i + 1], pixels[i + 2]);
-      if (brightness < 42) {
-        pixels[i + 3] = 0;
-      } else if (brightness < 72) {
-        pixels[i + 3] = Math.round(pixels[i + 3] * ((brightness - 42) / 30));
-      }
+      if (brightness < 42) pixels[i + 3] = 0;
+      else if (brightness < 72) pixels[i + 3] = Math.round(pixels[i + 3] * ((brightness - 42) / 30));
     }
     ctx.putImageData(imageData, 0, 0);
   } catch {
     // Some browsers lock pixel reads from double-clicked local files.
-    // The pet still animates from the source sprite in that case.
   }
 }
 
@@ -288,18 +278,15 @@ function animate(time = 0) {
     frameIndex += 1;
     lastTick = time;
   }
-
-  if (action === "run") {
-    targetX += 1.8;
-    if (Math.abs(targetX) > stage.clientWidth * 0.24) {
-      targetX *= -1;
-    }
+  if (action === "run" || alarmRinging) {
+    targetX += alarmRinging ? 2.4 : 1.8;
+    if (Math.abs(targetX) > stage.clientWidth * 0.24) targetX *= -1;
   } else {
     targetX *= 0.86;
   }
-
   x += (targetX - x) * 0.08;
-  canvas.style.translate = `${x}px ${action === "cheer" ? "-12px" : "0"}`;
+  canvas.style.translate = `${x}px ${action === "cheer" || alarmRinging ? "-12px" : "0"}`;
+  if (alarmRinging && action !== "cheer") action = "cheer";
   drawFrame();
   requestAnimationFrame(animate);
 }
@@ -329,6 +316,7 @@ customMinutes.addEventListener("change", () => {
 startTimerButton.addEventListener("click", startFocusTimer);
 pauseTimerButton.addEventListener("click", pauseFocusTimer);
 resetTimerButton.addEventListener("click", resetFocusTimer);
+stopAlarmButton.addEventListener("click", stopAlarm);
 alarmToggleButton.addEventListener("click", toggleAlarm);
 
 sheet.addEventListener("load", () => {
@@ -354,6 +342,6 @@ stage.addEventListener("keydown", (event) => {
 stage.tabIndex = 0;
 
 updateClock();
-timerDisplay.textContent = formatDuration(remainingSeconds);
+setTimerDisplays(remainingSeconds);
 window.setInterval(updateClock, 1000);
 registerServiceWorker();
