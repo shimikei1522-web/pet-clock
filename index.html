@@ -73,36 +73,41 @@
       </section>
 
       <section class="focus-panel" aria-label="集中タイマー">
-        <div class="timer-options" aria-label="タイマー時間">
-          <button class="time-choice active" type="button" data-minutes="5">5分</button>
-          <button class="time-choice" type="button" data-minutes="10">10分</button>
-          <button class="time-choice" type="button" data-minutes="15">15分</button>
-          <button class="time-choice" type="button" data-minutes="25">25分</button>
-          <button class="time-choice" type="button" data-minutes="45">45分</button>
-          <label class="custom-time">
-            <span>カスタム</span>
-            <input id="customMinutes" type="number" min="1" max="180" inputmode="numeric" placeholder="分" />
-          </label>
+        <div class="timer-card">
+          <span class="panel-title timer-title">集中タイマー</span>
+          <div class="timer-options" aria-label="タイマー時間">
+            <button class="time-choice active" type="button" data-minutes="5">5分</button>
+            <button class="time-choice" type="button" data-minutes="10">10分</button>
+            <button class="time-choice" type="button" data-minutes="15">15分</button>
+            <button class="time-choice" type="button" data-minutes="25">25分</button>
+            <button class="time-choice" type="button" data-minutes="45">45分</button>
+            <label class="custom-time">
+              <span>カスタム</span>
+              <input id="customMinutes" type="number" min="1" max="180" inputmode="numeric" placeholder="分" />
+            </label>
+          </div>
+
+          <div class="timer-controls">
+            <button id="startTimer" type="button">スタート</button>
+            <button id="pauseTimer" type="button">一時停止</button>
+            <button id="resetTimer" type="button">リセット</button>
+            <button id="alarmToggle" class="alarm-toggle active" type="button" aria-pressed="true">タイマーON</button>
+          </div>
         </div>
 
-        <div class="timer-controls">
-          <button id="startTimer" type="button">スタート</button>
-          <button id="pauseTimer" type="button">一時停止</button>
-          <button id="resetTimer" type="button">リセット</button>
-          <button id="alarmToggle" class="alarm-toggle active" type="button" aria-pressed="true">アラームON</button>
-        </div>
-
-        <div class="clock-alarm-panel" aria-label="指定時刻アラーム">
-          <span class="clock-alarm-label">時刻アラーム</span>
-          <label>
-            <span>時</span>
-            <select id="alarmHour" aria-label="アラームの時"></select>
-          </label>
-          <label>
-            <span>分</span>
-            <select id="alarmMinute" aria-label="アラームの分"></select>
-          </label>
-          <button id="clockAlarmToggle" class="clock-alarm-toggle" type="button" aria-pressed="false">OFF</button>
+        <div class="clock-alarm-card">
+          <span class="panel-title clock-alarm-label">時刻アラーム</span>
+          <div class="clock-alarm-panel" aria-label="指定時刻アラーム">
+            <label>
+              <span>時</span>
+              <select id="alarmHour" aria-label="アラームの時"></select>
+            </label>
+            <label>
+              <span>分</span>
+              <select id="alarmMinute" aria-label="アラームの分"></select>
+            </label>
+            <button id="clockAlarmToggle" class="clock-alarm-toggle" type="button" aria-pressed="false">時刻アラームOFF</button>
+          </div>
         </div>
       </section>
     </main>

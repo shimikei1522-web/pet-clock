@@ -272,7 +272,7 @@ body.theme-season.season-winter .stage {
   }
 
   50% {
-    transform: translate3d(2px, -6px, 0) rotate(0.7deg);
+    transform: translate3d(1px, -3px, 0) rotate(0.5deg);
   }
 }
 
@@ -393,6 +393,8 @@ body.theme-night .label {
 body.theme-night .daily-quote-button,
 body.theme-night .time-choice,
 body.theme-night .timer-controls button,
+body.theme-night .timer-card,
+body.theme-night .clock-alarm-card,
 body.theme-night .clock-alarm-panel,
 body.theme-night .clock-alarm-panel select,
 body.theme-night .clock-alarm-toggle,
@@ -527,9 +529,9 @@ body.theme-night .alarm-toggle.active {
 }
 
 .chef-bubble {
-  right: clamp(18px, 9vw, 108px);
-  top: 160px;
-  max-width: min(300px, 34vw);
+  right: clamp(16px, 5vw, 64px);
+  top: 92px;
+  max-width: min(260px, 28vw);
   font-size: clamp(15px, 1.8vw, 19px);
 }
 
@@ -563,7 +565,7 @@ body.theme-night .speech-bubble {
 .friend {
   position: absolute;
   right: clamp(76px, 14vw, 150px);
-  bottom: 188px;
+  bottom: 174px;
   width: clamp(150px, 21vw, 172px);
   z-index: 1;
   pointer-events: none;
@@ -762,12 +764,43 @@ h1 {
 
 .focus-panel {
   display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(260px, 0.9fr);
   gap: 12px;
   padding: 14px 16px;
   border: 1px solid rgba(44, 96, 97, 0.18);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.78);
   backdrop-filter: blur(14px);
+}
+
+.timer-card,
+.clock-alarm-card {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(44, 96, 97, 0.14);
+  border-radius: 8px;
+}
+
+.timer-card {
+  background: rgba(217, 245, 239, 0.58);
+}
+
+.clock-alarm-card {
+  background: rgba(255, 236, 224, 0.72);
+}
+
+.panel-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.timer-title {
+  color: #24484a;
 }
 
 .timer-options,
@@ -815,10 +848,7 @@ h1 {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  padding: 8px 10px;
-  border: 1px solid rgba(44, 96, 97, 0.18);
-  border-radius: 8px;
-  background: #fff;
+  padding: 0;
   color: #24484a;
   font-size: 14px;
   font-weight: 800;
@@ -848,10 +878,10 @@ h1 {
 
 .clock-alarm-toggle {
   min-height: 34px;
-  padding: 0 13px;
+  padding: 0 12px;
   border: 1px solid rgba(44, 96, 97, 0.18);
   border-radius: 8px;
-  background: #fff;
+  background: #fff7f3;
   color: #24484a;
   font: inherit;
   font-weight: 900;
@@ -860,7 +890,7 @@ h1 {
 }
 
 .clock-alarm-toggle.active {
-  background: #24484a;
+  background: #d94b35;
   color: #fff;
 }
 
@@ -959,9 +989,9 @@ h1 {
   }
 
   .chef-bubble {
-    right: 8px;
-    top: 204px;
-    max-width: min(210px, 58vw);
+    right: 6px;
+    top: 146px;
+    max-width: min(178px, 46vw);
     font-size: 13px;
   }
 
@@ -976,7 +1006,7 @@ h1 {
 
   .friend {
     right: 12px;
-    bottom: 146px;
+    bottom: 136px;
     width: clamp(94px, 24vw, 112px);
   }
 
@@ -993,8 +1023,15 @@ h1 {
   }
 
   .focus-panel {
+    grid-template-columns: 1fr;
     gap: 7px;
     padding: 8px 9px;
+  }
+
+  .timer-card,
+  .clock-alarm-card {
+    gap: 7px;
+    padding: 8px;
   }
 
   .timer-options {
@@ -1011,9 +1048,8 @@ h1 {
 
   .clock-alarm-panel {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(104px, 1.2fr);
     gap: 6px;
-    padding: 7px 8px;
     font-size: 12px;
   }
 
@@ -1133,7 +1169,7 @@ h1 {
 
   .friend {
     right: 8px;
-    bottom: 138px;
+    bottom: 128px;
     width: 90px;
   }
 
@@ -1147,7 +1183,7 @@ h1 {
   }
 
   .chef-bubble {
-    top: 196px;
-    max-width: min(190px, 56vw);
+    top: 140px;
+    max-width: min(160px, 44vw);
   }
 }

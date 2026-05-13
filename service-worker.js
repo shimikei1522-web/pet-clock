@@ -1,4 +1,4 @@
-const CACHE_NAME = "pepaatennko-cache-v29";
+const CACHE_NAME = "pepaatennko-cache-v30";
 const APP_FILES = [
   "./",
   "./index.html",

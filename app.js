@@ -341,14 +341,14 @@ function saveClockAlarm() {
 
 function updateClockAlarmUi() {
   clockAlarmToggle.classList.toggle("active", clockAlarmEnabled);
-  clockAlarmToggle.textContent = clockAlarmEnabled ? "ON" : "OFF";
+  clockAlarmToggle.textContent = clockAlarmEnabled ? "時刻アラームON" : "時刻アラームOFF";
   clockAlarmToggle.setAttribute("aria-pressed", String(clockAlarmEnabled));
 }
 
 function enableAlarmSound() {
   alarmEnabled = true;
   alarmToggleButton.classList.add("active");
-  alarmToggleButton.textContent = "アラームON";
+  alarmToggleButton.textContent = "タイマーON";
   alarmToggleButton.setAttribute("aria-pressed", "true");
   prepareAlarm();
 }
@@ -771,7 +771,7 @@ function toggleAlarm() {
   alarmEnabled = !alarmEnabled;
   if (!alarmEnabled) stopAlarm();
   alarmToggleButton.classList.toggle("active", alarmEnabled);
-  alarmToggleButton.textContent = alarmEnabled ? "アラームON" : "アラームOFF";
+  alarmToggleButton.textContent = alarmEnabled ? "タイマーON" : "タイマーOFF";
   alarmToggleButton.setAttribute("aria-pressed", String(alarmEnabled));
   if (alarmEnabled) prepareAlarm();
 }
