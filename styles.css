@@ -170,7 +170,7 @@ body {
 }
 
 .daily-quote-button,
-.snack-button {
+.name-row button {
   flex: 0 0 auto;
   min-height: 40px;
   padding: 0 14px;
@@ -185,8 +185,48 @@ body {
   white-space: nowrap;
 }
 
-.snack-button {
+.name-panel {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(44, 96, 97, 0.16);
+  border-radius: 8px;
   background: #f2fbf8;
+}
+
+.name-panel[hidden] {
+  display: none;
+}
+
+.name-panel label {
+  color: #557071;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.name-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.name-row input {
+  flex: 1 1 180px;
+  min-width: 160px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid rgba(44, 96, 97, 0.18);
+  border-radius: 8px;
+  background: #fff;
+  color: #24484a;
+  font: inherit;
+  font-size: 16px;
+}
+
+.name-row button {
+  background: #fff;
 }
 
 .portrait {
@@ -436,7 +476,7 @@ h1 {
   }
 
   .daily-quote-button,
-  .snack-button {
+  .name-row button {
     min-height: 38px;
     padding: 0 8px;
     font-size: 13px;
@@ -447,8 +487,20 @@ h1 {
     grid-column: span 1;
   }
 
-  .snack-button {
-    grid-column: span 1;
+  .name-panel {
+    padding: 8px;
+  }
+
+  .name-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 6px;
+  }
+
+  .name-row input {
+    min-width: 0;
+    min-height: 38px;
+    font-size: 15px;
   }
 
   .meters {

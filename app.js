@@ -9,7 +9,11 @@ const stageTimerLabel = document.querySelector("#stageTimerLabel");
 const stageTimerDisplay = document.querySelector("#stageTimerDisplay");
 const dailyQuoteButton = document.querySelector("#dailyQuoteButton");
 const luckyFortuneButton = document.querySelector("#luckyFortuneButton");
-const snackButtons = document.querySelectorAll(".snack-button");
+const nameSettingsButton = document.querySelector("#nameSettingsButton");
+const namePanel = document.querySelector("#namePanel");
+const userNameInput = document.querySelector("#userNameInput");
+const saveNameButton = document.querySelector("#saveNameButton");
+const clearNameButton = document.querySelector("#clearNameButton");
 const timeChoices = document.querySelectorAll(".time-choice");
 const customMinutes = document.querySelector("#customMinutes");
 const startTimerButton = document.querySelector("#startTimer");
@@ -43,6 +47,7 @@ let alarmRinging = false;
 let alarmId = 0;
 let audioContext = null;
 let quoteHoldUntil = 0;
+let userName = "";
 
 const timePeriods = {
   morning: { text: "おはようございます！今日もがんばろう！", replies: ["おはようございます！今日もがんばろう！", "朝だよ！まずは深呼吸して始めよう", "今日もいい一日にしようね"], action: "cheer" },
@@ -68,11 +73,6 @@ const exactTimeEvents = {
   "15:00": "おやつの時間だよ！",
   "18:00": "今日もおつかれさま！",
   "22:00": "そろそろ休む準備をしよう。",
-};
-const snackMessages = {
-  cookie: "クッキーありがとう！元気が出たよ！",
-  croissant: "サクサクでしあわせ！",
-  stollen: "特別なおやつだね。うれしい！",
 };
 const dailyQuotes = [
   "今日も一つずつ丁寧にいこう！",
@@ -135,6 +135,52 @@ function randomItem(items) {
   return items[Math.floor(Math.random() * items.length)];
 }
 
+function cleanUserName(value) {
+  return value.trim().replace(/\s+/g, " ").slice(0, 12);
+}
+
+function loadUserName() {
+  try {
+    userName = cleanUserName(localStorage.getItem("pepaatennkoUserName") || "");
+  } catch {
+    userName = "";
+  }
+  userNameInput.value = userName;
+}
+
+function namePrefix() {
+  return userName ? `${userName}さん、` : "";
+}
+
+function namedPeriodText(period = getTimePeriod()) {
+  if (!userName) return timePeriods[period].text;
+  const namedTexts = {
+    morning: `${userName}さん、おはようございます！今日も一つずつ進めよう！`,
+    afternoon: `${userName}さん、そろそろ休憩しながら進めよう`,
+    evening: `${userName}さん、おつかれさま！今日もよくがんばったね`,
+    night: `${userName}さん、遅くまでおつかれさま。そろそろ休もう`,
+  };
+  return namedTexts[period] || timePeriods[period].text;
+}
+
+function saveUserName() {
+  userName = cleanUserName(userNameInput.value);
+  userNameInput.value = userName;
+  try {
+    if (userName) {
+      localStorage.setItem("pepaatennkoUserName", userName);
+    } else {
+      localStorage.removeItem("pepaatennkoUserName");
+    }
+  } catch {
+    // localStorage may be unavailable in some private browsing modes.
+  }
+  namePanel.hidden = true;
+  nameSettingsButton.setAttribute("aria-expanded", "false");
+  quoteHoldUntil = Date.now() + 8000;
+  message.textContent = userName ? `${userName}さん、これからよろしくね！` : "名前設定をクリアしたよ";
+}
+
 function getTodayKey() {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
@@ -192,7 +238,7 @@ function showDailyQuote() {
   action = "wave";
   frameIndex = 0;
   window.clearTimeout(setAction.timer);
-  message.textContent = `今日のひとこと：${quote}`;
+  message.textContent = `今日のひとこと：${namePrefix()}${quote}`;
 }
 
 function showLuckyFortune() {
@@ -202,20 +248,7 @@ function showLuckyFortune() {
   action = "wave";
   frameIndex = 0;
   window.clearTimeout(setAction.timer);
-  message.textContent = `ラッキーお菓子：${fortune.sweet} / ラッキーカラー：${fortune.color} / ひとこと：${fortune.message}`;
-}
-
-function giveSnack(snackKey) {
-  if (timerRunning || alarmRinging) return;
-  const text = snackMessages[snackKey];
-  if (!text) return;
-  quoteHoldUntil = Date.now() + 8000;
-  mood = clamp(mood + 5, 0, 99);
-  energy = clamp(energy + 4, 0, 99);
-  updateMoodDisplay();
-  energyValue.textContent = energy;
-  setAction("snack", text);
-  window.clearTimeout(setAction.timer);
+  message.textContent = `ラッキーお菓子：${fortune.sweet} / ラッキーカラー：${fortune.color} / ひとこと：${namePrefix()}${fortune.message}`;
 }
 
 function hasShownExactTimeEvent(today, eventKey) {
@@ -250,7 +283,7 @@ function showExactTimeEvent(now) {
   action = "wave";
   frameIndex = 0;
   window.clearTimeout(setAction.timer);
-  message.textContent = text;
+  message.textContent = `${namePrefix()}${text}`;
 }
 
 function getMoodProfile() {
@@ -283,7 +316,7 @@ function updateClock() {
   if (period !== lastPeriod && !timerRunning && !alarmRinging && Date.now() >= quoteHoldUntil) {
     lastPeriod = period;
     updateMoodDisplay();
-    message.textContent = timePeriods[period].text;
+    message.textContent = namedPeriodText(period);
   }
 }
 
@@ -292,7 +325,10 @@ function chooseAction() {
   const period = timePeriods[getTimePeriod()];
   const profile = updateMoodDisplay();
   const next = Math.random() < 0.55 ? period.action : randomItem(clickActions);
-  setAction(next, randomItem([...period.replies, ...profile.messages]));
+  const namedReplies = userName
+    ? [`${userName}さん、おつかれさま！`, `${userName}さん、今日も一つずつ進めよう！`, `${userName}さん、そろそろ休憩しよう`]
+    : [];
+  setAction(next, randomItem([...period.replies, ...profile.messages, ...namedReplies]));
   mood = clamp(mood + (next === "sad" ? -4 : 3), 0, 99);
   energy = clamp(energy + (next === "run" ? -6 : 1), 0, 99);
   updateMoodDisplay();
@@ -305,7 +341,7 @@ function setAction(next, text = actions[next].text) {
   message.textContent = text;
   window.clearTimeout(setAction.timer);
   if (next !== "idle" && !alarmRinging) {
-    setAction.timer = window.setTimeout(() => setAction("idle", timerRunning ? "集中タイマー中だよ。いい調子！" : timePeriods[getTimePeriod()].text), next === "run" ? 1600 : 1200);
+    setAction.timer = window.setTimeout(() => setAction("idle", timerRunning ? `${namePrefix()}集中タイマー中だよ。いい調子！` : namedPeriodText()), next === "run" ? 1600 : 1200);
   }
 }
 
@@ -333,7 +369,7 @@ function startFocusTimer() {
   updateMoodDisplay();
   stageTimerLabel.textContent = "FOCUS";
   timerEndAt = Date.now() + remainingSeconds * 1000;
-  setAction("cheer", "集中スタート！Pepaatennkoも応援しているよ");
+  setAction("cheer", `${namePrefix()}集中スタート！Pepaatennkoも応援しているよ`);
   window.clearInterval(timerId);
   timerId = window.setInterval(tickFocusTimer, 250);
   tickFocusTimer();
@@ -346,7 +382,7 @@ function pauseFocusTimer() {
   remainingSeconds = Math.max(0, Math.ceil((timerEndAt - Date.now()) / 1000));
   window.clearInterval(timerId);
   setTimerDisplays(remainingSeconds);
-  message.textContent = "一時停止中。準備できたらまた始めよう";
+  message.textContent = `${namePrefix()}一時停止中。準備できたらまた始めよう`;
 }
 
 function resetFocusTimer() {
@@ -357,7 +393,7 @@ function resetFocusTimer() {
   remainingSeconds = selectedMinutes * 60;
   stageTimerLabel.textContent = "FOCUS";
   setTimerDisplays(remainingSeconds);
-  message.textContent = timePeriods[getTimePeriod()].text;
+  message.textContent = namedPeriodText();
 }
 
 function finishFocusTimer() {
@@ -373,8 +409,8 @@ function finishFocusTimer() {
   alarmRinging = true;
   updateMoodDisplay();
   stageTimerLabel.textContent = "タップして止めてね";
-  message.textContent = "おつかれさま！よくがんばったね！";
-  setAction("cheer", "おつかれさま！よくがんばったね！");
+  message.textContent = `${namePrefix()}おつかれさま！よくがんばったね！`;
+  setAction("cheer", `${namePrefix()}おつかれさま！よくがんばったね！`);
   startAlarmLoop();
 }
 
@@ -431,8 +467,8 @@ function stopAlarm() {
   if (wasRinging) {
     quoteHoldUntil = 0;
     updateMoodDisplay();
-    message.textContent = "おつかれさま！アラームを止めたよ";
-    setAction("cheer", "おつかれさま！アラームを止めたよ");
+    message.textContent = `${namePrefix()}おつかれさま！アラームを止めたよ`;
+    setAction("cheer", `${namePrefix()}おつかれさま！アラームを止めたよ`);
   }
 }
 
@@ -521,8 +557,19 @@ resetTimerButton.addEventListener("click", resetFocusTimer);
 alarmToggleButton.addEventListener("click", toggleAlarm);
 dailyQuoteButton.addEventListener("click", showDailyQuote);
 luckyFortuneButton.addEventListener("click", showLuckyFortune);
-snackButtons.forEach((button) => {
-  button.addEventListener("click", () => giveSnack(button.dataset.snack));
+nameSettingsButton.addEventListener("click", () => {
+  const willOpen = namePanel.hidden;
+  namePanel.hidden = !willOpen;
+  nameSettingsButton.setAttribute("aria-expanded", String(willOpen));
+  if (willOpen) userNameInput.focus();
+});
+saveNameButton.addEventListener("click", saveUserName);
+clearNameButton.addEventListener("click", () => {
+  userNameInput.value = "";
+  saveUserName();
+});
+userNameInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") saveUserName();
 });
 
 sheet.addEventListener("load", () => {
@@ -557,6 +604,7 @@ stage.addEventListener("keydown", (event) => {
 });
 stage.tabIndex = 0;
 
+loadUserName();
 updateClock();
 updateMoodDisplay();
 setTimerDisplays(remainingSeconds);
