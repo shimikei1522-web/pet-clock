@@ -5,6 +5,12 @@ const message = document.querySelector("#message");
 const moodValue = document.querySelector("#mood");
 const energyValue = document.querySelector("#energy");
 const clock = document.querySelector("#clock");
+const timerDisplay = document.querySelector("#timerDisplay");
+const timeChoices = document.querySelectorAll(".time-choice");
+const customMinutes = document.querySelector("#customMinutes");
+const startTimerButton = document.querySelector("#startTimer");
+const pauseTimerButton = document.querySelector("#pauseTimer");
+const resetTimerButton = document.querySelector("#resetTimer");
 
 const sheet = new Image();
 sheet.src = "./assets/spritesheet.webp";
@@ -21,42 +27,31 @@ let targetX = 0;
 let mood = 72;
 let energy = 88;
 let lastPeriod = "";
+let selectedMinutes = 5;
+let remainingSeconds = selectedMinutes * 60;
+let timerEndAt = 0;
+let timerRunning = false;
+let timerId = 0;
 
 const timePeriods = {
   morning: {
     text: "おはようございます！今日もがんばろう！",
-    replies: [
-      "おはようございます！今日もがんばろう！",
-      "朝だよ！まずは深呼吸して始めよう",
-      "今日もいい一日にしようね",
-    ],
+    replies: ["おはようございます！今日もがんばろう！", "朝だよ！まずは深呼吸して始めよう", "今日もいい一日にしようね"],
     action: "cheer",
   },
   afternoon: {
     text: "こんにちは！少し休憩しながら進めよう",
-    replies: [
-      "こんにちは！少し休憩しながら進めよう",
-      "お昼の元気、まだまだあるよ",
-      "無理しすぎず、いいペースでいこう",
-    ],
+    replies: ["こんにちは！少し休憩しながら進めよう", "お昼の元気、まだまだあるよ", "無理しすぎず、いいペースでいこう"],
     action: "wave",
   },
   evening: {
     text: "おかえりなさい！おおつかれさまです！",
-    replies: [
-      "おかえりなさい！おおつかれさまです！",
-      "夕方だね。ここまでよく進めたね",
-      "ひと息ついて、あと少しだけやろう",
-    ],
+    replies: ["おかえりなさい！おおつかれさまです！", "夕方だね。ここまでよく進めたね", "ひと息ついて、あと少しだけやろう"],
     action: "snack",
   },
   night: {
     text: "遅くまでおつかれさま。夜更かしないでね",
-    replies: [
-      "遅くまでおつかれさま。夜更かしないでね",
-      "夜はゆっくりモードでいこう",
-      "そろそろ休む準備も忘れないでね",
-    ],
+    replies: ["遅くまでおつかれさま。夜更かしないでね", "夜はゆっくりモードでいこう", "そろそろ休む準備も忘れないでね"],
     action: "shy",
   },
 };
@@ -78,9 +73,13 @@ function clamp(value, min, max) {
 }
 
 function formatTime(date) {
-  return [date.getHours(), date.getMinutes(), date.getSeconds()]
-    .map((value) => String(value).padStart(2, "0"))
-    .join(":");
+  return [date.getHours(), date.getMinutes(), date.getSeconds()].map((value) => String(value).padStart(2, "0")).join(":");
+}
+
+function formatDuration(totalSeconds) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
 function getTimePeriod(date = new Date()) {
@@ -102,7 +101,7 @@ function updateClock() {
   clock.textContent = value;
   clock.dateTime = now.toTimeString().slice(0, 8);
 
-  if (period !== lastPeriod) {
+  if (period !== lastPeriod && !timerRunning) {
     lastPeriod = period;
     message.textContent = timePeriods[period].text;
   }
@@ -124,7 +123,81 @@ function setAction(next, text = actions[next].text) {
   message.textContent = text;
   window.clearTimeout(setAction.timer);
   if (next !== "idle") {
-    setAction.timer = window.setTimeout(() => setAction("idle", timePeriods[getTimePeriod()].text), next === "run" ? 1600 : 1200);
+    setAction.timer = window.setTimeout(() => setAction("idle", timerRunning ? "集中タイマー中だよ。いい調子！" : timePeriods[getTimePeriod()].text), next === "run" ? 1600 : 1200);
+  }
+}
+
+function setSelectedMinutes(minutes) {
+  selectedMinutes = clamp(Math.round(minutes), 1, 180);
+  remainingSeconds = selectedMinutes * 60;
+  timerEndAt = 0;
+  timerRunning = false;
+  window.clearInterval(timerId);
+  timerDisplay.textContent = formatDuration(remainingSeconds);
+}
+
+function setActiveChoice(minutes) {
+  timeChoices.forEach((button) => {
+    const isActive = Number(button.dataset.minutes) === minutes;
+    button.classList.toggle("active", isActive);
+  });
+}
+
+function startFocusTimer() {
+  if (timerRunning) return;
+  if (remainingSeconds <= 0) {
+    remainingSeconds = selectedMinutes * 60;
+  }
+  timerRunning = true;
+  timerEndAt = Date.now() + remainingSeconds * 1000;
+  message.textContent = "集中スタート！Pepaatennkoも応援しているよ";
+  setAction("cheer", "集中スタート！Pepaatennkoも応援しているよ");
+  window.clearInterval(timerId);
+  timerId = window.setInterval(tickFocusTimer, 250);
+  tickFocusTimer();
+}
+
+function pauseFocusTimer() {
+  if (!timerRunning) return;
+  timerRunning = false;
+  remainingSeconds = Math.max(0, Math.ceil((timerEndAt - Date.now()) / 1000));
+  window.clearInterval(timerId);
+  timerDisplay.textContent = formatDuration(remainingSeconds);
+  message.textContent = "一時停止中。準備できたらまた始めよう";
+}
+
+function resetFocusTimer() {
+  timerRunning = false;
+  window.clearInterval(timerId);
+  remainingSeconds = selectedMinutes * 60;
+  timerDisplay.textContent = formatDuration(remainingSeconds);
+  message.textContent = timePeriods[getTimePeriod()].text;
+}
+
+function finishFocusTimer() {
+  timerRunning = false;
+  window.clearInterval(timerId);
+  remainingSeconds = 0;
+  timerDisplay.textContent = "00:00";
+  mood = clamp(mood + 8, 0, 99);
+  energy = clamp(energy + 3, 0, 99);
+  moodValue.textContent = mood;
+  energyValue.textContent = energy;
+  setAction("cheer", "おつかれさま！よくがんばったね！");
+  window.setTimeout(() => {
+    if (!timerRunning) {
+      remainingSeconds = selectedMinutes * 60;
+      timerDisplay.textContent = formatDuration(remainingSeconds);
+    }
+  }, 2400);
+}
+
+function tickFocusTimer() {
+  if (!timerRunning) return;
+  remainingSeconds = Math.max(0, Math.ceil((timerEndAt - Date.now()) / 1000));
+  timerDisplay.textContent = formatDuration(remainingSeconds);
+  if (remainingSeconds === 0) {
+    finishFocusTimer();
   }
 }
 
@@ -185,6 +258,26 @@ function registerServiceWorker() {
   navigator.serviceWorker.register("./service-worker.js").catch(() => {});
 }
 
+timeChoices.forEach((button) => {
+  button.addEventListener("click", () => {
+    const minutes = Number(button.dataset.minutes);
+    setActiveChoice(minutes);
+    customMinutes.value = "";
+    setSelectedMinutes(minutes);
+  });
+});
+
+customMinutes.addEventListener("change", () => {
+  const minutes = Number(customMinutes.value);
+  if (!Number.isFinite(minutes) || minutes <= 0) return;
+  setActiveChoice(0);
+  setSelectedMinutes(minutes);
+});
+
+startTimerButton.addEventListener("click", startFocusTimer);
+pauseTimerButton.addEventListener("click", pauseFocusTimer);
+resetTimerButton.addEventListener("click", resetFocusTimer);
+
 sheet.addEventListener("load", () => {
   frameWidth = Math.floor(sheet.naturalWidth / columns);
   frameHeight = Math.floor(sheet.naturalHeight / rows);
@@ -208,5 +301,6 @@ stage.addEventListener("keydown", (event) => {
 stage.tabIndex = 0;
 
 updateClock();
+timerDisplay.textContent = formatDuration(remainingSeconds);
 window.setInterval(updateClock, 1000);
 registerServiceWorker();

@@ -39,6 +39,34 @@
           </div>
         </div>
       </section>
+
+      <section class="focus-panel" aria-label="集中タイマー">
+        <div class="focus-head">
+          <div>
+            <p class="label">FOCUS</p>
+            <h2>作業応援モード</h2>
+          </div>
+          <output id="timerDisplay" class="timer-display" aria-live="polite">05:00</output>
+        </div>
+
+        <div class="timer-options" aria-label="タイマー時間">
+          <button class="time-choice active" type="button" data-minutes="5">5分</button>
+          <button class="time-choice" type="button" data-minutes="10">10分</button>
+          <button class="time-choice" type="button" data-minutes="15">15分</button>
+          <button class="time-choice" type="button" data-minutes="25">25分</button>
+          <button class="time-choice" type="button" data-minutes="45">45分</button>
+          <label class="custom-time">
+            <span>カスタム</span>
+            <input id="customMinutes" type="number" min="1" max="180" inputmode="numeric" placeholder="分" />
+          </label>
+        </div>
+
+        <div class="timer-controls">
+          <button id="startTimer" type="button">スタート</button>
+          <button id="pauseTimer" type="button">一時停止</button>
+          <button id="resetTimer" type="button">リセット</button>
+        </div>
+      </section>
     </main>
 
     <script src="./app.js"></script>
