@@ -980,12 +980,12 @@ h1 {
 
   .pet-bubble {
     left: 10px;
-    top: 88px;
-    max-width: calc(100% - 112px);
+    top: 86px;
+    max-width: min(174px, 48vw);
   }
 
   .pet-bubble::after {
-    right: 28px;
+    right: 18px;
   }
 
   .chef-bubble {
@@ -1006,7 +1006,7 @@ h1 {
 
   .friend {
     right: 12px;
-    bottom: 136px;
+    bottom: 112px;
     width: clamp(94px, 24vw, 112px);
   }
 
@@ -1178,12 +1178,16 @@ h1 {
   }
 
   .pet-bubble {
-    top: 84px;
-    max-width: calc(100% - 96px);
+    top: 82px;
+    max-width: min(150px, 46vw);
   }
 
   .chef-bubble {
     top: 140px;
     max-width: min(160px, 44vw);
+  }
+
+  .friend {
+    bottom: 106px;
   }
 }

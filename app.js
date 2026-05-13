@@ -51,6 +51,8 @@ let timerRunning = false;
 let timerId = 0;
 let alarmEnabled = true;
 let alarmRinging = false;
+let alarmMode = "";
+let celebrationUntil = 0;
 let alarmId = 0;
 let audioContext = null;
 let quoteHoldUntil = 0;
@@ -374,6 +376,8 @@ function checkClockAlarm(now) {
   clockAlarmLastKey = eventKey;
   enableAlarmSound();
   alarmRinging = true;
+  alarmMode = "clock";
+  celebrationUntil = 0;
   timerRunning = false;
   window.clearInterval(timerId);
   updateMoodDisplay();
@@ -701,6 +705,8 @@ function finishFocusTimer() {
   updateMoodDisplay();
   energyValue.textContent = energy;
   alarmRinging = true;
+  alarmMode = "timer";
+  celebrationUntil = Date.now() + 10000;
   updateMoodDisplay();
   stageTimerLabel.textContent = "タップして止めてね";
   setAction("cheer", `${namePrefix()}おつかれさま！ペットをタップして止めてね`);
@@ -730,7 +736,7 @@ function playTone(startTime, frequency, duration) {
   oscillator.stop(startTime + duration + 0.03);
 }
 
-function playAlarmPattern() {
+function playClockAlarmPattern() {
   if (!alarmEnabled) return;
   prepareAlarm();
   if (!audioContext || audioContext.state !== "running") return;
@@ -740,18 +746,42 @@ function playAlarmPattern() {
   playTone(now + 0.4, 1175, 0.22);
 }
 
+function playTimerCompletePattern() {
+  if (!alarmEnabled) return;
+  prepareAlarm();
+  if (!audioContext || audioContext.state !== "running") return;
+  const now = audioContext.currentTime;
+  playTone(now, 660, 0.38);
+  playTone(now + 0.42, 880, 0.5);
+}
+
+function playAlarmPattern() {
+  if (alarmMode === "timer") {
+    playTimerCompletePattern();
+    return;
+  }
+  playClockAlarmPattern();
+}
+
 function startAlarmLoop() {
   window.clearInterval(alarmId);
   playAlarmPattern();
   alarmId = window.setInterval(() => {
     if (!alarmRinging) return;
+    if (alarmMode === "timer" && Date.now() >= celebrationUntil) {
+      stopAlarm();
+      return;
+    }
     playAlarmPattern();
-  }, 1200);
+  }, alarmMode === "timer" ? 1800 : 1200);
 }
 
 function stopAlarm() {
   const wasRinging = alarmRinging;
   alarmRinging = false;
+  const stoppedMode = alarmMode;
+  alarmMode = "";
+  celebrationUntil = 0;
   window.clearInterval(alarmId);
   stageTimerLabel.textContent = "FOCUS";
   if (audioContext && audioContext.state === "running") {
@@ -760,7 +790,7 @@ function stopAlarm() {
   if (wasRinging) {
     quoteHoldUntil = 0;
     updateMoodDisplay();
-    message.textContent = `${namePrefix()}おつかれさま！アラームを止めたよ`;
+    message.textContent = stoppedMode === "clock" ? `${namePrefix()}時刻アラームを止めたよ` : `${namePrefix()}おつかれさま！よくがんばったね`;
     hideChefMessage();
     setAction("cheer", `${namePrefix()}おつかれさま！アラームを止めたよ`);
   }
@@ -811,13 +841,14 @@ function animate(time = 0) {
     lastTick = time;
   }
   if (action === "run" || alarmRinging) {
-    targetX += alarmRinging ? 2.4 : 1.8;
+    targetX += alarmRinging ? (alarmMode === "timer" ? 0.9 : 2.6) : 1.8;
     if (Math.abs(targetX) > stage.clientWidth * 0.24) targetX *= -1;
   } else {
     targetX *= 0.86;
   }
   x += (targetX - x) * 0.08;
-  canvas.style.translate = `${x}px ${action === "cheer" || alarmRinging ? "-12px" : "0"}`;
+  const alarmLift = alarmMode === "timer" ? "-9px" : "-14px";
+  canvas.style.translate = `${x}px ${action === "cheer" || alarmRinging ? alarmLift : "0"}`;
   if (alarmRinging && action !== "cheer") action = "cheer";
   drawFrame();
   requestAnimationFrame(animate);
