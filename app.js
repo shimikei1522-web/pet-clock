@@ -61,6 +61,13 @@ const actions = {
 };
 
 const clickActions = ["run", "wave", "cheer", "snack", "shy", "sad"];
+const exactTimeEvents = {
+  "07:00": "おはよう！今日もいい一日にしよう！",
+  "12:00": "お昼だよ！少し休憩しよう。",
+  "15:00": "おやつの時間だよ！",
+  "18:00": "今日もおつかれさま！",
+  "22:00": "そろそろ休む準備をしよう。",
+};
 const dailyQuotes = [
   "今日も一つずつ丁寧にいこう！",
   "発酵も成長も、待つ時間が大切だね。",
@@ -192,6 +199,41 @@ function showLuckyFortune() {
   message.textContent = `ラッキーお菓子：${fortune.sweet} / ラッキーカラー：${fortune.color} / ひとこと：${fortune.message}`;
 }
 
+function hasShownExactTimeEvent(today, eventKey) {
+  try {
+    const saved = JSON.parse(localStorage.getItem("pepaatennkoExactTimeEvents") || "{}");
+    return saved.date === today && Array.isArray(saved.keys) && saved.keys.includes(eventKey);
+  } catch {
+    return false;
+  }
+}
+
+function markExactTimeEventShown(today, eventKey) {
+  try {
+    const saved = JSON.parse(localStorage.getItem("pepaatennkoExactTimeEvents") || "{}");
+    const keys = saved.date === today && Array.isArray(saved.keys) ? saved.keys : [];
+    if (!keys.includes(eventKey)) keys.push(eventKey);
+    localStorage.setItem("pepaatennkoExactTimeEvents", JSON.stringify({ date: today, keys }));
+  } catch {
+    // localStorage may be unavailable in some private browsing modes.
+  }
+}
+
+function showExactTimeEvent(now) {
+  if (timerRunning || alarmRinging || Date.now() < quoteHoldUntil) return;
+  const eventKey = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  const text = exactTimeEvents[eventKey];
+  if (!text || now.getSeconds() > 3) return;
+  const today = getTodayKey();
+  if (hasShownExactTimeEvent(today, eventKey)) return;
+  markExactTimeEventShown(today, eventKey);
+  quoteHoldUntil = Date.now() + 8000;
+  action = "wave";
+  frameIndex = 0;
+  window.clearTimeout(setAction.timer);
+  message.textContent = text;
+}
+
 function getMoodProfile() {
   if (timerRunning) {
     return moodProfiles.find((profile) => profile.name === "やる気満々");
@@ -218,6 +260,7 @@ function updateClock() {
   const value = formatTime(now);
   clock.textContent = value;
   clock.dateTime = now.toTimeString().slice(0, 8);
+  showExactTimeEvent(now);
   if (period !== lastPeriod && !timerRunning && !alarmRinging && Date.now() >= quoteHoldUntil) {
     lastPeriod = period;
     updateMoodDisplay();
