@@ -393,6 +393,9 @@ body.theme-night .label {
 body.theme-night .daily-quote-button,
 body.theme-night .time-choice,
 body.theme-night .timer-controls button,
+body.theme-night .clock-alarm-panel,
+body.theme-night .clock-alarm-panel select,
+body.theme-night .clock-alarm-toggle,
 body.theme-night .custom-time,
 body.theme-night .meter,
 body.theme-night .name-panel,
@@ -807,6 +810,60 @@ h1 {
   color: #fff;
 }
 
+.clock-alarm-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid rgba(44, 96, 97, 0.18);
+  border-radius: 8px;
+  background: #fff;
+  color: #24484a;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.clock-alarm-label {
+  color: #d94b35;
+  white-space: nowrap;
+}
+
+.clock-alarm-panel label {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.clock-alarm-panel select {
+  min-height: 34px;
+  border: 1px solid rgba(44, 96, 97, 0.18);
+  border-radius: 8px;
+  background: #f2fbf8;
+  color: #24484a;
+  font: inherit;
+  font-size: 14px;
+}
+
+.clock-alarm-toggle {
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid rgba(44, 96, 97, 0.18);
+  border-radius: 8px;
+  background: #fff;
+  color: #24484a;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.clock-alarm-toggle.active {
+  background: #24484a;
+  color: #fff;
+}
+
 .custom-time {
   display: inline-flex;
   align-items: center;
@@ -950,6 +1007,22 @@ h1 {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 6px;
+  }
+
+  .clock-alarm-panel {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 6px;
+    padding: 7px 8px;
+    font-size: 12px;
+  }
+
+  .clock-alarm-panel select,
+  .clock-alarm-toggle {
+    width: 100%;
+    min-height: 36px;
+    padding: 0 4px;
+    font-size: 13px;
   }
 
   .time-choice,

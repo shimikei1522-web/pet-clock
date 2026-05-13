@@ -24,6 +24,9 @@ const startTimerButton = document.querySelector("#startTimer");
 const pauseTimerButton = document.querySelector("#pauseTimer");
 const resetTimerButton = document.querySelector("#resetTimer");
 const alarmToggleButton = document.querySelector("#alarmToggle");
+const alarmHourSelect = document.querySelector("#alarmHour");
+const alarmMinuteSelect = document.querySelector("#alarmMinute");
+const clockAlarmToggle = document.querySelector("#clockAlarmToggle");
 
 const sheet = new Image();
 sheet.src = "./assets/spritesheet.webp";
@@ -53,6 +56,8 @@ let audioContext = null;
 let quoteHoldUntil = 0;
 let chefBubbleTimer = 0;
 let nextConversationAt = Date.now() + 120000;
+let clockAlarmEnabled = false;
+let clockAlarmLastKey = "";
 let userName = "";
 let selectedTheme = "fresh";
 
@@ -177,6 +182,21 @@ function formatDuration(totalSeconds) {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
+function populateClockAlarmOptions() {
+  for (let hour = 0; hour < 24; hour += 1) {
+    const option = document.createElement("option");
+    option.value = String(hour).padStart(2, "0");
+    option.textContent = String(hour).padStart(2, "0");
+    alarmHourSelect.append(option);
+  }
+  for (let minute = 0; minute < 60; minute += 1) {
+    const option = document.createElement("option");
+    option.value = String(minute).padStart(2, "0");
+    option.textContent = String(minute).padStart(2, "0");
+    alarmMinuteSelect.append(option);
+  }
+}
+
 function setTimerDisplays(seconds) {
   const value = formatDuration(seconds);
   stageTimerDisplay.textContent = value;
@@ -292,6 +312,74 @@ function loadTheme() {
     selectedTheme = "fresh";
   }
   applyTheme(selectedTheme);
+}
+
+function loadClockAlarm() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("pepaatennkoClockAlarm") || "{}");
+    alarmHourSelect.value = saved.hour || "07";
+    alarmMinuteSelect.value = saved.minute || "00";
+    clockAlarmEnabled = Boolean(saved.enabled);
+  } catch {
+    alarmHourSelect.value = "07";
+    alarmMinuteSelect.value = "00";
+    clockAlarmEnabled = false;
+  }
+  updateClockAlarmUi();
+}
+
+function saveClockAlarm() {
+  try {
+    localStorage.setItem(
+      "pepaatennkoClockAlarm",
+      JSON.stringify({ hour: alarmHourSelect.value, minute: alarmMinuteSelect.value, enabled: clockAlarmEnabled }),
+    );
+  } catch {
+    // localStorage may be unavailable in some private browsing modes.
+  }
+}
+
+function updateClockAlarmUi() {
+  clockAlarmToggle.classList.toggle("active", clockAlarmEnabled);
+  clockAlarmToggle.textContent = clockAlarmEnabled ? "ON" : "OFF";
+  clockAlarmToggle.setAttribute("aria-pressed", String(clockAlarmEnabled));
+}
+
+function enableAlarmSound() {
+  alarmEnabled = true;
+  alarmToggleButton.classList.add("active");
+  alarmToggleButton.textContent = "アラームON";
+  alarmToggleButton.setAttribute("aria-pressed", "true");
+  prepareAlarm();
+}
+
+function toggleClockAlarm() {
+  clockAlarmEnabled = !clockAlarmEnabled;
+  if (clockAlarmEnabled) enableAlarmSound();
+  saveClockAlarm();
+  updateClockAlarmUi();
+  quoteHoldUntil = Date.now() + 8000;
+  hideChefMessage();
+  message.textContent = clockAlarmEnabled
+    ? `${namePrefix()}${alarmHourSelect.value}:${alarmMinuteSelect.value} にアラームをセットしたよ`
+    : `${namePrefix()}時刻アラームをOFFにしたよ`;
+}
+
+function checkClockAlarm(now) {
+  if (!clockAlarmEnabled || alarmRinging) return;
+  if (now.getSeconds() !== 0) return;
+  const eventKey = `${getTodayKey()}-${alarmHourSelect.value}:${alarmMinuteSelect.value}`;
+  const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  if (currentTime !== `${alarmHourSelect.value}:${alarmMinuteSelect.value}` || clockAlarmLastKey === eventKey) return;
+  clockAlarmLastKey = eventKey;
+  enableAlarmSound();
+  alarmRinging = true;
+  timerRunning = false;
+  window.clearInterval(timerId);
+  updateMoodDisplay();
+  stageTimerLabel.textContent = "タップして止めてね";
+  setAction("cheer", `${namePrefix()}ペットをタップして止めてね`);
+  startAlarmLoop();
 }
 
 function saveTheme(theme) {
@@ -511,6 +599,7 @@ function updateClock() {
   const value = formatTime(now);
   clock.textContent = value;
   clock.dateTime = now.toTimeString().slice(0, 8);
+  checkClockAlarm(now);
   showExactTimeEvent(now);
   showSeasonEvent(now);
   maybeShowConversation();
@@ -760,6 +849,15 @@ startTimerButton.addEventListener("click", startFocusTimer);
 pauseTimerButton.addEventListener("click", pauseFocusTimer);
 resetTimerButton.addEventListener("click", resetFocusTimer);
 alarmToggleButton.addEventListener("click", toggleAlarm);
+clockAlarmToggle.addEventListener("click", toggleClockAlarm);
+alarmHourSelect.addEventListener("change", () => {
+  saveClockAlarm();
+  clockAlarmLastKey = "";
+});
+alarmMinuteSelect.addEventListener("change", () => {
+  saveClockAlarm();
+  clockAlarmLastKey = "";
+});
 dailyQuoteButton.addEventListener("click", showDailyQuote);
 luckyFortuneButton.addEventListener("click", showLuckyFortune);
 nameSettingsButton.addEventListener("click", () => {
@@ -827,6 +925,8 @@ stage.addEventListener("keydown", (event) => {
 stage.tabIndex = 0;
 
 loadUserName();
+populateClockAlarmOptions();
+loadClockAlarm();
 loadTheme();
 updateClock();
 updateMoodDisplay();

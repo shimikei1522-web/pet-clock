@@ -91,6 +91,19 @@
           <button id="resetTimer" type="button">リセット</button>
           <button id="alarmToggle" class="alarm-toggle active" type="button" aria-pressed="true">アラームON</button>
         </div>
+
+        <div class="clock-alarm-panel" aria-label="指定時刻アラーム">
+          <span class="clock-alarm-label">時刻アラーム</span>
+          <label>
+            <span>時</span>
+            <select id="alarmHour" aria-label="アラームの時"></select>
+          </label>
+          <label>
+            <span>分</span>
+            <select id="alarmMinute" aria-label="アラームの分"></select>
+          </label>
+          <button id="clockAlarmToggle" class="clock-alarm-toggle" type="button" aria-pressed="false">OFF</button>
+        </div>
       </section>
     </main>
 
