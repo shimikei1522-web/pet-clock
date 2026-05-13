@@ -41,6 +41,7 @@ let alarmEnabled = true;
 let alarmRinging = false;
 let alarmId = 0;
 let audioContext = null;
+let quoteHoldUntil = 0;
 
 const timePeriods = {
   morning: { text: "おはようございます！今日もがんばろう！", replies: ["おはようございます！今日もがんばろう！", "朝だよ！まずは深呼吸して始めよう", "今日もいい一日にしようね"], action: "cheer" },
@@ -134,7 +135,11 @@ function pickDailyQuote() {
 function showDailyQuote() {
   if (alarmRinging) return;
   const quote = pickDailyQuote();
-  setAction("wave", `今日のひとこと：${quote}`);
+  quoteHoldUntil = Date.now() + 8000;
+  action = "wave";
+  frameIndex = 0;
+  window.clearTimeout(setAction.timer);
+  message.textContent = `今日のひとこと：${quote}`;
 }
 
 function getMoodProfile() {
@@ -163,7 +168,7 @@ function updateClock() {
   const value = formatTime(now);
   clock.textContent = value;
   clock.dateTime = now.toTimeString().slice(0, 8);
-  if (period !== lastPeriod && !timerRunning && !alarmRinging) {
+  if (period !== lastPeriod && !timerRunning && !alarmRinging && Date.now() >= quoteHoldUntil) {
     lastPeriod = period;
     updateMoodDisplay();
     message.textContent = timePeriods[period].text;
@@ -171,6 +176,7 @@ function updateClock() {
 }
 
 function chooseAction() {
+  quoteHoldUntil = 0;
   const period = timePeriods[getTimePeriod()];
   const profile = updateMoodDisplay();
   const next = Math.random() < 0.55 ? period.action : randomItem(clickActions);
@@ -207,6 +213,7 @@ function setActiveChoice(minutes) {
 
 function startFocusTimer() {
   stopAlarm();
+  quoteHoldUntil = 0;
   if (timerRunning) return;
   prepareAlarm();
   if (remainingSeconds <= 0) remainingSeconds = selectedMinutes * 60;
@@ -222,6 +229,7 @@ function startFocusTimer() {
 
 function pauseFocusTimer() {
   if (!timerRunning) return;
+  quoteHoldUntil = 0;
   timerRunning = false;
   remainingSeconds = Math.max(0, Math.ceil((timerEndAt - Date.now()) / 1000));
   window.clearInterval(timerId);
@@ -231,6 +239,7 @@ function pauseFocusTimer() {
 
 function resetFocusTimer() {
   stopAlarm();
+  quoteHoldUntil = 0;
   timerRunning = false;
   window.clearInterval(timerId);
   remainingSeconds = selectedMinutes * 60;
@@ -240,6 +249,7 @@ function resetFocusTimer() {
 }
 
 function finishFocusTimer() {
+  quoteHoldUntil = 0;
   timerRunning = false;
   window.clearInterval(timerId);
   remainingSeconds = 0;
@@ -307,6 +317,7 @@ function stopAlarm() {
     audioContext.suspend().catch(() => {});
   }
   if (wasRinging) {
+    quoteHoldUntil = 0;
     updateMoodDisplay();
     message.textContent = "おつかれさま！アラームを止めたよ";
     setAction("cheer", "おつかれさま！アラームを止めたよ");
@@ -314,6 +325,7 @@ function stopAlarm() {
 }
 
 function toggleAlarm() {
+  quoteHoldUntil = 0;
   alarmEnabled = !alarmEnabled;
   if (!alarmEnabled) stopAlarm();
   alarmToggleButton.classList.toggle("active", alarmEnabled);
