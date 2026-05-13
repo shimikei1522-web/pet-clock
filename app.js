@@ -9,6 +9,7 @@ const stageTimerLabel = document.querySelector("#stageTimerLabel");
 const stageTimerDisplay = document.querySelector("#stageTimerDisplay");
 const dailyQuoteButton = document.querySelector("#dailyQuoteButton");
 const luckyFortuneButton = document.querySelector("#luckyFortuneButton");
+const snackButtons = document.querySelectorAll(".snack-button");
 const timeChoices = document.querySelectorAll(".time-choice");
 const customMinutes = document.querySelector("#customMinutes");
 const startTimerButton = document.querySelector("#startTimer");
@@ -67,6 +68,11 @@ const exactTimeEvents = {
   "15:00": "おやつの時間だよ！",
   "18:00": "今日もおつかれさま！",
   "22:00": "そろそろ休む準備をしよう。",
+};
+const snackMessages = {
+  cookie: "クッキーありがとう！元気が出たよ！",
+  croissant: "サクサクでしあわせ！",
+  stollen: "特別なおやつだね。うれしい！",
 };
 const dailyQuotes = [
   "今日も一つずつ丁寧にいこう！",
@@ -197,6 +203,19 @@ function showLuckyFortune() {
   frameIndex = 0;
   window.clearTimeout(setAction.timer);
   message.textContent = `ラッキーお菓子：${fortune.sweet} / ラッキーカラー：${fortune.color} / ひとこと：${fortune.message}`;
+}
+
+function giveSnack(snackKey) {
+  if (timerRunning || alarmRinging) return;
+  const text = snackMessages[snackKey];
+  if (!text) return;
+  quoteHoldUntil = Date.now() + 8000;
+  mood = clamp(mood + 5, 0, 99);
+  energy = clamp(energy + 4, 0, 99);
+  updateMoodDisplay();
+  energyValue.textContent = energy;
+  setAction("snack", text);
+  window.clearTimeout(setAction.timer);
 }
 
 function hasShownExactTimeEvent(today, eventKey) {
@@ -502,6 +521,9 @@ resetTimerButton.addEventListener("click", resetFocusTimer);
 alarmToggleButton.addEventListener("click", toggleAlarm);
 dailyQuoteButton.addEventListener("click", showDailyQuote);
 luckyFortuneButton.addEventListener("click", showLuckyFortune);
+snackButtons.forEach((button) => {
+  button.addEventListener("click", () => giveSnack(button.dataset.snack));
+});
 
 sheet.addEventListener("load", () => {
   frameWidth = Math.floor(sheet.naturalWidth / columns);

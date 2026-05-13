@@ -152,9 +152,9 @@ body {
 
 .panel {
   display: grid;
-  grid-template-columns: auto auto auto 1fr auto;
+  grid-template-columns: auto auto 1fr auto;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
   padding: 16px 18px;
   border: 1px solid rgba(44, 96, 97, 0.18);
   border-radius: 8px;
@@ -162,7 +162,16 @@ body {
   backdrop-filter: blur(14px);
 }
 
-.daily-quote-button {
+.pet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 260px;
+}
+
+.daily-quote-button,
+.snack-button {
+  flex: 0 0 auto;
   min-height: 40px;
   padding: 0 14px;
   border: 1px solid rgba(44, 96, 97, 0.18);
@@ -173,6 +182,11 @@ body {
   font-size: 14px;
   font-weight: 800;
   cursor: pointer;
+  white-space: nowrap;
+}
+
+.snack-button {
+  background: #f2fbf8;
 }
 
 .portrait {
@@ -413,10 +427,28 @@ h1 {
     text-align: center;
   }
 
-  .daily-quote-button {
+  .pet-actions {
     grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .daily-quote-button,
+  .snack-button {
     min-height: 38px;
-    padding: 0 10px;
+    padding: 0 8px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .daily-quote-button {
+    grid-column: span 1;
+  }
+
+  .snack-button {
+    grid-column: span 1;
   }
 
   .meters {

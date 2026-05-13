@@ -31,8 +31,13 @@
           <p class="label">PET</p>
           <h1>Pepaatennko</h1>
         </div>
-        <button id="dailyQuoteButton" class="daily-quote-button" type="button">今日のひとこと</button>
-        <button id="luckyFortuneButton" class="daily-quote-button" type="button">ラッキー占い</button>
+        <div class="pet-actions" aria-label="ペットメニュー">
+          <button id="dailyQuoteButton" class="daily-quote-button" type="button">今日のひとこと</button>
+          <button id="luckyFortuneButton" class="daily-quote-button" type="button">ラッキー占い</button>
+          <button class="snack-button" type="button" data-snack="cookie">クッキー</button>
+          <button class="snack-button" type="button" data-snack="croissant">クロワッサン</button>
+          <button class="snack-button" type="button" data-snack="stollen">シュトーレン</button>
+        </div>
         <p id="message" class="message" aria-live="polite">クリックすると動きます</p>
         <div class="meters" aria-label="ペットの状態">
           <div class="meter">
