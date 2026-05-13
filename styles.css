@@ -152,7 +152,7 @@ body {
 
 .panel {
   display: grid;
-  grid-template-columns: auto auto 1fr auto;
+  grid-template-columns: auto auto auto 1fr auto;
   align-items: center;
   gap: 18px;
   padding: 16px 18px;
@@ -160,6 +160,19 @@ body {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.76);
   backdrop-filter: blur(14px);
+}
+
+.daily-quote-button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(44, 96, 97, 0.18);
+  border-radius: 8px;
+  background: #fff;
+  color: #24484a;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
 }
 
 .portrait {
@@ -435,6 +448,12 @@ h1 {
     grid-column: 1 / -1;
     font-size: 15px;
     text-align: center;
+  }
+
+  .daily-quote-button {
+    grid-column: 1 / -1;
+    min-height: 38px;
+    padding: 0 10px;
   }
 
   .meters {

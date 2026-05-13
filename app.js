@@ -8,6 +8,7 @@ const clock = document.querySelector("#clock");
 const timerDisplay = document.querySelector("#timerDisplay");
 const stageTimerLabel = document.querySelector("#stageTimerLabel");
 const stageTimerDisplay = document.querySelector("#stageTimerDisplay");
+const dailyQuoteButton = document.querySelector("#dailyQuoteButton");
 const timeChoices = document.querySelectorAll(".time-choice");
 const customMinutes = document.querySelector("#customMinutes");
 const startTimerButton = document.querySelector("#startTimer");
@@ -59,6 +60,16 @@ const actions = {
 };
 
 const clickActions = ["run", "wave", "cheer", "snack", "shy", "sad"];
+const dailyQuotes = [
+  "今日も一つずつ丁寧にいこう！",
+  "発酵も成長も、待つ時間が大切だね。",
+  "少し休憩して、またおいしく進めよう。",
+  "小さな積み重ねが、きれいな仕上がりにつながるよ。",
+  "焼き上がりを待つみたいに、焦らずいこう。",
+  "粉をふるうみたいに、気持ちも軽く整えよう。",
+  "今日のひと手間が、明日の自信になるよ。",
+  "うまくいかない日も、生地みたいに少し休ませて大丈夫。",
+];
 const moodProfiles = [
   { name: "ねむい", minMood: 0, maxMood: 45, minEnergy: 0, maxEnergy: 46, messages: ["ちょっとねむいみたい。少し休もう", "今日はゆっくりめでいこう"] },
   { name: "おなかすいた", minMood: 0, maxMood: 58, minEnergy: 47, maxEnergy: 99, messages: ["おなかすいたかも。ひと息つこう", "軽く何か食べたら元気が出そう"] },
@@ -97,6 +108,33 @@ function getTimePeriod(date = new Date()) {
 
 function randomItem(items) {
   return items[Math.floor(Math.random() * items.length)];
+}
+
+function getTodayKey() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+}
+
+function pickDailyQuote() {
+  const today = getTodayKey();
+  try {
+    const saved = JSON.parse(localStorage.getItem("pepaatennkoDailyQuote") || "{}");
+    if (saved.date === today && typeof saved.quote === "string") {
+      return saved.quote;
+    }
+    const index = Math.abs([...today].reduce((total, char) => total + char.charCodeAt(0), 0)) % dailyQuotes.length;
+    const quote = dailyQuotes[index];
+    localStorage.setItem("pepaatennkoDailyQuote", JSON.stringify({ date: today, quote }));
+    return quote;
+  } catch {
+    return dailyQuotes[new Date().getDate() % dailyQuotes.length];
+  }
+}
+
+function showDailyQuote() {
+  if (alarmRinging) return;
+  const quote = pickDailyQuote();
+  setAction("wave", `今日のひとこと：${quote}`);
 }
 
 function getMoodProfile() {
@@ -357,6 +395,7 @@ startTimerButton.addEventListener("click", startFocusTimer);
 pauseTimerButton.addEventListener("click", pauseFocusTimer);
 resetTimerButton.addEventListener("click", resetFocusTimer);
 alarmToggleButton.addEventListener("click", toggleAlarm);
+dailyQuoteButton.addEventListener("click", showDailyQuote);
 
 sheet.addEventListener("load", () => {
   frameWidth = Math.floor(sheet.naturalWidth / columns);
