@@ -11,6 +11,7 @@ const customMinutes = document.querySelector("#customMinutes");
 const startTimerButton = document.querySelector("#startTimer");
 const pauseTimerButton = document.querySelector("#pauseTimer");
 const resetTimerButton = document.querySelector("#resetTimer");
+const alarmToggleButton = document.querySelector("#alarmToggle");
 
 const sheet = new Image();
 sheet.src = "./assets/spritesheet.webp";
@@ -32,6 +33,8 @@ let remainingSeconds = selectedMinutes * 60;
 let timerEndAt = 0;
 let timerRunning = false;
 let timerId = 0;
+let alarmEnabled = true;
+let audioContext = null;
 
 const timePeriods = {
   morning: {
@@ -145,6 +148,7 @@ function setActiveChoice(minutes) {
 
 function startFocusTimer() {
   if (timerRunning) return;
+  prepareAlarm();
   if (remainingSeconds <= 0) {
     remainingSeconds = selectedMinutes * 60;
   }
@@ -183,6 +187,7 @@ function finishFocusTimer() {
   energy = clamp(energy + 3, 0, 99);
   moodValue.textContent = mood;
   energyValue.textContent = energy;
+  playAlarm();
   setAction("cheer", "おつかれさま！よくがんばったね！");
   window.setTimeout(() => {
     if (!timerRunning) {
@@ -190,6 +195,53 @@ function finishFocusTimer() {
       timerDisplay.textContent = formatDuration(remainingSeconds);
     }
   }, 2400);
+}
+
+function prepareAlarm() {
+  if (!alarmEnabled) return;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+  if (!audioContext) {
+    audioContext = new AudioContextClass();
+  }
+  if (audioContext.state === "suspended") {
+    audioContext.resume().catch(() => {});
+  }
+}
+
+function playTone(startTime, frequency, duration) {
+  if (!audioContext || !alarmEnabled) return;
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(frequency, startTime);
+  gain.gain.setValueAtTime(0.0001, startTime);
+  gain.gain.exponentialRampToValueAtTime(0.08, startTime + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+  oscillator.connect(gain);
+  gain.connect(audioContext.destination);
+  oscillator.start(startTime);
+  oscillator.stop(startTime + duration + 0.02);
+}
+
+function playAlarm() {
+  if (!alarmEnabled) return;
+  prepareAlarm();
+  if (!audioContext || audioContext.state !== "running") return;
+  const now = audioContext.currentTime;
+  playTone(now, 880, 0.12);
+  playTone(now + 0.18, 988, 0.12);
+  playTone(now + 0.36, 1175, 0.18);
+}
+
+function toggleAlarm() {
+  alarmEnabled = !alarmEnabled;
+  alarmToggleButton.classList.toggle("active", alarmEnabled);
+  alarmToggleButton.textContent = alarmEnabled ? "アラームON" : "アラームOFF";
+  alarmToggleButton.setAttribute("aria-pressed", String(alarmEnabled));
+  if (alarmEnabled) {
+    prepareAlarm();
+  }
 }
 
 function tickFocusTimer() {
@@ -277,6 +329,7 @@ customMinutes.addEventListener("change", () => {
 startTimerButton.addEventListener("click", startFocusTimer);
 pauseTimerButton.addEventListener("click", pauseFocusTimer);
 resetTimerButton.addEventListener("click", resetFocusTimer);
+alarmToggleButton.addEventListener("click", toggleAlarm);
 
 sheet.addEventListener("load", () => {
   frameWidth = Math.floor(sheet.naturalWidth / columns);
