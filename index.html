@@ -35,6 +35,7 @@
           <button id="dailyQuoteButton" class="daily-quote-button" type="button">今日のひとこと</button>
           <button id="luckyFortuneButton" class="daily-quote-button" type="button">ラッキー占い</button>
           <button id="nameSettingsButton" class="daily-quote-button" type="button" aria-expanded="false" aria-controls="namePanel">名前設定</button>
+          <button id="themeSettingsButton" class="daily-quote-button" type="button" aria-expanded="false" aria-controls="themePanel">背景設定</button>
         </div>
         <div id="namePanel" class="name-panel" hidden>
           <label for="userNameInput">呼んでほしい名前</label>
@@ -42,6 +43,16 @@
             <input id="userNameInput" type="text" maxlength="12" autocomplete="off" placeholder="名前" />
             <button id="saveNameButton" type="button">保存</button>
             <button id="clearNameButton" type="button">消す</button>
+          </div>
+        </div>
+        <div id="themePanel" class="theme-panel" hidden>
+          <span class="theme-panel-title">背景テーマ</span>
+          <div class="theme-options" aria-label="背景テーマ">
+            <button class="theme-choice active" type="button" data-theme="fresh">さわやか</button>
+            <button class="theme-choice" type="button" data-theme="night">夜空</button>
+            <button class="theme-choice" type="button" data-theme="forest">森</button>
+            <button class="theme-choice" type="button" data-theme="cafe">カフェ</button>
+            <button class="theme-choice" type="button" data-theme="season">季節</button>
           </div>
         </div>
         <p id="message" class="message" aria-live="polite">クリックすると動きます</p>

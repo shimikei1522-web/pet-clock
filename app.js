@@ -14,6 +14,9 @@ const namePanel = document.querySelector("#namePanel");
 const userNameInput = document.querySelector("#userNameInput");
 const saveNameButton = document.querySelector("#saveNameButton");
 const clearNameButton = document.querySelector("#clearNameButton");
+const themeSettingsButton = document.querySelector("#themeSettingsButton");
+const themePanel = document.querySelector("#themePanel");
+const themeChoices = document.querySelectorAll(".theme-choice");
 const timeChoices = document.querySelectorAll(".time-choice");
 const customMinutes = document.querySelector("#customMinutes");
 const startTimerButton = document.querySelector("#startTimer");
@@ -48,6 +51,7 @@ let alarmId = 0;
 let audioContext = null;
 let quoteHoldUntil = 0;
 let userName = "";
+let selectedTheme = "fresh";
 
 const timePeriods = {
   morning: { text: "おはようございます！今日もがんばろう！", replies: ["おはようございます！今日もがんばろう！", "朝だよ！まずは深呼吸して始めよう", "今日もいい一日にしようね"], action: "cheer" },
@@ -179,6 +183,49 @@ function saveUserName() {
   nameSettingsButton.setAttribute("aria-expanded", "false");
   quoteHoldUntil = Date.now() + 8000;
   message.textContent = userName ? `${userName}さん、これからよろしくね！` : "名前設定をクリアしたよ";
+}
+
+function getSeasonClass(date = new Date()) {
+  const month = date.getMonth() + 1;
+  if (month >= 3 && month <= 5) return "season-spring";
+  if (month >= 6 && month <= 8) return "season-summer";
+  if (month >= 9 && month <= 11) return "season-autumn";
+  return "season-winter";
+}
+
+function applyTheme(theme) {
+  selectedTheme = ["fresh", "night", "forest", "cafe", "season"].includes(theme) ? theme : "fresh";
+  document.body.classList.remove("theme-night", "theme-forest", "theme-cafe", "theme-season", "season-spring", "season-summer", "season-autumn", "season-winter");
+  if (selectedTheme !== "fresh") {
+    document.body.classList.add(`theme-${selectedTheme}`);
+  }
+  if (selectedTheme === "season") {
+    document.body.classList.add(getSeasonClass());
+  }
+  themeChoices.forEach((button) => button.classList.toggle("active", button.dataset.theme === selectedTheme));
+}
+
+function loadTheme() {
+  try {
+    selectedTheme = localStorage.getItem("pepaatennkoTheme") || "fresh";
+  } catch {
+    selectedTheme = "fresh";
+  }
+  applyTheme(selectedTheme);
+}
+
+function saveTheme(theme) {
+  applyTheme(theme);
+  try {
+    localStorage.setItem("pepaatennkoTheme", selectedTheme);
+  } catch {
+    // localStorage may be unavailable in some private browsing modes.
+  }
+  themePanel.hidden = true;
+  themeSettingsButton.setAttribute("aria-expanded", "false");
+  quoteHoldUntil = Date.now() + 8000;
+  const labels = { fresh: "さわやか", night: "夜空", forest: "森", cafe: "カフェ", season: "季節" };
+  message.textContent = `${namePrefix()}背景を「${labels[selectedTheme]}」にしたよ`;
 }
 
 function getTodayKey() {
@@ -561,6 +608,10 @@ nameSettingsButton.addEventListener("click", () => {
   const willOpen = namePanel.hidden;
   namePanel.hidden = !willOpen;
   nameSettingsButton.setAttribute("aria-expanded", String(willOpen));
+  if (willOpen) {
+    themePanel.hidden = true;
+    themeSettingsButton.setAttribute("aria-expanded", "false");
+  }
   if (willOpen) userNameInput.focus();
 });
 saveNameButton.addEventListener("click", saveUserName);
@@ -570,6 +621,18 @@ clearNameButton.addEventListener("click", () => {
 });
 userNameInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") saveUserName();
+});
+themeSettingsButton.addEventListener("click", () => {
+  const willOpen = themePanel.hidden;
+  themePanel.hidden = !willOpen;
+  themeSettingsButton.setAttribute("aria-expanded", String(willOpen));
+  if (willOpen) {
+    namePanel.hidden = true;
+    nameSettingsButton.setAttribute("aria-expanded", "false");
+  }
+});
+themeChoices.forEach((button) => {
+  button.addEventListener("click", () => saveTheme(button.dataset.theme));
 });
 
 sheet.addEventListener("load", () => {
@@ -605,6 +668,7 @@ stage.addEventListener("keydown", (event) => {
 stage.tabIndex = 0;
 
 loadUserName();
+loadTheme();
 updateClock();
 updateMoodDisplay();
 setTimerDisplays(remainingSeconds);
