@@ -6,13 +6,13 @@ const moodValue = document.querySelector("#mood");
 const energyValue = document.querySelector("#energy");
 const clock = document.querySelector("#clock");
 const timerDisplay = document.querySelector("#timerDisplay");
+const stageTimerLabel = document.querySelector("#stageTimerLabel");
 const stageTimerDisplay = document.querySelector("#stageTimerDisplay");
 const timeChoices = document.querySelectorAll(".time-choice");
 const customMinutes = document.querySelector("#customMinutes");
 const startTimerButton = document.querySelector("#startTimer");
 const pauseTimerButton = document.querySelector("#pauseTimer");
 const resetTimerButton = document.querySelector("#resetTimer");
-const stopAlarmButton = document.querySelector("#stopAlarm");
 const alarmToggleButton = document.querySelector("#alarmToggle");
 
 const sheet = new Image();
@@ -143,6 +143,7 @@ function startFocusTimer() {
   prepareAlarm();
   if (remainingSeconds <= 0) remainingSeconds = selectedMinutes * 60;
   timerRunning = true;
+  stageTimerLabel.textContent = "FOCUS";
   timerEndAt = Date.now() + remainingSeconds * 1000;
   setAction("cheer", "集中スタート！Pepaatennkoも応援しているよ");
   window.clearInterval(timerId);
@@ -164,6 +165,7 @@ function resetFocusTimer() {
   timerRunning = false;
   window.clearInterval(timerId);
   remainingSeconds = selectedMinutes * 60;
+  stageTimerLabel.textContent = "FOCUS";
   setTimerDisplays(remainingSeconds);
   message.textContent = timePeriods[getTimePeriod()].text;
 }
@@ -178,7 +180,7 @@ function finishFocusTimer() {
   moodValue.textContent = mood;
   energyValue.textContent = energy;
   alarmRinging = true;
-  stopAlarmButton.hidden = false;
+  stageTimerLabel.textContent = "タップして止めてね";
   message.textContent = "おつかれさま！よくがんばったね！";
   setAction("cheer", "おつかれさま！よくがんばったね！");
   startAlarmLoop();
@@ -227,11 +229,16 @@ function startAlarmLoop() {
 }
 
 function stopAlarm() {
+  const wasRinging = alarmRinging;
   alarmRinging = false;
   window.clearInterval(alarmId);
-  stopAlarmButton.hidden = true;
+  stageTimerLabel.textContent = "FOCUS";
   if (audioContext && audioContext.state === "running") {
     audioContext.suspend().catch(() => {});
+  }
+  if (wasRinging) {
+    message.textContent = "おつかれさま！アラームを止めたよ";
+    setAction("cheer", "おつかれさま！アラームを止めたよ");
   }
 }
 
@@ -316,7 +323,6 @@ customMinutes.addEventListener("change", () => {
 startTimerButton.addEventListener("click", startFocusTimer);
 pauseTimerButton.addEventListener("click", pauseFocusTimer);
 resetTimerButton.addEventListener("click", resetFocusTimer);
-stopAlarmButton.addEventListener("click", stopAlarm);
 alarmToggleButton.addEventListener("click", toggleAlarm);
 
 sheet.addEventListener("load", () => {
@@ -332,10 +338,20 @@ sheet.addEventListener("error", () => {
   message.textContent = "画像が見つかりません";
 });
 
-stage.addEventListener("click", chooseAction);
+stage.addEventListener("click", () => {
+  if (alarmRinging) {
+    stopAlarm();
+    return;
+  }
+  chooseAction();
+});
 stage.addEventListener("keydown", (event) => {
   if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
+    if (alarmRinging) {
+      stopAlarm();
+      return;
+    }
     chooseAction();
   }
 });

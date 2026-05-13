@@ -300,15 +300,6 @@ h1 {
   color: #fff;
 }
 
-.stop-alarm {
-  background: #b8172f !important;
-  color: #fff !important;
-}
-
-.stop-alarm[hidden] {
-  display: none;
-}
-
 .custom-time {
   display: inline-flex;
   align-items: center;
