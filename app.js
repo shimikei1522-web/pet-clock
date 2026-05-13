@@ -2,6 +2,7 @@ const canvas = document.querySelector("#pet");
 const ctx = canvas.getContext("2d", { willReadFrequently: true });
 const stage = document.querySelector("#stage");
 const message = document.querySelector("#message");
+const chefMessage = document.querySelector("#chefMessage");
 const moodValue = document.querySelector("#mood");
 const energyValue = document.querySelector("#energy");
 const clock = document.querySelector("#clock");
@@ -50,6 +51,8 @@ let alarmRinging = false;
 let alarmId = 0;
 let audioContext = null;
 let quoteHoldUntil = 0;
+let chefBubbleTimer = 0;
+let nextConversationAt = Date.now() + 120000;
 let userName = "";
 let selectedTheme = "fresh";
 
@@ -133,6 +136,32 @@ const moodProfiles = [
   { name: "ごきげん", minMood: 59, maxMood: 84, minEnergy: 45, maxEnergy: 99, messages: ["ごきげんだよ。今日もいい感じ！", "Pepaatennkoは楽しそうにしているよ"] },
   { name: "やる気満々", minMood: 75, maxMood: 99, minEnergy: 70, maxEnergy: 99, messages: ["やる気満々！この調子でいこう", "集中する準備ばっちりだよ"] },
 ];
+const conversations = {
+  normal: [
+    ["今日もがんばってるね", "焦らず丁寧にいこう"],
+    ["少し休憩する？", "休む時間も大事だよ"],
+    ["今日はどんな一日にする？", "小さな目標を一つ決めるといいよ"],
+    ["なんだかいい日になりそう", "その気持ち、大切にしよう"],
+    ["一つずつ進めば大丈夫", "丁寧な積み重ねが力になるよ"],
+    ["お菓子の香りがしてきそう", "丁寧な作業は、仕上がりに出るよ"],
+    ["発酵って待つのが大事なんだよね", "そう。成長も同じだね"],
+    ["パン生地みたいに成長中だね", "焦らず、じっくり育てよう"],
+    ["焼き色って大事だよね", "最後の見極めが仕上がりを決めるよ"],
+    ["急がなくても大丈夫", "丁寧に進める方が、きっといいよ"],
+  ],
+  focus: [
+    ["タイマー、いい感じに進んでるよ", "その集中、すごくいいね"],
+    ["あと少しだよ！", "最後まで落ち着いていこう"],
+    ["今、集中できてるね", "この調子で進めよう"],
+    ["ひと区切りまでがんばろう", "終わったら少し休もうね"],
+  ],
+  seasonal: {
+    spring: ["春の香りがするね", "新しいことを始めるのにぴったりだね"],
+    summer: ["暑い日は無理しないでね", "水分補給も忘れずに"],
+    autumn: ["栗やさつまいもの季節だね", "秋の素材はわくわくするね"],
+    winter: ["寒くなってきたね", "あたたかい飲み物と一緒に進めよう"],
+  },
+};
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -208,7 +237,24 @@ function saveUserName() {
   namePanel.hidden = true;
   nameSettingsButton.setAttribute("aria-expanded", "false");
   quoteHoldUntil = Date.now() + 8000;
+  hideChefMessage();
   message.textContent = userName ? `${userName}さん、これからよろしくね！` : "名前設定をクリアしたよ";
+}
+
+function showChefMessage(text, duration = 10000) {
+  chefMessage.hidden = false;
+  chefMessage.textContent = text;
+  window.clearTimeout(chefBubbleTimer);
+  chefBubbleTimer = window.setTimeout(() => {
+    chefMessage.hidden = true;
+    chefMessage.textContent = "";
+  }, duration);
+}
+
+function hideChefMessage() {
+  window.clearTimeout(chefBubbleTimer);
+  chefMessage.hidden = true;
+  chefMessage.textContent = "";
 }
 
 function getSeasonClass(date = new Date()) {
@@ -258,6 +304,7 @@ function saveTheme(theme) {
   themePanel.hidden = true;
   themeSettingsButton.setAttribute("aria-expanded", "false");
   quoteHoldUntil = Date.now() + 8000;
+  hideChefMessage();
   const labels = { fresh: "さわやか", night: "夜空", forest: "森", cafe: "カフェ", season: "季節" };
   message.textContent = `${namePrefix()}背景を「${labels[selectedTheme]}」にしたよ`;
 }
@@ -347,6 +394,7 @@ function showSeasonEvent(now) {
     stage.classList.remove("season-event", "season-event-spring", "season-event-summer", "season-event-autumn", "season-event-winter");
   }, 2600);
   window.clearTimeout(setAction.timer);
+  hideChefMessage();
   message.textContent = `${namePrefix()}${randomItem(season.messages)}`;
 }
 
@@ -357,6 +405,7 @@ function showDailyQuote() {
   action = "wave";
   frameIndex = 0;
   window.clearTimeout(setAction.timer);
+  hideChefMessage();
   message.textContent = `今日のひとこと：${namePrefix()}${quote}`;
 }
 
@@ -367,7 +416,37 @@ function showLuckyFortune() {
   action = "wave";
   frameIndex = 0;
   window.clearTimeout(setAction.timer);
+  hideChefMessage();
   message.textContent = `ラッキーお菓子：${fortune.sweet} / ラッキーカラー：${fortune.color} / ひとこと：${namePrefix()}${fortune.message}`;
+}
+
+function scheduleNextConversation(delay = 120000 + Math.random() * 180000) {
+  nextConversationAt = Date.now() + delay;
+}
+
+function getConversationPair() {
+  if (userName && Math.random() < 0.35) {
+    return [`${userName}さん、今日もおつかれさま`, `${userName}さんのペースで進めよう`];
+  }
+  if (Math.random() < 0.25) {
+    return conversations.seasonal[getSeasonKey()];
+  }
+  const pool = timerRunning ? conversations.focus : conversations.normal;
+  return randomItem(pool);
+}
+
+function maybeShowConversation() {
+  const now = Date.now();
+  if (now < nextConversationAt) return;
+  if (alarmRinging || now < quoteHoldUntil) {
+    scheduleNextConversation(60000);
+    return;
+  }
+  const [petText, chefText] = getConversationPair();
+  quoteHoldUntil = now + 10000;
+  message.textContent = petText;
+  showChefMessage(chefText, 10000);
+  scheduleNextConversation();
 }
 
 function hasShownExactTimeEvent(today, eventKey) {
@@ -403,6 +482,7 @@ function showExactTimeEvent(now) {
   frameIndex = 0;
   window.clearTimeout(setAction.timer);
   message.textContent = `${namePrefix()}${text}`;
+  hideChefMessage();
 }
 
 function getMoodProfile() {
@@ -433,6 +513,7 @@ function updateClock() {
   clock.dateTime = now.toTimeString().slice(0, 8);
   showExactTimeEvent(now);
   showSeasonEvent(now);
+  maybeShowConversation();
   if (period !== lastPeriod && !timerRunning && !alarmRinging && Date.now() >= quoteHoldUntil) {
     lastPeriod = period;
     updateMoodDisplay();
@@ -459,6 +540,7 @@ function chooseAction() {
 function setAction(next, text = actions[next].text) {
   action = next;
   frameIndex = 0;
+  hideChefMessage();
   message.textContent = text;
   window.clearTimeout(setAction.timer);
   if (next !== "idle" && !alarmRinging) {
@@ -503,6 +585,7 @@ function pauseFocusTimer() {
   remainingSeconds = Math.max(0, Math.ceil((timerEndAt - Date.now()) / 1000));
   window.clearInterval(timerId);
   setTimerDisplays(remainingSeconds);
+  hideChefMessage();
   message.textContent = `${namePrefix()}一時停止中。準備できたらまた始めよう`;
 }
 
@@ -514,6 +597,7 @@ function resetFocusTimer() {
   remainingSeconds = selectedMinutes * 60;
   stageTimerLabel.textContent = "FOCUS";
   setTimerDisplays(remainingSeconds);
+  hideChefMessage();
   message.textContent = namedPeriodText();
 }
 
@@ -530,8 +614,7 @@ function finishFocusTimer() {
   alarmRinging = true;
   updateMoodDisplay();
   stageTimerLabel.textContent = "タップして止めてね";
-  message.textContent = `${namePrefix()}おつかれさま！よくがんばったね！`;
-  setAction("cheer", `${namePrefix()}おつかれさま！よくがんばったね！`);
+  setAction("cheer", `${namePrefix()}おつかれさま！ペットをタップして止めてね`);
   startAlarmLoop();
 }
 
@@ -589,6 +672,7 @@ function stopAlarm() {
     quoteHoldUntil = 0;
     updateMoodDisplay();
     message.textContent = `${namePrefix()}おつかれさま！アラームを止めたよ`;
+    hideChefMessage();
     setAction("cheer", `${namePrefix()}おつかれさま！アラームを止めたよ`);
   }
 }
@@ -719,6 +803,7 @@ sheet.addEventListener("load", () => {
 });
 
 sheet.addEventListener("error", () => {
+  hideChefMessage();
   message.textContent = "画像が見つかりません";
 });
 
