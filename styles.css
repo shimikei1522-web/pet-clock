@@ -268,11 +268,11 @@ body.theme-season.season-winter .stage {
 @keyframes friendWatch {
   0%,
   100% {
-    transform: translate3d(0, 0, 0) rotate(-0.5deg);
+    transform: translate3d(-2px, 0, 0) rotate(-0.5deg);
   }
 
   50% {
-    transform: translate3d(1px, -3px, 0) rotate(0.5deg);
+    transform: translate3d(3px, -4px, 0) rotate(0.5deg);
   }
 }
 
@@ -569,8 +569,8 @@ body.theme-night .speech-bubble {
 .friend {
   position: absolute;
   right: clamp(76px, 14vw, 150px);
-  bottom: 174px;
-  width: clamp(150px, 21vw, 172px);
+  bottom: 164px;
+  width: clamp(195px, 27vw, 224px);
   z-index: 1;
   pointer-events: none;
 }
@@ -584,7 +584,7 @@ body.theme-night .speech-bubble {
   filter: drop-shadow(0 8px 8px rgba(31, 88, 55, 0.18));
   transform-origin: 50% 100%;
   will-change: transform;
-  animation: friendWatch 4.2s ease-in-out infinite;
+  animation: friendWatch 3.5s ease-in-out infinite;
 }
 
 .stage:active .pet {
@@ -1053,8 +1053,8 @@ h1 {
 
   .friend {
     right: 12px;
-    bottom: 112px;
-    width: clamp(94px, 24vw, 112px);
+    bottom: 102px;
+    width: clamp(118px, 30vw, 138px);
   }
 
   .shadow {
@@ -1239,8 +1239,8 @@ h1 {
 
   .friend {
     right: 8px;
-    bottom: 128px;
-    width: 90px;
+    bottom: 98px;
+    width: 112px;
   }
 
   .speech-bubble {
@@ -1258,6 +1258,6 @@ h1 {
   }
 
   .friend {
-    bottom: 106px;
+    bottom: 96px;
   }
 }
