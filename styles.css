@@ -973,13 +973,13 @@ h1 {
 
   .app {
     width: min(100vw - 12px, 480px);
-    min-height: 100svh;
-    padding: 4px 0;
-    gap: 5px;
+    min-height: auto;
+    padding: 3px 0;
+    gap: 4px;
   }
 
   .stage {
-    min-height: clamp(310px, 44svh, 390px);
+    min-height: clamp(298px, 41svh, 370px);
   }
 
   .sky::before {
@@ -1053,8 +1053,8 @@ h1 {
 
   .friend {
     right: 12px;
-    bottom: 102px;
-    width: clamp(118px, 30vw, 138px);
+    bottom: 96px;
+    width: clamp(112px, 28vw, 128px);
   }
 
   .shadow {
@@ -1064,33 +1064,33 @@ h1 {
 
   .panel {
     grid-template-columns: auto 1fr auto;
-    gap: 7px;
-    padding: 7px 9px;
+    gap: 6px;
+    padding: 6px 8px;
     text-align: left;
   }
 
   .focus-panel {
     grid-template-columns: 1fr;
-    gap: 6px;
-    padding: 7px 8px;
+    gap: 5px;
+    padding: 6px 7px;
   }
 
   .timer-card,
   .clock-alarm-card {
-    gap: 6px;
-    padding: 7px;
+    gap: 5px;
+    padding: 6px;
   }
 
   .timer-options {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 5px;
+    gap: 4px;
   }
 
   .timer-controls {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 5px;
+    gap: 4px;
   }
 
   .clock-alarm-panel {
@@ -1110,9 +1110,9 @@ h1 {
 
   .time-choice,
   .timer-controls button {
-    min-height: 39px;
+    min-height: 37px;
     padding: 0 6px;
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .portrait {
@@ -1129,13 +1129,13 @@ h1 {
     grid-column: 1 / -1;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 6px;
+    gap: 5px;
     min-width: 0;
   }
 
   .daily-quote-button,
   .name-row button {
-    min-height: 38px;
+    min-height: 36px;
     padding: 0 5px;
     font-size: clamp(11px, 3.2vw, 13px);
     white-space: nowrap;
@@ -1148,7 +1148,7 @@ h1 {
   .name-panel,
   .theme-panel,
   .bgm-panel {
-    padding: 8px;
+    padding: 7px;
   }
 
   .bgm-panel {
@@ -1175,11 +1175,11 @@ h1 {
 
   .theme-options {
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 5px;
+    gap: 4px;
   }
 
   .theme-choice {
-    min-height: 36px;
+    min-height: 35px;
     padding: 0 5px;
     font-size: 12px;
   }
@@ -1239,8 +1239,8 @@ h1 {
 
   .friend {
     right: 8px;
-    bottom: 98px;
-    width: 112px;
+    bottom: 92px;
+    width: 104px;
   }
 
   .speech-bubble {
@@ -1258,6 +1258,6 @@ h1 {
   }
 
   .friend {
-    bottom: 96px;
+    bottom: 90px;
   }
 }
