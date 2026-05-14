@@ -1,4 +1,4 @@
-const CACHE_NAME = "pepaatennko-cache-v38";
+const CACHE_NAME = "pepaatennko-cache-v43";
 const APP_FILES = [
   "./",
   "./index.html",
@@ -8,6 +8,7 @@ const APP_FILES = [
   "./assets/spritesheet.webp",
   "./assets/pet-reference.png",
   "./assets/chef-friend-standing.png.png",
+  "./assets/animal-friend-transparent.png",
 ];
 
 self.addEventListener("install", (event) => {
