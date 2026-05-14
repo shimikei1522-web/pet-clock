@@ -18,6 +18,11 @@ const clearNameButton = document.querySelector("#clearNameButton");
 const themeSettingsButton = document.querySelector("#themeSettingsButton");
 const themePanel = document.querySelector("#themePanel");
 const themeChoices = document.querySelectorAll(".theme-choice");
+const bgmSettingsButton = document.querySelector("#bgmSettingsButton");
+const bgmPanel = document.querySelector("#bgmPanel");
+const bgmToggle = document.querySelector("#bgmToggle");
+const bgmMode = document.querySelector("#bgmMode");
+const bgmVolume = document.querySelector("#bgmVolume");
 const timeChoices = document.querySelectorAll(".time-choice");
 const customMinutes = document.querySelector("#customMinutes");
 const startTimerButton = document.querySelector("#startTimer");
@@ -55,6 +60,13 @@ let alarmMode = "";
 let celebrationUntil = 0;
 let alarmId = 0;
 let audioContext = null;
+let bgmGain = null;
+let bgmOscillators = [];
+let bgmTimer = 0;
+let bgmEnabled = false;
+let bgmStarted = false;
+let bgmModeValue = "off";
+let bgmVolumeValue = 0.04;
 let quoteHoldUntil = 0;
 let chefBubbleTimer = 0;
 let nextConversationAt = Date.now() + 120000;
@@ -62,6 +74,66 @@ let clockAlarmEnabled = false;
 let clockAlarmLastKey = "";
 let userName = "";
 let selectedTheme = "fresh";
+
+const bgmPatterns = {
+  gentle: {
+    step: 620,
+    wave: "sine",
+    level: 0.78,
+    notes: [
+      [523.25, 0.28],
+      [659.25, 0.24],
+      [783.99, 0.3],
+      [659.25, 0.32],
+      null,
+      [587.33, 0.26],
+      [659.25, 0.34],
+      null,
+    ],
+  },
+  cafe: {
+    step: 430,
+    wave: "triangle",
+    level: 0.68,
+    notes: [
+      [523.25, 0.16],
+      [659.25, 0.16],
+      [783.99, 0.18],
+      [880, 0.16],
+      [783.99, 0.22],
+      null,
+      [659.25, 0.16],
+      [587.33, 0.2],
+    ],
+  },
+  focus: {
+    step: 820,
+    wave: "sine",
+    level: 0.54,
+    notes: [
+      [392, 0.22],
+      null,
+      [587.33, 0.2],
+      null,
+      [493.88, 0.26],
+      null,
+    ],
+  },
+  night: {
+    step: 760,
+    wave: "sine",
+    level: 0.46,
+    notes: [
+      [440, 0.32],
+      null,
+      [523.25, 0.28],
+      [659.25, 0.34],
+      null,
+      [523.25, 0.36],
+      null,
+    ],
+  },
+};
 
 const timePeriods = {
   morning: { text: "おはようございます！今日もがんばろう！", replies: ["おはようございます！今日もがんばろう！", "朝だよ！まずは深呼吸して始めよう", "今日もいい一日にしようね"], action: "cheer" },
@@ -347,12 +419,125 @@ function updateClockAlarmUi() {
   clockAlarmToggle.setAttribute("aria-pressed", String(clockAlarmEnabled));
 }
 
+function ensureAudioContext() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return null;
+  if (!audioContext) audioContext = new AudioContextClass();
+  if (audioContext.state === "suspended") audioContext.resume().catch(() => {});
+  return audioContext;
+}
+
 function enableAlarmSound() {
   alarmEnabled = true;
   alarmToggleButton.classList.add("active");
   alarmToggleButton.textContent = "タイマーON";
   alarmToggleButton.setAttribute("aria-pressed", "true");
   prepareAlarm();
+}
+
+function loadBgmSettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("pepaatennkoBgm") || "{}");
+    bgmModeValue = bgmPatterns[saved.mode] ? saved.mode : saved.enabled ? "gentle" : "off";
+    bgmEnabled = false;
+    bgmVolumeValue = Number(saved.volume) || 0.04;
+  } catch {
+    bgmEnabled = false;
+    bgmModeValue = "off";
+    bgmVolumeValue = 0.04;
+  }
+  bgmMode.value = bgmModeValue;
+  bgmVolume.value = String(bgmVolumeValue);
+  updateBgmUi();
+}
+
+function saveBgmSettings() {
+  try {
+    localStorage.setItem("pepaatennkoBgm", JSON.stringify({ enabled: bgmEnabled, mode: bgmModeValue, volume: bgmVolumeValue }));
+  } catch {
+    // localStorage may be unavailable in some private browsing modes.
+  }
+}
+
+function updateBgmUi() {
+  bgmToggle.classList.toggle("active", bgmEnabled);
+  bgmToggle.textContent = bgmEnabled ? "BGM停止" : "BGM再生";
+  bgmToggle.setAttribute("aria-pressed", String(bgmEnabled));
+  bgmMode.value = bgmModeValue;
+}
+
+function playBgmNote(frequency, duration, wave, level) {
+  if (!audioContext || !bgmGain || !frequency) return;
+  const startTime = audioContext.currentTime;
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  oscillator.type = wave;
+  oscillator.frequency.setValueAtTime(frequency, startTime);
+  gain.gain.setValueAtTime(0.0001, startTime);
+  gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, level), startTime + 0.035);
+  gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+  oscillator.connect(gain);
+  gain.connect(bgmGain);
+  oscillator.start(startTime);
+  oscillator.stop(startTime + duration + 0.04);
+  bgmOscillators.push(oscillator);
+  oscillator.addEventListener("ended", () => {
+    bgmOscillators = bgmOscillators.filter((item) => item !== oscillator);
+  });
+}
+
+function scheduleBgmLoop(stepIndex = 0) {
+  if (!bgmStarted || !bgmEnabled || !bgmPatterns[bgmModeValue]) return;
+  const pattern = bgmPatterns[bgmModeValue];
+  const note = pattern.notes[stepIndex % pattern.notes.length];
+  if (note) playBgmNote(note[0], note[1], pattern.wave, pattern.level);
+  bgmTimer = window.setTimeout(() => scheduleBgmLoop(stepIndex + 1), pattern.step);
+}
+
+function startBgm() {
+  if (!bgmEnabled || bgmModeValue === "off") return;
+  const context = ensureAudioContext();
+  if (!context || bgmStarted) return;
+  bgmGain = context.createGain();
+  bgmGain.gain.setValueAtTime(alarmRinging ? bgmVolumeValue * 0.12 : bgmVolumeValue, context.currentTime);
+  bgmGain.connect(context.destination);
+  bgmStarted = true;
+  scheduleBgmLoop();
+}
+
+function stopBgm() {
+  window.clearTimeout(bgmTimer);
+  bgmOscillators.forEach((oscillator) => {
+    try {
+      oscillator.stop();
+    } catch {
+      // Oscillator may already be stopped.
+    }
+  });
+  bgmOscillators = [];
+  if (bgmGain) bgmGain.disconnect();
+  bgmGain = null;
+  bgmStarted = false;
+}
+
+function setBgmDucked(ducked) {
+  if (!bgmGain || !audioContext) return;
+  const target = ducked ? bgmVolumeValue * 0.12 : bgmVolumeValue;
+  bgmGain.gain.cancelScheduledValues(audioContext.currentTime);
+  bgmGain.gain.setTargetAtTime(target, audioContext.currentTime, 0.35);
+}
+
+function toggleBgm() {
+  bgmEnabled = !bgmEnabled;
+  if (bgmEnabled) {
+    if (bgmModeValue === "off") bgmModeValue = "gentle";
+    startBgm();
+  } else {
+    bgmModeValue = "off";
+    stopBgm();
+  }
+  saveBgmSettings();
+  updateBgmUi();
 }
 
 function toggleClockAlarm() {
@@ -715,10 +900,7 @@ function finishFocusTimer() {
 
 function prepareAlarm() {
   if (!alarmEnabled) return;
-  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContextClass) return;
-  if (!audioContext) audioContext = new AudioContextClass();
-  if (audioContext.state === "suspended") audioContext.resume().catch(() => {});
+  ensureAudioContext();
 }
 
 function playTone(startTime, frequency, duration) {
@@ -765,6 +947,7 @@ function playAlarmPattern() {
 
 function startAlarmLoop() {
   window.clearInterval(alarmId);
+  setBgmDucked(true);
   playAlarmPattern();
   alarmId = window.setInterval(() => {
     if (!alarmRinging) return;
@@ -784,8 +967,9 @@ function stopAlarm() {
   celebrationUntil = 0;
   window.clearInterval(alarmId);
   stageTimerLabel.textContent = "FOCUS";
+  setBgmDucked(false);
   if (audioContext && audioContext.state === "running") {
-    audioContext.suspend().catch(() => {});
+    if (!bgmStarted) audioContext.suspend().catch(() => {});
   }
   if (wasRinging) {
     quoteHoldUntil = 0;
@@ -897,7 +1081,9 @@ nameSettingsButton.addEventListener("click", () => {
   nameSettingsButton.setAttribute("aria-expanded", String(willOpen));
   if (willOpen) {
     themePanel.hidden = true;
+    bgmPanel.hidden = true;
     themeSettingsButton.setAttribute("aria-expanded", "false");
+    bgmSettingsButton.setAttribute("aria-expanded", "false");
   }
   if (willOpen) userNameInput.focus();
 });
@@ -915,11 +1101,40 @@ themeSettingsButton.addEventListener("click", () => {
   themeSettingsButton.setAttribute("aria-expanded", String(willOpen));
   if (willOpen) {
     namePanel.hidden = true;
+    bgmPanel.hidden = true;
     nameSettingsButton.setAttribute("aria-expanded", "false");
+    bgmSettingsButton.setAttribute("aria-expanded", "false");
   }
 });
 themeChoices.forEach((button) => {
   button.addEventListener("click", () => saveTheme(button.dataset.theme));
+});
+bgmSettingsButton.addEventListener("click", () => {
+  const willOpen = bgmPanel.hidden;
+  bgmPanel.hidden = !willOpen;
+  bgmSettingsButton.setAttribute("aria-expanded", String(willOpen));
+  if (willOpen) {
+    namePanel.hidden = true;
+    themePanel.hidden = true;
+    nameSettingsButton.setAttribute("aria-expanded", "false");
+    themeSettingsButton.setAttribute("aria-expanded", "false");
+  }
+});
+bgmToggle.addEventListener("click", toggleBgm);
+bgmMode.addEventListener("change", () => {
+  bgmModeValue = bgmMode.value;
+  bgmEnabled = bgmModeValue !== "off";
+  stopBgm();
+  if (bgmEnabled) startBgm();
+  saveBgmSettings();
+  updateBgmUi();
+});
+bgmVolume.addEventListener("change", () => {
+  bgmVolumeValue = Number(bgmVolume.value) || 0.04;
+  if (bgmGain && audioContext) {
+    bgmGain.gain.setTargetAtTime(alarmRinging ? bgmVolumeValue * 0.12 : bgmVolumeValue, audioContext.currentTime, 0.2);
+  }
+  saveBgmSettings();
 });
 
 sheet.addEventListener("load", () => {
@@ -958,6 +1173,7 @@ stage.tabIndex = 0;
 loadUserName();
 populateClockAlarmOptions();
 loadClockAlarm();
+loadBgmSettings();
 loadTheme();
 updateClock();
 updateMoodDisplay();

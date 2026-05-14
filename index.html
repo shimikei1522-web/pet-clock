@@ -41,6 +41,7 @@
           <button id="luckyFortuneButton" class="daily-quote-button" type="button">ラッキー占い</button>
           <button id="nameSettingsButton" class="daily-quote-button" type="button" aria-expanded="false" aria-controls="namePanel">名前設定</button>
           <button id="themeSettingsButton" class="daily-quote-button" type="button" aria-expanded="false" aria-controls="themePanel">背景設定</button>
+          <button id="bgmSettingsButton" class="daily-quote-button" type="button" aria-expanded="false" aria-controls="bgmPanel">BGM</button>
         </div>
         <div id="namePanel" class="name-panel" hidden>
           <label for="userNameInput">呼んでほしい名前</label>
@@ -59,6 +60,28 @@
             <button class="theme-choice" type="button" data-theme="cafe">カフェ</button>
             <button class="theme-choice" type="button" data-theme="season">季節</button>
           </div>
+        </div>
+        <div id="bgmPanel" class="bgm-panel" hidden>
+          <span class="bgm-panel-title">BGM設定</span>
+          <button id="bgmToggle" class="bgm-toggle" type="button" aria-pressed="false">BGM再生</button>
+          <label class="bgm-mode">
+            <span>BGM</span>
+            <select id="bgmMode" aria-label="BGM種類">
+              <option value="off">オフ</option>
+              <option value="gentle">やさしい</option>
+              <option value="cafe">カフェ</option>
+              <option value="focus">集中</option>
+              <option value="night">夜</option>
+            </select>
+          </label>
+          <label class="bgm-volume">
+            <span>音量</span>
+            <select id="bgmVolume" aria-label="BGM音量">
+              <option value="0.04">小</option>
+              <option value="0.08">中</option>
+              <option value="0.13">大</option>
+            </select>
+          </label>
         </div>
         <div class="meters" aria-label="ペットの状態">
           <div class="meter">
