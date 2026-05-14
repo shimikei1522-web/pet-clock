@@ -136,10 +136,10 @@ const bgmPatterns = {
 };
 
 const timePeriods = {
-  morning: { text: "おはようございます！今日もがんばろう！", replies: ["おはようございます！今日もがんばろう！", "朝だよ！まずは深呼吸して始めよう", "今日もいい一日にしようね"], action: "cheer" },
-  afternoon: { text: "こんにちは！少し休憩しながら進めよう", replies: ["こんにちは！少し休憩しながら進めよう", "お昼の元気、まだまだあるよ", "無理しすぎず、いいペースでいこう"], action: "wave" },
-  evening: { text: "おかえりなさい！おおつかれさまです！", replies: ["おかえりなさい！おおつかれさまです！", "夕方だね。ここまでよく進めたね", "ひと息ついて、あと少しだけやろう"], action: "snack" },
-  night: { text: "遅くまでおつかれさま。夜更かしないでね", replies: ["遅くまでおつかれさま。夜更かしないでね", "夜はゆっくりモードでいこう", "そろそろ休む準備も忘れないでね"], action: "shy" },
+  morning: { text: "おはようございます！今日もがんばろう！", replies: ["朝の空気、ちょっと新しいね", "朝だよ！まずは深呼吸して始めよう", "今日もいい一日にしようね"], action: "cheer" },
+  afternoon: { text: "こんにちは！少し休憩しながら進めよう", replies: ["午後の手順を一つ選ぼう", "お昼の元気、まだまだあるよ", "無理しすぎず、いいペースでいこう"], action: "wave" },
+  evening: { text: "おかえりなさい！おおつかれさまです！", replies: ["夕方の確認タイムにしよう", "夕方だね。ここまでよく進めたね", "ひと息ついて、あと少しだけやろう"], action: "snack" },
+  night: { text: "遅くまでおつかれさま。夜更かしないでね", replies: ["夜のメモは明日の味方だよ", "夜はゆっくりモードでいこう", "そろそろ休む準備も忘れないでね"], action: "shy" },
 };
 
 const actions = {
@@ -242,6 +242,129 @@ const conversations = {
   },
 };
 
+const extraPetReplies = {
+  normal: [
+    "手を止めて、今できたことを一つ見つけよう",
+    "迷ったら、最初の目的に戻ってみよう",
+    "道具を並べ直すだけでも前進だよ",
+    "今の一口分だけ進めよう",
+    "作業台を整えると、気持ちも少し整うよ",
+    "考えすぎたら、まず一つだけ試してみよう",
+    "できたところから見れば、ちゃんと進んでいるよ",
+    "小さな確認が、大きな失敗を防いでくれるよ",
+  ],
+  morning: [
+    "朝の一手目は、軽く整えるところから",
+    "今日のメモを一行だけ書いてみよう",
+    "窓を開けるみたいに、気持ちも少し広げよう",
+    "最初の準備が、あとで助けてくれるよ",
+  ],
+  afternoon: [
+    "午後は道具チェックから始めてもいいよ",
+    "目が疲れたら、遠くを少し見よう",
+    "お昼のあとこそ、ゆっくり切り替えよう",
+    "一度に抱えず、順番を決めてみよう",
+  ],
+  evening: [
+    "今日できたことを、ひとつだけ数えよう",
+    "片づけまでが、明日の準備になるよ",
+    "夕方は仕上げより確認が似合う時間だね",
+    "残りは小さく区切って進めよう",
+  ],
+  night: [
+    "夜は考えをメモに預けてもいいよ",
+    "眠る前の準備も、立派な作業だよ",
+    "明日の自分に、少し余白を残そう",
+    "今日はここまで、という合図も大切だよ",
+  ],
+  focus: [
+    "今は一つの作業だけ見ていよう",
+    "集中の波に、静かに乗れているよ",
+    "余計なことは、あとで拾えば大丈夫",
+    "手順を一つ終えたら、小さく丸をつけよう",
+  ],
+  timerComplete: [
+    "一つ区切れたね。肩をゆるめよう",
+    "よく戻ってこられたね。ここで一息",
+    "集中のあとには、整える時間をどうぞ",
+    "今の積み重ね、ちゃんと残っているよ",
+  ],
+  clockAlarm: [
+    "約束の時間だよ。タップで止めてね",
+    "時間になったよ。合図に気づいてね",
+    "ここで一度、予定を確認しよう",
+    "お知らせだよ。ペットをタップしてね",
+  ],
+  dailyQuote: [
+    "今日の言葉、ポケットに入れておこう",
+    "この一言、あとで効いてくるかも",
+    "読めたね。次は小さく動いてみよう",
+  ],
+  lucky: [
+    "今日のラッキー、こっそり味方だよ",
+    "いい予感は、作業台のすみに置いておこう",
+    "ラッキーを見つける目、今日は冴えてるよ",
+  ],
+  named: [
+    "、今できたところから見てみよう",
+    "、今日は整える日でもいいよ",
+    "、迷ったら一つだけ試してみよう",
+    "、手順を小さく分けてみよう",
+  ],
+};
+
+const extraSeasonReplies = {
+  spring: ["春の軽さで、まず一つ整えよう", "いちごみたいに明るい一歩にしよう"],
+  summer: ["レモンみたいに、さっぱり切り替えよう", "暑い日は、確認も涼しめにいこう"],
+  autumn: ["栗をむくみたいに、少しずつ進めよう", "かぼちゃ色の落ち着きで見直そう"],
+  winter: ["焼き菓子の香りみたいに、ゆっくり温めよう", "冷える日は、手元を大事に進めよう"],
+};
+
+const extraConversations = {
+  normal: [
+    ["作業台、少し整える？", "整えると、次の一手が見えやすいよ"],
+    ["今日は仕込みの日かも", "すぐ結果が出ない日も大切だよ"],
+    ["ちょっと考えすぎたかも", "一つ試すと、次が見えてくるよ"],
+    ["今の一歩、見逃さないでね", "小さな進歩ほど大事にしよう"],
+    ["焼く前の確認って大事だね", "最後の確認が仕上がりを守るよ"],
+    ["なんだか頭がいっぱい", "一つだけ紙に書き出してみよう"],
+    ["おいしい予感がする", "予感を形にするのが職人の仕事だね"],
+    ["粉の袋、ちゃんと閉めた？", "そういう確認が平和を守るんだよ"],
+  ],
+  morning: [
+    ["朝の準備、何からする？", "道具を一つ選ぶだけでも始まるよ"],
+    ["今日は軽く始めたいな", "最初は小さな確認で十分だよ"],
+  ],
+  afternoon: [
+    ["午後のリズム、探してる", "水分を置いてから始めよう"],
+    ["お昼のあと、眠いかも", "手元を明るくして切り替えよう"],
+  ],
+  evening: [
+    ["今日の仕上げ、どうする？", "明日に渡す形まで整えよう"],
+    ["夕方の色、焼き色みたい", "見極める時間にぴったりだね"],
+  ],
+  night: [
+    ["夜の作業は静かだね", "音を減らすと体も休まりやすいよ"],
+    ["明日に残してもいい？", "もちろん。続きのメモだけ置こう"],
+  ],
+  focus: [
+    ["集中の音がしてる気がする", "いいリズムに入っている合図かも"],
+    ["そろそろ区切る？", "区切りを作ると、続きが楽になるよ"],
+    ["今は一皿ぶんだけ見よう", "範囲を小さくすると手が動くよ"],
+    ["確認の時間、入れる？", "途中の確認は失敗を減らしてくれるよ"],
+  ],
+  timerComplete: [
+    ["一つ区切れたね", "次の前に、手を休めよう"],
+    ["集中、ちゃんと形になったよ", "短い休憩で整えよう"],
+  ],
+  seasonal: {
+    spring: ["桜の色、やさしいね", "新しい手順を試すのにいい季節だね"],
+    summer: ["ゼリーみたいに涼しくいこう", "温度と休憩を忘れずにね"],
+    autumn: ["栗の季節は集中しやすいね", "香ばしい気分で見直そう"],
+    winter: ["シュトーレンみたいに寝かせる？", "待つことで深まるものもあるよ"],
+  },
+};
+
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
@@ -302,16 +425,16 @@ function loadUserName() {
 }
 
 function namePrefix() {
-  return userName ? `${userName}さん、` : "";
+  return userName ? `${userName}、` : "";
 }
 
 function namedPeriodText(period = getTimePeriod()) {
   if (!userName) return timePeriods[period].text;
   const namedTexts = {
-    morning: `${userName}さん、おはようございます！今日も一つずつ進めよう！`,
-    afternoon: `${userName}さん、そろそろ休憩しながら進めよう`,
-    evening: `${userName}さん、おつかれさま！今日もよくがんばったね`,
-    night: `${userName}さん、遅くまでおつかれさま。そろそろ休もう`,
+    morning: `${userName}、朝の準備を一つだけ始めよう`,
+    afternoon: `${userName}、午後は順番を決めて動こう`,
+    evening: `${userName}、今日できたことを一つ見つけよう`,
+    night: `${userName}、続きはメモに預けてもいいよ`,
   };
   return namedTexts[period] || timePeriods[period].text;
 }
@@ -332,7 +455,7 @@ function saveUserName() {
   nameSettingsButton.setAttribute("aria-expanded", "false");
   quoteHoldUntil = Date.now() + 8000;
   hideChefMessage();
-  message.textContent = userName ? `${userName}さん、これからよろしくね！` : "名前設定をクリアしたよ";
+  message.textContent = userName ? `${userName}、これからよろしくね！` : "名前設定をクリアしたよ";
 }
 
 function showChefMessage(text, duration = 10000) {
@@ -567,7 +690,7 @@ function checkClockAlarm(now) {
   window.clearInterval(timerId);
   updateMoodDisplay();
   stageTimerLabel.textContent = "タップして止めてね";
-  setAction("cheer", `${namePrefix()}ペットをタップして止めてね`);
+  setAction("cheer", `${namePrefix()}${randomItem(extraPetReplies.clockAlarm)}`);
   startAlarmLoop();
 }
 
@@ -598,13 +721,13 @@ function pickDailyQuote() {
     if (saved.date === today && typeof saved.quote === "string") {
       return saved.quote;
     }
-    const quotePool = [...dailyQuotes, ...getSeasonEvent().quotes];
+    const quotePool = [...dailyQuotes, ...extraPetReplies.dailyQuote, ...getSeasonEvent().quotes, ...extraSeasonReplies[getSeasonKey()]];
     const index = Math.abs([...today].reduce((total, char) => total + char.charCodeAt(0), 0)) % quotePool.length;
     const quote = quotePool[index];
     localStorage.setItem("pepaatennkoDailyQuote", JSON.stringify({ date: today, quote }));
     return quote;
   } catch {
-    const quotePool = [...dailyQuotes, ...getSeasonEvent().quotes];
+    const quotePool = [...dailyQuotes, ...extraPetReplies.dailyQuote, ...getSeasonEvent().quotes, ...extraSeasonReplies[getSeasonKey()]];
     return quotePool[new Date().getDate() % quotePool.length];
   }
 }
@@ -625,7 +748,7 @@ function pickLuckyFortune() {
       date: today,
       sweet: pickFromList([...luckySweets, ...getSeasonEvent().sweets], today, 11),
       color: pickFromList(luckyColors, today, 23),
-      message: pickFromList([...luckyMessages, ...getSeasonEvent().messages], today, 37),
+      message: pickFromList([...luckyMessages, ...extraPetReplies.lucky, ...getSeasonEvent().messages, ...extraSeasonReplies[getSeasonKey()]], today, 37),
     };
     localStorage.setItem("pepaatennkoLuckyFortune", JSON.stringify(fortune));
     return fortune;
@@ -633,7 +756,9 @@ function pickLuckyFortune() {
     return {
       sweet: [...luckySweets, ...getSeasonEvent().sweets][new Date().getDate() % [...luckySweets, ...getSeasonEvent().sweets].length],
       color: luckyColors[new Date().getDay() % luckyColors.length],
-      message: [...luckyMessages, ...getSeasonEvent().messages][new Date().getMonth() % [...luckyMessages, ...getSeasonEvent().messages].length],
+      message: [...luckyMessages, ...extraPetReplies.lucky, ...getSeasonEvent().messages, ...extraSeasonReplies[getSeasonKey()]][
+        new Date().getMonth() % [...luckyMessages, ...extraPetReplies.lucky, ...getSeasonEvent().messages, ...extraSeasonReplies[getSeasonKey()]].length
+      ],
     };
   }
 }
@@ -672,7 +797,7 @@ function showSeasonEvent(now) {
   }, 2600);
   window.clearTimeout(setAction.timer);
   hideChefMessage();
-  message.textContent = `${namePrefix()}${randomItem(season.messages)}`;
+  message.textContent = `${namePrefix()}${randomItem([...season.messages, ...extraSeasonReplies[getSeasonKey()]])}`;
 }
 
 function showDailyQuote() {
@@ -684,6 +809,7 @@ function showDailyQuote() {
   window.clearTimeout(setAction.timer);
   hideChefMessage();
   message.textContent = `今日のひとこと：${namePrefix()}${quote}`;
+  if (Math.random() < 0.35) showChefMessage(randomItem(extraPetReplies.dailyQuote), 8000);
 }
 
 function showLuckyFortune() {
@@ -695,6 +821,7 @@ function showLuckyFortune() {
   window.clearTimeout(setAction.timer);
   hideChefMessage();
   message.textContent = `ラッキーお菓子：${fortune.sweet} / ラッキーカラー：${fortune.color} / ひとこと：${namePrefix()}${fortune.message}`;
+  if (Math.random() < 0.35) showChefMessage(randomItem(extraPetReplies.lucky), 8000);
 }
 
 function scheduleNextConversation(delay = 120000 + Math.random() * 180000) {
@@ -703,12 +830,19 @@ function scheduleNextConversation(delay = 120000 + Math.random() * 180000) {
 
 function getConversationPair() {
   if (userName && Math.random() < 0.35) {
-    return [`${userName}さん、今日もおつかれさま`, `${userName}さんのペースで進めよう`];
+    return randomItem([
+      [`${userName}、手元を一つ整えよう`, `${userName}のペースで十分だよ`],
+      [`${userName}、今の一歩を見てね`, "そこから次が見えてくるよ"],
+      [`${userName}、考えすぎたら一つ試そう`, "小さく試すのはいい方法だよ"],
+    ]);
   }
   if (Math.random() < 0.25) {
-    return conversations.seasonal[getSeasonKey()];
+    return randomItem([conversations.seasonal[getSeasonKey()], extraConversations.seasonal[getSeasonKey()]]);
   }
-  const pool = timerRunning ? conversations.focus : conversations.normal;
+  const period = getTimePeriod();
+  const pool = timerRunning
+    ? [...conversations.focus, ...extraConversations.focus]
+    : [...conversations.normal, ...extraConversations.normal, ...extraConversations[period]];
   return randomItem(pool);
 }
 
@@ -806,9 +940,19 @@ function chooseAction() {
   const season = getSeasonEvent();
   const next = Math.random() < 0.55 ? period.action : randomItem(clickActions);
   const namedReplies = userName
-    ? [`${userName}さん、おつかれさま！`, `${userName}さん、今日も一つずつ進めよう！`, `${userName}さん、そろそろ休憩しよう`]
+    ? extraPetReplies.named.map((text) => `${userName}${text}`)
     : [];
-  setAction(next, randomItem([...period.replies, ...profile.messages, ...season.messages, ...namedReplies]));
+  const replyPool = [
+    ...period.replies,
+    ...extraPetReplies.normal,
+    ...extraPetReplies[getTimePeriod()],
+    ...(timerRunning ? extraPetReplies.focus : []),
+    ...profile.messages,
+    ...season.messages,
+    ...extraSeasonReplies[getSeasonKey()],
+    ...namedReplies,
+  ];
+  setAction(next, randomItem(replyPool));
   mood = clamp(mood + (next === "sad" ? -4 : 3), 0, 99);
   energy = clamp(energy + (next === "run" ? -6 : 1), 0, 99);
   updateMoodDisplay();
@@ -822,7 +966,7 @@ function setAction(next, text = actions[next].text) {
   message.textContent = text;
   window.clearTimeout(setAction.timer);
   if (next !== "idle" && !alarmRinging) {
-    setAction.timer = window.setTimeout(() => setAction("idle", timerRunning ? `${namePrefix()}集中タイマー中だよ。いい調子！` : namedPeriodText()), next === "run" ? 1600 : 1200);
+    setAction.timer = window.setTimeout(() => setAction("idle", timerRunning ? `${namePrefix()}${randomItem(extraPetReplies.focus)}` : namedPeriodText()), next === "run" ? 1600 : 1200);
   }
 }
 
@@ -894,7 +1038,12 @@ function finishFocusTimer() {
   celebrationUntil = Date.now() + 10000;
   updateMoodDisplay();
   stageTimerLabel.textContent = "タップして止めてね";
-  setAction("cheer", `${namePrefix()}おつかれさま！ペットをタップして止めてね`);
+  setAction("cheer", `${namePrefix()}${randomItem(extraPetReplies.timerComplete)} ペットをタップしてね`);
+  if (Math.random() < 0.6) {
+    const [petText, chefText] = randomItem(extraConversations.timerComplete);
+    message.textContent = `${namePrefix()}${petText}`;
+    showChefMessage(chefText, 10000);
+  }
   startAlarmLoop();
 }
 
@@ -974,9 +1123,9 @@ function stopAlarm() {
   if (wasRinging) {
     quoteHoldUntil = 0;
     updateMoodDisplay();
-    message.textContent = stoppedMode === "clock" ? `${namePrefix()}時刻アラームを止めたよ` : `${namePrefix()}おつかれさま！よくがんばったね`;
+    message.textContent = stoppedMode === "clock" ? `${namePrefix()}予定の合図を止めたよ` : `${namePrefix()}${randomItem(extraPetReplies.timerComplete)}`;
     hideChefMessage();
-    setAction("cheer", `${namePrefix()}おつかれさま！アラームを止めたよ`);
+    setAction("cheer", stoppedMode === "clock" ? `${namePrefix()}知らせを確認できたね` : `${namePrefix()}${randomItem(extraPetReplies.timerComplete)}`);
   }
 }
 
