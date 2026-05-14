@@ -74,6 +74,7 @@ let clockAlarmEnabled = false;
 let clockAlarmLastKey = "";
 let userName = "";
 let selectedTheme = "fresh";
+const PET_REACTION_HOLD_MS = 9000;
 
 const bgmPatterns = {
   gentle: {
@@ -965,8 +966,11 @@ function setAction(next, text = actions[next].text) {
   hideChefMessage();
   message.textContent = text;
   window.clearTimeout(setAction.timer);
+  if (next !== "idle") {
+    quoteHoldUntil = Date.now() + PET_REACTION_HOLD_MS;
+  }
   if (next !== "idle" && !alarmRinging) {
-    setAction.timer = window.setTimeout(() => setAction("idle", timerRunning ? `${namePrefix()}${randomItem(extraPetReplies.focus)}` : namedPeriodText()), next === "run" ? 1600 : 1200);
+    setAction.timer = window.setTimeout(() => setAction("idle", timerRunning ? `${namePrefix()}${randomItem(extraPetReplies.focus)}` : namedPeriodText()), PET_REACTION_HOLD_MS);
   }
 }
 
