@@ -733,6 +733,51 @@ const chefSoloLines = {
   ],
 };
 
+const animalFriendReplies = {
+  normal: [
+    "ねえねえ、一緒に応援しよう",
+    "今日も見守り係、よろしくね",
+    "小さな相棒、準備できた？",
+    "そっちからも応援してあげて",
+    "一緒にいると心強いね",
+    "今日はふたりで見守る日だね",
+    "ちょこんと座ってるの、かわいいね",
+    "いい感じだよね、相棒",
+    "そっと応援する作戦でいこう",
+    "小さな応援団、集合だね",
+    "見守るのも大事なお仕事だよ",
+    "今日の作業、いい流れだよね",
+    "一緒にうなずいておこう",
+    "相棒、今日もいい表情してるね",
+    "小さくても応援力は大きいよ",
+    "この空気、なんだかいいね",
+    "次の一歩、見守ってよう",
+    "ちょっと眠そう？でもかわいいね",
+    "応援の準備、できてる？",
+    "ふたりでいると、にぎやかでいいね",
+  ],
+  focus: [
+    "今は静かに応援しよう",
+    "あまり騒がず、でも全力で応援だよ",
+    "今の集中、見えてた？",
+    "この調子で、そっと背中を押そう",
+    "小さな相棒も、いい仕事してるよ",
+    "そっと見守る係、お願いね",
+  ],
+  rest: [
+    "そろそろ休憩って伝える？",
+    "がんばりすぎてないか見ててね",
+    "焦らずいこうって伝えたいね",
+    "今日はやさしく見守る作戦だよ",
+  ],
+  named: [
+    "、相棒も応援してるよ",
+    "、今日はふたりで見守ってるよ",
+    "、今の一歩を相棒も見てたよ",
+    "、小さな応援団がついてるよ",
+  ],
+};
+
 const recentPetLines = [];
 const recentChefLines = [];
 const recentConversationLines = [];
@@ -835,6 +880,15 @@ function getAutoPetLinePool() {
     ...profile.messages,
     ...season.messages,
     ...extraSeasonReplies[getSeasonKey()],
+    ...namedReplies,
+  ];
+}
+
+function getAnimalFriendReplyPool() {
+  const namedReplies = userName ? animalFriendReplies.named.map((text) => `${userName}${text}`) : [];
+  return [
+    ...animalFriendReplies.normal,
+    ...(timerRunning ? animalFriendReplies.focus : animalFriendReplies.rest),
     ...namedReplies,
   ];
 }
@@ -1292,7 +1346,8 @@ function maybeShowConversation() {
   const roll = Math.random();
   if (roll < (timerRunning ? 0.35 : 0.3)) {
     quoteHoldUntil = now + 10000;
-    message.textContent = pickFresh(getAutoPetLinePool(), recentPetLines, 12);
+    const pool = Math.random() < (timerRunning ? 0.12 : 0.18) ? getAnimalFriendReplyPool() : getAutoPetLinePool();
+    message.textContent = pickFresh(pool, recentPetLines, 12);
     if (Math.random() < 0.35) showChefSolo(timerRunning ? "focus" : "idle", 10000);
   } else if (roll < (timerRunning ? 0.65 : 0.55)) {
     showChefSolo(timerRunning ? "focus" : "idle", 10000);
@@ -1397,7 +1452,8 @@ function chooseAction() {
     ...extraSeasonReplies[getSeasonKey()],
     ...namedReplies,
   ];
-  setAction(next, pickFresh(replyPool, recentPetLines, 12));
+  const linePool = Math.random() < (timerRunning ? 0.12 : 0.18) ? getAnimalFriendReplyPool() : replyPool;
+  setAction(next, pickFresh(linePool, recentPetLines, 12));
   mood = clamp(mood + (next === "sad" ? -4 : 3), 0, 99);
   energy = clamp(energy + (next === "run" ? -6 : 1), 0, 99);
   updateMoodDisplay();
