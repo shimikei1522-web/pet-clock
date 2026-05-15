@@ -71,6 +71,7 @@ let quoteHoldUntil = 0;
 let chefBubbleTimer = 0;
 let animalBubbleTimer = 0;
 let nextConversationAt = Date.now() + 120000;
+let clockIntervalId = 0;
 let clockAlarmEnabled = false;
 let clockAlarmLastKey = "";
 let userName = "";
@@ -888,12 +889,16 @@ function updateMoodDisplay() {
   return profile;
 }
 
-function updateClock() {
-  const now = new Date();
-  const period = getTimePeriod(now);
+function updateClockDisplay(now = new Date()) {
   const value = formatTime(now);
   clock.textContent = value;
   clock.dateTime = now.toTimeString().slice(0, 8);
+}
+
+function updateClock() {
+  const now = new Date();
+  const period = getTimePeriod(now);
+  updateClockDisplay(now);
   checkClockAlarm(now);
   showExactTimeEvent(now);
   showSeasonEvent(now);
@@ -903,6 +908,20 @@ function updateClock() {
     updateMoodDisplay();
     message.textContent = namedPeriodText(period);
   }
+}
+
+function safeUpdateClock() {
+  try {
+    updateClock();
+  } catch {
+    updateClockDisplay();
+  }
+}
+
+function startClockUpdates() {
+  window.clearInterval(clockIntervalId);
+  safeUpdateClock();
+  clockIntervalId = window.setInterval(safeUpdateClock, 1000);
 }
 
 function chooseAction() {
@@ -1303,11 +1322,10 @@ populateClockAlarmOptions();
 loadClockAlarm();
 loadBgmSettings();
 loadTheme();
-updateClock();
+startClockUpdates();
 showStartupGreeting();
 updateMoodDisplay();
 setTimerDisplays(remainingSeconds);
 scheduleNextConversation(20000 + Math.random() * 40000);
 window.setTimeout(() => showChefSolo("startup", 10000, 0.8), 6500);
-window.setInterval(updateClock, 1000);
 registerServiceWorker();
