@@ -581,15 +581,19 @@ body.theme-night .alarm-toggle.active {
 }
 
 .chef-bubble {
-  right: clamp(16px, 5vw, 64px);
-  top: 92px;
-  max-width: min(260px, 28vw);
+  right: clamp(12px, 3vw, 38px);
+  top: auto;
+  bottom: 112px;
+  max-width: min(240px, 24vw);
   font-size: clamp(15px, 1.8vw, 19px);
 }
 
 .chef-bubble::after {
-  right: 34px;
-  bottom: -10px;
+  left: -10px;
+  top: 22px;
+  right: auto;
+  bottom: auto;
+  transform: rotate(135deg);
 }
 
 .chef-bubble[hidden] {
@@ -606,6 +610,7 @@ body.theme-night .alarm-toggle.active {
 .animal-bubble::after {
   left: 30px;
   bottom: -10px;
+  transform: rotate(45deg);
 }
 
 .animal-bubble[hidden] {
@@ -1207,6 +1212,8 @@ h1 {
     top: -8px;
     right: 22px;
     bottom: auto;
+    left: auto;
+    transform: rotate(225deg);
   }
 
   .animal-bubble {
@@ -1221,6 +1228,8 @@ h1 {
     top: -8px;
     bottom: auto;
     left: 22px;
+    right: auto;
+    transform: rotate(225deg);
   }
 
   .pet {

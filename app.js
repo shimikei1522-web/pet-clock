@@ -175,7 +175,7 @@ const exactTimeEvents = {
   "22:00": "そろそろ休む準備をしよう。",
 };
 
-const dailyQuotes = ["今日もゆっくり始めよう。", "ひとつずつ進めよう。", "少し休んだら、また始めよう。", "しっかり確認すると安心だね。", "準備を丁寧にすると、あとでいいことがあるよ。", "今の様子を見てみよう。", "次にやることを一つ決めよう。", "無理しないくらいでいこう。"];
+const dailyQuotes = ["今日もゆっくり始めよう。","ひとつずつ進めよう。","少し休んだら、また始めよう。","しっかり確認すると安心だね。","準備を丁寧にすると、あとでいいことがあるよ。","今の様子を見てみよう。","次にやることを一つ決めよう。","無理しないくらいでいこう。","今日も一緒に、楽しく進めようね。","絶対大丈夫、いってらっしゃい！","いつも一生懸命なところ、かっこいいよ。","自分のペースでぼちぼちいこう。","何かあったら、いつでもひと息つこう。","今日も一日、ハッピーに過ごそうね。","笑顔を少し置いていこう。","緊張しても大丈夫。ちゃんと応援してるよ。","発表の前は深呼吸しよう。","今日もがんばっていてえらいよ。","間違えても大丈夫。次に進めばいいよ。","目標に向かって、一緒にファイト！","きっとうまくいくって信じてるよ。","今日はいい日になるよ。応援してるね。","失敗しても気にしないで。やり直せるよ。","今日は大活躍できそうだよ。","一緒にがんばれるの、うれしいよ。","最後まであきらめない気持ち、すてきだよ。","がんばってるの、ちゃんと知ってるよ。","今日はぼくが元気を届ける番だよ。","小さな一歩でも、ちゃんと前進だよ。","休むことも大事な準備だよ。","やさしい気持ちで始めよう。","今日の自分に、少しだけ拍手しよう。"];
 
 const seasonalEvents = {
   spring: { className: "season-spring", messages: ["春は新しいことを始めたくなるね。", "春の空気って、なんだかわくわくするね。"], quotes: ["春はゆっくり始めるのにぴったりだね。"], sweets: ["いちごタルト", "桜クッキー"] },
@@ -184,9 +184,9 @@ const seasonalEvents = {
   winter: { className: "season-winter", messages: ["寒い日は、あたたかい飲み物が味方だね。", "冬の作業は、手元をあたためてからね。"], quotes: ["寒い日は体をあたためてから始めよう。"], sweets: ["シュトーレン", "チョコケーキ"] },
 };
 
-const luckySweets = ["クロワッサン", "シュークリーム", "マドレーヌ", "プリン", "ベーグル", "メロンパン", "フィナンシェ", "ロールケーキ"];
-const luckyColors = ["ミントグリーン", "いちごレッド", "クリームイエロー", "ココアブラウン", "シュガーホワイト", "ベリーピンク", "空色ブルー", "ピスタチオグリーン"];
-const luckyMessages = ["今日は丁寧に進めると良い日！", "ひと休みのあとに、いいアイデアが出そう。", "しっかり確認すると安心だね。", "次にやることを一つ決めよう。", "無理しないくらいでいこう。"];
+const luckySweets = ["クロワッサン","シュークリーム","マドレーヌ","プリン","ベーグル","メロンパン","フィナンシェ","ロールケーキ","食パン","クリームパン","チョココロネ","カヌレ","スコーン","レモンタルト","いちごショート","アップルパイ","チーズケーキ","ドーナツ","バターロール","ミルクパン"];
+const luckyColors = ["ミントグリーン","いちごレッド","クリームイエロー","ココアブラウン","シュガーホワイト","ベリーピンク","空色ブルー","ピスタチオグリーン","レモンイエロー","カフェラテ色","さくらピンク","オレンジ","ラベンダー","バニラホワイト","チョコレート色"];
+const luckyMessages = ["今日は丁寧に進めると良い日！","ひと休みのあとに、いいアイデアが出そう。","しっかり確認すると安心だね。","次にやることを一つ決めよう。","無理しないくらいでいこう。","ラッキーお菓子はプリン。やさしく進めよう。","ラッキーパンはクロワッサン。いい流れが来そう。","ラッキー行動は深呼吸。落ち着くと見えてくるよ。","ラッキーカラーはクリーム色。やわらかい気持ちでいこう。","ラッキーお菓子はシュークリーム。ふんわり進めよう。","ラッキーパンは食パン。基本を大切にするとよさそう。","ラッキー行動は机をきれいにすること。","ラッキーカラーはミント。気分がすっきりしそう。","ラッキーお菓子はマドレーヌ。小さな幸せがありそう。","ラッキーパンはメロンパン。今日は少し楽しくいこう。","ラッキー行動は水分補給。元気が戻りそう。","ラッキーカラーはさくらピンク。やさしい日になりそう。","ラッキーお菓子はアップルパイ。いい香りの一日だよ。","ラッキーパンはバターロール。丸く進めば大丈夫。","ラッキー行動は道具をそろえること。"];
 
 const moodProfiles = [
   { name: "ねむい", minMood: 0, maxMood: 45, minEnergy: 0, maxEnergy: 46, messages: ["少し眠そうだね。休憩しよう。", "今日はゆっくりめでいこう。"] },
@@ -738,7 +738,7 @@ function startBgm() {
   const context = ensureAudioContext();
   if (!context || bgmStarted) return;
   bgmGain = context.createGain();
-  bgmGain.gain.setValueAtTime(alarmRinging ? bgmVolumeValue * 0.04 : bgmVolumeValue, context.currentTime);
+  bgmGain.gain.setValueAtTime(alarmRinging ? bgmVolumeValue * 0.02 : bgmVolumeValue, context.currentTime);
   bgmGain.connect(context.destination);
   bgmStarted = true;
   scheduleBgmLoop();
@@ -761,7 +761,7 @@ function stopBgm() {
 
 function setBgmDucked(ducked) {
   if (!bgmGain || !audioContext) return;
-  const target = ducked ? bgmVolumeValue * 0.04 : bgmVolumeValue;
+  const target = ducked ? bgmVolumeValue * 0.02 : bgmVolumeValue;
   bgmGain.gain.cancelScheduledValues(audioContext.currentTime);
   bgmGain.gain.setTargetAtTime(target, audioContext.currentTime, ducked ? 0.12 : 0.35);
 }
@@ -1224,14 +1224,14 @@ function prepareAlarm() {
   ensureAudioContext();
 }
 
-function playTone(startTime, frequency, duration, level = 0.28) {
+function playTone(startTime, frequency, duration, level = 0.36) {
   if (!audioContext || !alarmEnabled) return;
   const oscillator = audioContext.createOscillator();
   const gain = audioContext.createGain();
   oscillator.type = "sine";
   oscillator.frequency.setValueAtTime(frequency, startTime);
   gain.gain.setValueAtTime(0.0001, startTime);
-  gain.gain.exponentialRampToValueAtTime(Math.min(level, 0.42), startTime + 0.025);
+  gain.gain.exponentialRampToValueAtTime(Math.min(level, 0.58), startTime + 0.025);
   gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
   oscillator.connect(gain);
   gain.connect(audioContext.destination);
@@ -1244,9 +1244,10 @@ function playClockAlarmPattern() {
   prepareAlarm();
   if (!audioContext || audioContext.state !== "running") return;
   const now = audioContext.currentTime;
-  playTone(now, 880, 0.14, 0.34);
-  playTone(now + 0.2, 988, 0.14, 0.34);
-  playTone(now + 0.4, 1175, 0.22, 0.38);
+  playTone(now, 784, 0.18, 0.48);
+  playTone(now + 0.2, 988, 0.18, 0.5);
+  playTone(now + 0.4, 1175, 0.24, 0.54);
+  playTone(now + 0.68, 988, 0.18, 0.48);
 }
 
 function playTimerCompletePattern() {
@@ -1254,8 +1255,9 @@ function playTimerCompletePattern() {
   prepareAlarm();
   if (!audioContext || audioContext.state !== "running") return;
   const now = audioContext.currentTime;
-  playTone(now, 660, 0.38, 0.28);
-  playTone(now + 0.42, 880, 0.5, 0.32);
+  playTone(now, 660, 0.45, 0.4);
+  playTone(now + 0.42, 880, 0.58, 0.44);
+  playTone(now + 0.96, 990, 0.42, 0.34);
 }
 
 function playAlarmPattern() {
@@ -1468,7 +1470,7 @@ bgmMode.addEventListener("change", () => {
 bgmVolume.addEventListener("change", () => {
   bgmVolumeValue = Number(bgmVolume.value) || 0.04;
   if (bgmGain && audioContext) {
-    bgmGain.gain.setTargetAtTime(alarmRinging ? bgmVolumeValue * 0.04 : bgmVolumeValue, audioContext.currentTime, 0.2);
+    bgmGain.gain.setTargetAtTime(alarmRinging ? bgmVolumeValue * 0.02 : bgmVolumeValue, audioContext.currentTime, 0.2);
   }
   saveBgmSettings();
   showChefSolo("bgm", 9000, 0.35);
