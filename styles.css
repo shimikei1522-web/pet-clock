@@ -447,10 +447,13 @@ body.theme-night .custom-time,
 body.theme-night .meter,
 body.theme-night .name-panel,
 body.theme-night .theme-panel,
+body.theme-night .anniversary-panel,
 body.theme-night .bgm-panel,
 body.theme-night .bgm-toggle,
 body.theme-night .bgm-mode select,
 body.theme-night .bgm-volume select,
+body.theme-night .anniversary-grid input,
+body.theme-night .anniversary-grid select,
 body.theme-night .name-row input,
 body.theme-night .name-row button,
 body.theme-night .theme-choice {
@@ -723,6 +726,7 @@ body.theme-night .speech-bubble {
 
 .name-panel,
 .theme-panel,
+.anniversary-panel,
 .bgm-panel {
   grid-column: 1 / -1;
   display: grid;
@@ -735,12 +739,14 @@ body.theme-night .speech-bubble {
 
 .name-panel[hidden],
 .theme-panel[hidden],
+.anniversary-panel[hidden],
 .bgm-panel[hidden] {
   display: none;
 }
 
 .name-panel label,
 .theme-panel-title,
+.anniversary-panel-title,
 .bgm-panel-title {
   color: #557071;
   font-size: 12px;
@@ -799,6 +805,75 @@ body.theme-night .speech-bubble {
 .bgm-panel {
   grid-template-columns: auto auto minmax(120px, 1fr) minmax(110px, auto);
   align-items: center;
+}
+
+.anniversary-grid,
+.anniversary-list {
+  display: grid;
+}
+
+.anniversary-grid {
+  grid-template-columns: minmax(110px, 0.9fr) minmax(76px, 0.55fr) minmax(76px, 0.55fr) minmax(160px, 1.4fr) auto;
+  gap: 8px;
+  align-items: end;
+}
+
+.anniversary-grid label {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  color: #557071;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.anniversary-grid input,
+.anniversary-grid select {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid rgba(44, 96, 97, 0.18);
+  border-radius: 8px;
+  background: #fff;
+  color: #24484a;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 0 8px;
+}
+
+.anniversary-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.anniversary-actions button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgba(44, 96, 97, 0.18);
+  border-radius: 8px;
+  background: #fff;
+  color: #24484a;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.anniversary-list {
+  gap: 5px;
+}
+
+.anniversary-list-item,
+.anniversary-empty {
+  min-height: 32px;
+  padding: 7px 9px;
+  border: 1px solid rgba(44, 96, 97, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #24484a;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 .bgm-toggle,
@@ -1265,8 +1340,40 @@ h1 {
 
   .name-panel,
   .theme-panel,
+  .anniversary-panel,
   .bgm-panel {
     padding: 7px;
+  }
+
+  .anniversary-grid {
+    grid-template-columns: minmax(86px, 1fr) repeat(2, minmax(52px, 0.6fr));
+    gap: 5px;
+  }
+
+  .anniversary-name,
+  .anniversary-memo {
+    grid-column: 1 / -1;
+  }
+
+  .anniversary-actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .anniversary-grid input,
+  .anniversary-grid select,
+  .anniversary-actions button {
+    min-height: 34px;
+    font-size: 12px;
+  }
+
+  .anniversary-list-item,
+  .anniversary-empty {
+    min-height: 30px;
+    padding: 6px 8px;
+    font-size: 11px;
   }
 
   .bgm-panel {
@@ -1325,6 +1432,10 @@ h1 {
 
   .meter strong {
     font-size: 17px;
+  }
+
+  .meters {
+    display: none;
   }
 
   .custom-time {

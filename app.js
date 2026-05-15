@@ -19,6 +19,16 @@ const clearNameButton = document.querySelector("#clearNameButton");
 const themeSettingsButton = document.querySelector("#themeSettingsButton");
 const themePanel = document.querySelector("#themePanel");
 const themeChoices = document.querySelectorAll(".theme-choice");
+const anniversarySettingsButton = document.querySelector("#anniversarySettingsButton");
+const anniversaryPanel = document.querySelector("#anniversaryPanel");
+const anniversaryType = document.querySelector("#anniversaryType");
+const anniversaryMonth = document.querySelector("#anniversaryMonth");
+const anniversaryDay = document.querySelector("#anniversaryDay");
+const anniversaryName = document.querySelector("#anniversaryName");
+const anniversaryMemo = document.querySelector("#anniversaryMemo");
+const saveAnniversaryButton = document.querySelector("#saveAnniversaryButton");
+const clearAnniversaryButton = document.querySelector("#clearAnniversaryButton");
+const anniversaryList = document.querySelector("#anniversaryList");
 const bgmSettingsButton = document.querySelector("#bgmSettingsButton");
 const bgmPanel = document.querySelector("#bgmPanel");
 const bgmToggle = document.querySelector("#bgmToggle");
@@ -75,6 +85,7 @@ let clockIntervalId = 0;
 let clockAlarmEnabled = false;
 let clockAlarmLastKey = "";
 let userName = "";
+let anniversaries = {};
 let selectedTheme = "fresh";
 const PET_REACTION_HOLD_MS = 9000;
 
@@ -396,6 +407,158 @@ function saveUserName() {
   message.textContent = userName ? `${userName}、これからよろしくね！` : "名前設定をクリアしたよ";
 }
 
+function cleanAnniversaryEntry(entry = {}) {
+  const month = Number(entry.month);
+  const day = Number(entry.day);
+  const name = String(entry.name || "").trim().slice(0, 18);
+  const memo = String(entry.memo || "").trim().slice(0, 32);
+  if (!Number.isInteger(month) || month < 1 || month > 12) return null;
+  const maxDay = new Date(2024, month, 0).getDate();
+  if (!Number.isInteger(day) || day < 1 || day > maxDay) return null;
+  return { month, day, name, memo };
+}
+
+function loadAnniversaries() {
+  try {
+    const saved = localStorage.getItem("petAnniversaries") || localStorage.getItem("pepaatennkoAnniversaries") || "{}";
+    anniversaries = JSON.parse(saved) || {};
+  } catch {
+    anniversaries = {};
+  }
+  renderAnniversaryList();
+  fillAnniversaryForm();
+}
+
+function saveAnniversaries() {
+  try {
+    localStorage.setItem("petAnniversaries", JSON.stringify(anniversaries));
+    localStorage.setItem("pepaatennkoAnniversaries", JSON.stringify(anniversaries));
+  } catch {
+    // localStorage may be unavailable in some private browsing modes.
+  }
+}
+
+function fillAnniversaryForm() {
+  const entry = anniversaries[anniversaryType.value] || {};
+  anniversaryMonth.value = entry.month || "";
+  anniversaryDay.value = entry.day || "";
+  anniversaryName.value = entry.name || "";
+  anniversaryMemo.value = entry.memo || "";
+}
+
+function getAnniversaryTypeLabel(type) {
+  if (type === "birthday") return "誕生日";
+  return type === "anniversary1" ? "記念日1" : "記念日2";
+}
+
+function renderAnniversaryList() {
+  if (!anniversaryList) return;
+  const rows = Object.entries(anniversaries)
+    .filter(([, entry]) => entry && entry.month && entry.day)
+    .map(([type, entry]) => {
+      const title = entry.name || getAnniversaryTypeLabel(type);
+      const memo = entry.memo ? " / " + entry.memo : "";
+      return '<button class="anniversary-list-item" type="button" data-type="' + type + '">' + getAnniversaryTypeLabel(type) + "：" + entry.month + "月" + entry.day + "日 " + title + memo + "</button>";
+    });
+  anniversaryList.innerHTML = rows.length ? rows.join("") : '<span class="anniversary-empty">まだ登録がありません</span>';
+  anniversaryList.querySelectorAll(".anniversary-list-item").forEach((button) => {
+    button.addEventListener("click", () => {
+      anniversaryType.value = button.dataset.type;
+      fillAnniversaryForm();
+    });
+  });
+}
+
+function getTodayAnniversaries(now = new Date()) {
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
+  return Object.entries(anniversaries)
+    .map(([type, entry]) => ({ type, ...entry }))
+    .filter((entry) => Number(entry.month) === month && Number(entry.day) === day);
+}
+
+function getAnniversaryLabel(entry) {
+  return entry.name || entry.memo || getAnniversaryTypeLabel(entry.type);
+}
+
+function getAnniversaryMessage(entry) {
+  const label = getAnniversaryLabel(entry);
+  const pool = [
+    "今日は" + label + "だね。おめでとう！",
+    "今日は" + label + "だね。いい一日になりますように。",
+    "記念日だね。いっしょにお祝いしよう。",
+    "今日はちょっと特別な気分だね。",
+    "大切な日を覚えているよ。",
+    "今日はお祝いの日だね。ゆっくり楽しもう。",
+    "おめでとう。すてきな一日になりますように。",
+  ];
+  return namePrefix() + randomItem(pool);
+}
+
+function readAnniversaryStatus() {
+  try {
+    return JSON.parse(localStorage.getItem("pepaatennkoAnniversaryStatus") || "{}") || {};
+  } catch {
+    return {};
+  }
+}
+
+function writeAnniversaryStatus(status) {
+  try {
+    localStorage.setItem("pepaatennkoAnniversaryStatus", JSON.stringify(status));
+  } catch {
+    // localStorage may be unavailable in some private browsing modes.
+  }
+}
+
+function maybeShowAnniversaryComment(force = false) {
+  if (alarmRinging) return false;
+  const todays = getTodayAnniversaries();
+  if (!todays.length) return false;
+  const today = getTodayKey();
+  const status = readAnniversaryStatus();
+  const count = status.date === today ? Number(status.count) || 0 : 0;
+  if (!force && (count >= 4 || Date.now() < quoteHoldUntil || Math.random() > 0.18)) return false;
+  const entry = todays[count % todays.length];
+  quoteHoldUntil = Date.now() + 12000;
+  hideChefMessage();
+  hideAnimalMessage();
+  message.textContent = getAnniversaryMessage(entry);
+  writeAnniversaryStatus({ date: today, count: count + 1, lastAt: Date.now() });
+  return true;
+}
+
+function saveAnniversaryEntry() {
+  const entry = cleanAnniversaryEntry({
+    month: anniversaryMonth.value,
+    day: anniversaryDay.value,
+    name: anniversaryName.value,
+    memo: anniversaryMemo.value,
+  });
+  quoteHoldUntil = Date.now() + 9000;
+  if (!entry) {
+    message.textContent = namePrefix() + "月と日を正しく入れてね";
+    return;
+  }
+  anniversaries[anniversaryType.value] = entry;
+  saveAnniversaries();
+  renderAnniversaryList();
+  fillAnniversaryForm();
+  if (getTodayAnniversaries().some((item) => item.type === anniversaryType.value)) {
+    maybeShowAnniversaryComment(true);
+  } else {
+    message.textContent = namePrefix() + "記念日を保存したよ";
+  }
+}
+
+function clearAnniversaryEntry() {
+  delete anniversaries[anniversaryType.value];
+  saveAnniversaries();
+  renderAnniversaryList();
+  fillAnniversaryForm();
+  message.textContent = namePrefix() + "記念日を削除したよ";
+  quoteHoldUntil = Date.now() + 8000;
+}
 function showChefMessage(text, duration = 10000) {
   chefMessage.hidden = false;
   chefMessage.textContent = text;
@@ -575,7 +738,7 @@ function startBgm() {
   const context = ensureAudioContext();
   if (!context || bgmStarted) return;
   bgmGain = context.createGain();
-  bgmGain.gain.setValueAtTime(alarmRinging ? bgmVolumeValue * 0.12 : bgmVolumeValue, context.currentTime);
+  bgmGain.gain.setValueAtTime(alarmRinging ? bgmVolumeValue * 0.04 : bgmVolumeValue, context.currentTime);
   bgmGain.connect(context.destination);
   bgmStarted = true;
   scheduleBgmLoop();
@@ -598,9 +761,9 @@ function stopBgm() {
 
 function setBgmDucked(ducked) {
   if (!bgmGain || !audioContext) return;
-  const target = ducked ? bgmVolumeValue * 0.12 : bgmVolumeValue;
+  const target = ducked ? bgmVolumeValue * 0.04 : bgmVolumeValue;
   bgmGain.gain.cancelScheduledValues(audioContext.currentTime);
-  bgmGain.gain.setTargetAtTime(target, audioContext.currentTime, 0.35);
+  bgmGain.gain.setTargetAtTime(target, audioContext.currentTime, ducked ? 0.12 : 0.35);
 }
 
 function toggleBgm() {
@@ -807,6 +970,10 @@ function maybeShowConversation() {
   if (now < nextConversationAt) return;
   if (alarmRinging || now < quoteHoldUntil) {
     scheduleNextConversation(timerRunning ? 70000 : 30000);
+    return;
+  }
+  if (!timerRunning && maybeShowAnniversaryComment(false)) {
+    scheduleNextConversation(45000 + Math.random() * 30000);
     return;
   }
 
@@ -1038,7 +1205,7 @@ function finishFocusTimer() {
   energyValue.textContent = energy;
   alarmRinging = true;
   alarmMode = "timer";
-  celebrationUntil = Date.now() + 10000;
+  celebrationUntil = Date.now() + 30000;
   updateMoodDisplay();
   stageTimerLabel.textContent = "タップして止めてね";
   setAction("cheer", `${namePrefix()}${randomItem(extraPetReplies.timerComplete)} ペットをタップしてね`);
@@ -1057,14 +1224,14 @@ function prepareAlarm() {
   ensureAudioContext();
 }
 
-function playTone(startTime, frequency, duration) {
+function playTone(startTime, frequency, duration, level = 0.28) {
   if (!audioContext || !alarmEnabled) return;
   const oscillator = audioContext.createOscillator();
   const gain = audioContext.createGain();
   oscillator.type = "sine";
   oscillator.frequency.setValueAtTime(frequency, startTime);
   gain.gain.setValueAtTime(0.0001, startTime);
-  gain.gain.exponentialRampToValueAtTime(0.16, startTime + 0.025);
+  gain.gain.exponentialRampToValueAtTime(Math.min(level, 0.42), startTime + 0.025);
   gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
   oscillator.connect(gain);
   gain.connect(audioContext.destination);
@@ -1077,9 +1244,9 @@ function playClockAlarmPattern() {
   prepareAlarm();
   if (!audioContext || audioContext.state !== "running") return;
   const now = audioContext.currentTime;
-  playTone(now, 880, 0.14);
-  playTone(now + 0.2, 988, 0.14);
-  playTone(now + 0.4, 1175, 0.22);
+  playTone(now, 880, 0.14, 0.34);
+  playTone(now + 0.2, 988, 0.14, 0.34);
+  playTone(now + 0.4, 1175, 0.22, 0.38);
 }
 
 function playTimerCompletePattern() {
@@ -1087,8 +1254,8 @@ function playTimerCompletePattern() {
   prepareAlarm();
   if (!audioContext || audioContext.state !== "running") return;
   const now = audioContext.currentTime;
-  playTone(now, 660, 0.38);
-  playTone(now + 0.42, 880, 0.5);
+  playTone(now, 660, 0.38, 0.28);
+  playTone(now + 0.42, 880, 0.5, 0.32);
 }
 
 function playAlarmPattern() {
@@ -1227,8 +1394,10 @@ nameSettingsButton.addEventListener("click", () => {
   if (willOpen) {
     themePanel.hidden = true;
     bgmPanel.hidden = true;
+    anniversaryPanel.hidden = true;
     themeSettingsButton.setAttribute("aria-expanded", "false");
     bgmSettingsButton.setAttribute("aria-expanded", "false");
+    anniversarySettingsButton.setAttribute("aria-expanded", "false");
   }
   if (willOpen) userNameInput.focus();
 });
@@ -1247,13 +1416,32 @@ themeSettingsButton.addEventListener("click", () => {
   if (willOpen) {
     namePanel.hidden = true;
     bgmPanel.hidden = true;
+    anniversaryPanel.hidden = true;
     nameSettingsButton.setAttribute("aria-expanded", "false");
     bgmSettingsButton.setAttribute("aria-expanded", "false");
+    anniversarySettingsButton.setAttribute("aria-expanded", "false");
   }
 });
 themeChoices.forEach((button) => {
   button.addEventListener("click", () => saveTheme(button.dataset.theme));
 });
+anniversarySettingsButton.addEventListener("click", () => {
+  const willOpen = anniversaryPanel.hidden;
+  anniversaryPanel.hidden = !willOpen;
+  anniversarySettingsButton.setAttribute("aria-expanded", String(willOpen));
+  if (willOpen) {
+    namePanel.hidden = true;
+    themePanel.hidden = true;
+    bgmPanel.hidden = true;
+    nameSettingsButton.setAttribute("aria-expanded", "false");
+    themeSettingsButton.setAttribute("aria-expanded", "false");
+    bgmSettingsButton.setAttribute("aria-expanded", "false");
+    fillAnniversaryForm();
+  }
+});
+anniversaryType.addEventListener("change", fillAnniversaryForm);
+saveAnniversaryButton.addEventListener("click", saveAnniversaryEntry);
+clearAnniversaryButton.addEventListener("click", clearAnniversaryEntry);
 bgmSettingsButton.addEventListener("click", () => {
   const willOpen = bgmPanel.hidden;
   bgmPanel.hidden = !willOpen;
@@ -1261,8 +1449,10 @@ bgmSettingsButton.addEventListener("click", () => {
   if (willOpen) {
     namePanel.hidden = true;
     themePanel.hidden = true;
+    anniversaryPanel.hidden = true;
     nameSettingsButton.setAttribute("aria-expanded", "false");
     themeSettingsButton.setAttribute("aria-expanded", "false");
+    anniversarySettingsButton.setAttribute("aria-expanded", "false");
   }
 });
 bgmToggle.addEventListener("click", toggleBgm);
@@ -1278,7 +1468,7 @@ bgmMode.addEventListener("change", () => {
 bgmVolume.addEventListener("change", () => {
   bgmVolumeValue = Number(bgmVolume.value) || 0.04;
   if (bgmGain && audioContext) {
-    bgmGain.gain.setTargetAtTime(alarmRinging ? bgmVolumeValue * 0.12 : bgmVolumeValue, audioContext.currentTime, 0.2);
+    bgmGain.gain.setTargetAtTime(alarmRinging ? bgmVolumeValue * 0.04 : bgmVolumeValue, audioContext.currentTime, 0.2);
   }
   saveBgmSettings();
   showChefSolo("bgm", 9000, 0.35);
@@ -1318,12 +1508,14 @@ stage.addEventListener("keydown", (event) => {
 stage.tabIndex = 0;
 
 loadUserName();
+loadAnniversaries();
 populateClockAlarmOptions();
 loadClockAlarm();
 loadBgmSettings();
 loadTheme();
 startClockUpdates();
 showStartupGreeting();
+maybeShowAnniversaryComment(true);
 updateMoodDisplay();
 setTimerDisplays(remainingSeconds);
 scheduleNextConversation(20000 + Math.random() * 40000);

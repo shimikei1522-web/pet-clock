@@ -45,6 +45,7 @@
           <button id="luckyFortuneButton" class="daily-quote-button" type="button">ラッキー占い</button>
           <button id="nameSettingsButton" class="daily-quote-button" type="button" aria-expanded="false" aria-controls="namePanel">名前設定</button>
           <button id="themeSettingsButton" class="daily-quote-button" type="button" aria-expanded="false" aria-controls="themePanel">背景設定</button>
+          <button id="anniversarySettingsButton" class="daily-quote-button" type="button" aria-expanded="false" aria-controls="anniversaryPanel">記念日設定</button>
           <button id="bgmSettingsButton" class="daily-quote-button" type="button" aria-expanded="false" aria-controls="bgmPanel">BGM</button>
         </div>
         <div id="namePanel" class="name-panel" hidden>
@@ -64,6 +65,40 @@
             <button class="theme-choice" type="button" data-theme="cafe">カフェ</button>
             <button class="theme-choice" type="button" data-theme="season">季節</button>
           </div>
+        </div>
+        <div id="anniversaryPanel" class="anniversary-panel" hidden>
+          <span class="anniversary-panel-title">誕生日・記念日</span>
+          <div class="anniversary-grid">
+            <label>
+              <span>種類</span>
+              <select id="anniversaryType">
+                <option value="birthday">誕生日</option>
+                <option value="anniversary1">記念日1</option>
+                <option value="anniversary2">記念日2</option>
+              </select>
+            </label>
+            <label>
+              <span>月</span>
+              <input id="anniversaryMonth" type="number" min="1" max="12" inputmode="numeric" placeholder="5" />
+            </label>
+            <label>
+              <span>日</span>
+              <input id="anniversaryDay" type="number" min="1" max="31" inputmode="numeric" placeholder="10" />
+            </label>
+            <label class="anniversary-name">
+              <span>名前</span>
+              <input id="anniversaryName" type="text" maxlength="18" placeholder="開店記念日" />
+            </label>
+            <label class="anniversary-memo">
+              <span>メモ</span>
+              <input id="anniversaryMemo" type="text" maxlength="32" placeholder="ベーカリーの記念日" />
+            </label>
+            <div class="anniversary-actions">
+              <button id="saveAnniversaryButton" type="button">保存</button>
+              <button id="clearAnniversaryButton" type="button">削除</button>
+            </div>
+          </div>
+          <div id="anniversaryList" class="anniversary-list" aria-live="polite"></div>
         </div>
         <div id="bgmPanel" class="bgm-panel" hidden>
           <span class="bgm-panel-title">BGM設定</span>
