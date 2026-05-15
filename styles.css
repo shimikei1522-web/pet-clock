@@ -593,6 +593,22 @@ body.theme-night .alarm-toggle.active {
   display: none;
 }
 
+.animal-bubble {
+  left: max(116px, calc(50% - 268px));
+  top: 248px;
+  max-width: min(210px, 26vw);
+  font-size: clamp(14px, 1.6vw, 17px);
+}
+
+.animal-bubble::after {
+  left: 30px;
+  bottom: -10px;
+}
+
+.animal-bubble[hidden] {
+  display: none;
+}
+
 body.theme-night .speech-bubble {
   border-color: rgba(225, 250, 255, 0.24);
   background: rgba(245, 255, 253, 0.94);
@@ -1113,6 +1129,17 @@ h1 {
     right: 24px;
   }
 
+  .animal-bubble {
+    left: 58px;
+    top: 184px;
+    max-width: min(132px, 36vw);
+    font-size: 12px;
+  }
+
+  .animal-bubble::after {
+    left: 20px;
+  }
+
   .pet {
     width: min(43vw, 165px);
     bottom: 72px;
@@ -1345,6 +1372,13 @@ h1 {
   .chef-bubble {
     top: 140px;
     max-width: min(160px, 44vw);
+  }
+
+  .animal-bubble {
+    left: 50px;
+    top: 178px;
+    max-width: min(118px, 35vw);
+    font-size: 11px;
   }
 
   .friend {
