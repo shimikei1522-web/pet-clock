@@ -175,7 +175,36 @@ const exactTimeEvents = {
   "22:00": "そろそろ休む準備をしよう。",
 };
 
-const dailyQuotes = ["今日もゆっくり始めよう。","ひとつずつ進めよう。","少し休んだら、また始めよう。","しっかり確認すると安心だね。","準備を丁寧にすると、あとでいいことがあるよ。","今の様子を見てみよう。","次にやることを一つ決めよう。","無理しないくらいでいこう。","今日も一緒に、楽しく進めようね。","絶対大丈夫、いってらっしゃい！","いつも一生懸命なところ、かっこいいよ。","自分のペースでぼちぼちいこう。","何かあったら、いつでもひと息つこう。","今日も一日、ハッピーに過ごそうね。","笑顔を少し置いていこう。","緊張しても大丈夫。ちゃんと応援してるよ。","発表の前は深呼吸しよう。","今日もがんばっていてえらいよ。","間違えても大丈夫。次に進めばいいよ。","目標に向かって、一緒にファイト！","きっとうまくいくって信じてるよ。","今日はいい日になるよ。応援してるね。","失敗しても気にしないで。やり直せるよ。","今日は大活躍できそうだよ。","一緒にがんばれるの、うれしいよ。","最後まであきらめない気持ち、すてきだよ。","がんばってるの、ちゃんと知ってるよ。","今日はぼくが元気を届ける番だよ。","小さな一歩でも、ちゃんと前進だよ。","休むことも大事な準備だよ。","やさしい気持ちで始めよう。","今日の自分に、少しだけ拍手しよう。"];
+const dailyQuotes = [
+  "今日も一緒に、全力で楽しもうね！",
+  "{name}なら絶対大丈夫、いってらっしゃい！",
+  "いつも一生懸命なところ、本当にカッコいいと思ってるよ！",
+  "無理しないで、自分のペースでボチボチがんばろ！",
+  "何かあったらいつでも言ってね。私はずっと味方だから！",
+  "今日も一日、お互いハッピーに過ごそうね！",
+  "{name}の笑顔を見ると、こっちまで元気になっちゃうよ！",
+  "テスト、緊張するかもしれないけど、いつもの{name}なら大丈夫！",
+  "発表のとき緊張したら、私の席を見て！ニコって笑って応援してるからね。",
+  "宿題とかいつも頑張っててえらい！今日も応援してるよ。",
+  "間違えてもドンマイ！次、がんばれば全然オッケーだよ！",
+  "今日の目標に向かって、一緒にファイトー！",
+  "{name}なら、きっとうまくいくって信じてるよ！",
+  "今日の試合、絶対勝てるよ！応援の準備はバッチリだからね！",
+  "失敗しても気にしないで！みんなでカバーするから楽しもう！",
+  "{name}の運動神経なら、今日のドッジボールや試合も大活躍間違いなし！",
+  "同じチームになれてめちゃくちゃ嬉しい！一緒にがんばろうね。",
+  "最後まであきらめずに走る姿、すっごく応援したくなる！",
+  "今日もお疲れ様！がんばってるの、ちゃんと知ってるからね。",
+  "いつも話を聞いてくれてありがとう。今日は私が元気をあげる番だよ！",
+];
+const DAILY_QUOTE_VERSION = 3;
+const dailyQuoteFallbacks = {
+  "{name}なら絶対大丈夫、いってらっしゃい！": "きっと大丈夫、いってらっしゃい！",
+  "{name}の笑顔を見ると、こっちまで元気になっちゃうよ！": "笑顔を見ると、こっちまで元気になっちゃうよ！",
+  "テスト、緊張するかもしれないけど、いつもの{name}なら大丈夫！": "テスト、緊張するかもしれないけど、いつも通りなら大丈夫！",
+  "{name}なら、きっとうまくいくって信じてるよ！": "きっとうまくいくって信じてるよ！",
+  "{name}の運動神経なら、今日のドッジボールや試合も大活躍間違いなし！": "今日のドッジボールや試合も、大活躍間違いなし！",
+};
 
 const seasonalEvents = {
   spring: { className: "season-spring", messages: ["春は新しいことを始めたくなるね。", "春の空気って、なんだかわくわくするね。"], quotes: ["春はゆっくり始めるのにぴったりだね。"], sweets: ["いちごタルト", "桜クッキー"] },
@@ -833,21 +862,24 @@ function getTodayKey() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 }
 
+function formatDailyQuote(quote) {
+  if (userName) return quote.replaceAll("{name}", userName);
+  return dailyQuoteFallbacks[quote] || quote.replaceAll("{name}", "");
+}
+
 function pickDailyQuote() {
   const today = getTodayKey();
   try {
     const saved = JSON.parse(localStorage.getItem("pepaatennkoDailyQuote") || "{}");
-    if (saved.date === today && typeof saved.quote === "string") {
+    if (saved.date === today && saved.version === DAILY_QUOTE_VERSION && dailyQuotes.includes(saved.quote)) {
       return saved.quote;
     }
-    const quotePool = [...dailyQuotes, ...extraPetReplies.dailyQuote, ...getSeasonEvent().quotes, ...extraSeasonReplies[getSeasonKey()]];
-    const index = Math.abs([...today].reduce((total, char) => total + char.charCodeAt(0), 0)) % quotePool.length;
-    const quote = quotePool[index];
-    localStorage.setItem("pepaatennkoDailyQuote", JSON.stringify({ date: today, quote }));
+    const index = Math.abs([...today].reduce((total, char) => total + char.charCodeAt(0), 0)) % dailyQuotes.length;
+    const quote = dailyQuotes[index];
+    localStorage.setItem("pepaatennkoDailyQuote", JSON.stringify({ date: today, version: DAILY_QUOTE_VERSION, quote }));
     return quote;
   } catch {
-    const quotePool = [...dailyQuotes, ...extraPetReplies.dailyQuote, ...getSeasonEvent().quotes, ...extraSeasonReplies[getSeasonKey()]];
-    return quotePool[new Date().getDate() % quotePool.length];
+    return dailyQuotes[new Date().getDate() % dailyQuotes.length];
   }
 }
 
@@ -928,7 +960,7 @@ function showDailyQuote() {
   frameIndex = 0;
   window.clearTimeout(setAction.timer);
   hideChefMessage();
-  message.textContent = `今日のひとこと：${namePrefix()}${quote}`;
+  message.textContent = `今日のひとこと：${formatDailyQuote(quote)}`;
   showChefSolo("dailyQuote", 9000, 0.55);
 }
 
