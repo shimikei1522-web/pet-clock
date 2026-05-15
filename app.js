@@ -29,7 +29,6 @@ const customMinutes = document.querySelector("#customMinutes");
 const startTimerButton = document.querySelector("#startTimer");
 const pauseTimerButton = document.querySelector("#pauseTimer");
 const resetTimerButton = document.querySelector("#resetTimer");
-const alarmToggleButton = document.querySelector("#alarmToggle");
 const alarmHourSelect = document.querySelector("#alarmHour");
 const alarmMinuteSelect = document.querySelector("#alarmMinute");
 const clockAlarmToggle = document.querySelector("#clockAlarmToggle");
@@ -508,9 +507,6 @@ function ensureAudioContext() {
 
 function enableAlarmSound() {
   alarmEnabled = true;
-  alarmToggleButton.classList.add("active");
-  alarmToggleButton.textContent = "タイマーON";
-  alarmToggleButton.setAttribute("aria-pressed", "true");
   prepareAlarm();
 }
 
@@ -1119,16 +1115,6 @@ function stopAlarm() {
   }
 }
 
-function toggleAlarm() {
-  quoteHoldUntil = 0;
-  alarmEnabled = !alarmEnabled;
-  if (!alarmEnabled) stopAlarm();
-  alarmToggleButton.classList.toggle("active", alarmEnabled);
-  alarmToggleButton.textContent = alarmEnabled ? "タイマーON" : "タイマーOFF";
-  alarmToggleButton.setAttribute("aria-pressed", String(alarmEnabled));
-  if (alarmEnabled) prepareAlarm();
-}
-
 function tickFocusTimer() {
   if (!timerRunning) return;
   remainingSeconds = Math.max(0, Math.ceil((timerEndAt - Date.now()) / 1000));
@@ -1202,7 +1188,6 @@ customMinutes.addEventListener("change", () => {
 startTimerButton.addEventListener("click", startFocusTimer);
 pauseTimerButton.addEventListener("click", pauseFocusTimer);
 resetTimerButton.addEventListener("click", resetFocusTimer);
-alarmToggleButton.addEventListener("click", toggleAlarm);
 clockAlarmToggle.addEventListener("click", toggleClockAlarm);
 alarmHourSelect.addEventListener("change", () => {
   saveClockAlarm();

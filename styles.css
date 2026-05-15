@@ -1083,15 +1083,17 @@ h1 {
   }
 
   .stage-timer {
-    left: 8px;
+    left: 50%;
     right: auto;
-    bottom: 8px;
+    bottom: 10px;
+    transform: translateX(-50%);
     min-width: 116px;
-    padding: 7px 10px 9px;
+    padding: 6px 10px 8px;
+    text-align: center;
   }
 
   .stage-timer output {
-    font-size: clamp(26px, 9vw, 38px);
+    font-size: clamp(25px, 8.5vw, 36px);
   }
 
   .speech-bubble {
@@ -1120,24 +1122,30 @@ h1 {
 
   .chef-bubble {
     right: 6px;
-    top: 146px;
-    max-width: min(178px, 46vw);
-    font-size: 13px;
+    top: auto;
+    bottom: 18px;
+    max-width: min(116px, 31vw);
+    font-size: 12px;
   }
 
   .chef-bubble::after {
-    right: 24px;
+    top: -8px;
+    right: 22px;
+    bottom: auto;
   }
 
   .animal-bubble {
-    left: 58px;
-    top: 184px;
-    max-width: min(132px, 36vw);
+    left: 8px;
+    top: auto;
+    bottom: 18px;
+    max-width: min(116px, 31vw);
     font-size: 12px;
   }
 
   .animal-bubble::after {
-    left: 20px;
+    top: -8px;
+    bottom: auto;
+    left: 22px;
   }
 
   .pet {
@@ -1199,7 +1207,7 @@ h1 {
 
   .timer-controls {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 4px;
   }
 
@@ -1370,14 +1378,17 @@ h1 {
   }
 
   .chef-bubble {
-    top: 140px;
-    max-width: min(160px, 44vw);
+    top: auto;
+    bottom: 16px;
+    max-width: min(108px, 30vw);
+    font-size: 11px;
   }
 
   .animal-bubble {
-    left: 50px;
-    top: 178px;
-    max-width: min(118px, 35vw);
+    left: 6px;
+    top: auto;
+    bottom: 16px;
+    max-width: min(108px, 30vw);
     font-size: 11px;
   }
 
