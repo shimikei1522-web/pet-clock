@@ -523,6 +523,7 @@ body.theme-night .time-choice.active,
 body.theme-night .theme-choice.active,
 body.theme-night .large-timer-toggle.active,
 body.theme-night .large-clock-toggle.active,
+body.theme-night .analog-clock-toggle.active,
 body.theme-night .alarm-toggle.active {
   background: #eaf6d6;
   color: #1d3a3a;
@@ -606,6 +607,18 @@ body.large-clock-mode .clock-panel {
 
 body.large-clock-mode .clock-panel > .clock-label,
 body.large-clock-mode .clock-panel > .clock {
+  visibility: hidden;
+}
+
+body.analog-clock-mode .clock-panel {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+body.analog-clock-mode .clock-panel > .clock-label,
+body.analog-clock-mode .clock-panel > .clock {
   visibility: hidden;
 }
 
@@ -829,6 +842,127 @@ body.theme-night .speech-bubble {
   transform-origin: 50% 100%;
   will-change: transform;
   animation: friendWatch 30s ease-in-out infinite;
+}
+
+.analog-clock {
+  --hour-angle: 0deg;
+  --minute-angle: 0deg;
+  --second-angle: 0deg;
+  position: absolute;
+  right: clamp(92px, 15vw, 188px);
+  top: clamp(70px, 13vh, 120px);
+  z-index: 2;
+  width: clamp(72px, 8vw, 98px);
+  aspect-ratio: 1;
+  border: 3px solid rgba(36, 72, 74, 0.5);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.94) 0 6%, transparent 7%),
+    linear-gradient(145deg, rgba(255, 252, 236, 0.96), rgba(225, 249, 244, 0.9));
+  box-shadow:
+    0 12px 26px rgba(31, 88, 82, 0.15),
+    inset 0 0 0 4px rgba(255, 255, 255, 0.58);
+  pointer-events: none;
+}
+
+.analog-clock[hidden] {
+  display: none;
+}
+
+.analog-clock::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  background:
+    linear-gradient(#24484a 0 0) 50% 0 / 2px 8px no-repeat,
+    linear-gradient(#24484a 0 0) 100% 50% / 8px 2px no-repeat,
+    linear-gradient(#24484a 0 0) 50% 100% / 2px 8px no-repeat,
+    linear-gradient(#24484a 0 0) 0 50% / 8px 2px no-repeat;
+  opacity: 0.62;
+}
+
+.analog-number {
+  position: absolute;
+  color: #24484a;
+  font-size: clamp(10px, 1.2vw, 13px);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.analog-number-12 {
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.analog-number-3 {
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+}
+
+.analog-number-6 {
+  bottom: 7px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.analog-number-9 {
+  top: 50%;
+  left: 8px;
+  transform: translateY(-50%);
+}
+
+.analog-hand {
+  position: absolute;
+  left: 50%;
+  bottom: 50%;
+  width: 3px;
+  border-radius: 99px;
+  transform-origin: 50% 100%;
+  box-shadow: 0 1px 2px rgba(28, 55, 58, 0.2);
+}
+
+.analog-hour {
+  height: 25%;
+  background: #24484a;
+  transform: translateX(-50%) rotate(var(--hour-angle));
+}
+
+.analog-minute {
+  height: 34%;
+  background: #2d6c70;
+  transform: translateX(-50%) rotate(var(--minute-angle));
+}
+
+.analog-second {
+  width: 2px;
+  height: 39%;
+  background: #d94b35;
+  transform: translateX(-50%) rotate(var(--second-angle));
+}
+
+.analog-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.82);
+  border-radius: 50%;
+  background: #d94b35;
+  transform: translate(-50%, -50%);
+}
+
+body.theme-night .analog-clock {
+  border-color: rgba(229, 250, 255, 0.56);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.94) 0 6%, transparent 7%),
+    linear-gradient(145deg, rgba(244, 255, 252, 0.96), rgba(192, 228, 238, 0.88));
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.32),
+    inset 0 0 0 4px rgba(255, 255, 255, 0.5);
 }
 
 .animal-friend {
@@ -1306,6 +1440,11 @@ h1 {
   color: #fff;
 }
 
+.analog-clock-toggle.active {
+  background: #24484a;
+  color: #fff;
+}
+
 .timer-controls button {
   background: #fff;
 }
@@ -1316,7 +1455,8 @@ h1 {
 }
 
 .timer-controls .large-timer-toggle.active,
-.timer-controls .large-clock-toggle.active {
+.timer-controls .large-clock-toggle.active,
+.timer-controls .analog-clock-toggle.active {
   background: #24484a;
   color: #fff;
 }
@@ -1547,6 +1687,48 @@ h1 {
     right: 4px;
     bottom: 84px;
     width: clamp(136px, 34vw, 156px);
+  }
+
+  .analog-clock {
+    right: clamp(34px, 11vw, 52px);
+    top: 104px;
+    width: clamp(50px, 16vw, 66px);
+    border-width: 2px;
+  }
+
+  .analog-clock::before {
+    inset: 7px;
+    background:
+      linear-gradient(#24484a 0 0) 50% 0 / 2px 6px no-repeat,
+      linear-gradient(#24484a 0 0) 100% 50% / 6px 2px no-repeat,
+      linear-gradient(#24484a 0 0) 50% 100% / 2px 6px no-repeat,
+      linear-gradient(#24484a 0 0) 0 50% / 6px 2px no-repeat;
+  }
+
+  .analog-number {
+    font-size: 9px;
+  }
+
+  .analog-number-12 {
+    top: 6px;
+  }
+
+  .analog-number-3 {
+    right: 6px;
+  }
+
+  .analog-number-6 {
+    bottom: 5px;
+  }
+
+  .analog-number-9 {
+    left: 6px;
+  }
+
+  .analog-center {
+    width: 8px;
+    height: 8px;
+    border-width: 1px;
   }
 
   .friend-chef {
@@ -1822,6 +2004,12 @@ h1 {
     right: 4px;
     bottom: 84px;
     width: 126px;
+  }
+
+  .analog-clock {
+    right: 28px;
+    top: 102px;
+    width: 48px;
   }
 
   .animal-friend {

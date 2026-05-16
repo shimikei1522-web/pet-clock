@@ -26,6 +26,16 @@
         <p id="message" class="speech-bubble pet-bubble" aria-live="polite">クリックすると動きます</p>
         <p id="chefMessage" class="speech-bubble chef-bubble" aria-live="polite" hidden></p>
         <p id="animalMessage" class="speech-bubble animal-bubble" aria-live="polite" hidden></p>
+        <div id="analogClock" class="analog-clock" role="img" aria-label="アナログ時計" hidden>
+          <span class="analog-number analog-number-12">12</span>
+          <span class="analog-number analog-number-3">3</span>
+          <span class="analog-number analog-number-6">6</span>
+          <span class="analog-number analog-number-9">9</span>
+          <span class="analog-hand analog-hour"></span>
+          <span class="analog-hand analog-minute"></span>
+          <span class="analog-hand analog-second"></span>
+          <span class="analog-center"></span>
+        </div>
         <div class="friend" aria-hidden="true">
           <img class="friend-chef" src="./assets/chef-friend-standing.png.png" alt="" />
         </div>
@@ -180,6 +190,7 @@
           </div>
 
           <div class="timer-controls">
+            <button id="analogClockToggle" class="analog-clock-toggle" type="button" aria-pressed="false">アナログ時計にする</button>
             <button id="largeClockToggle" class="large-clock-toggle" type="button" aria-pressed="false">大画面時計OFF</button>
             <button id="startTimer" type="button">スタート</button>
             <button id="pauseTimer" type="button">一時停止</button>

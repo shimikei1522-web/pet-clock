@@ -4,6 +4,7 @@ const stage = document.querySelector("#stage");
 const message = document.querySelector("#message");
 const chefMessage = document.querySelector("#chefMessage");
 const animalMessage = document.querySelector("#animalMessage");
+const analogClock = document.querySelector("#analogClock");
 const controlPanel = document.querySelector(".panel");
 const moodValue = document.querySelector("#mood");
 const energyValue = document.querySelector("#energy");
@@ -49,6 +50,7 @@ const pauseTimerButton = document.querySelector("#pauseTimer");
 const resetTimerButton = document.querySelector("#resetTimer");
 const largeTimerToggle = document.querySelector("#largeTimerToggle");
 const largeClockToggle = document.querySelector("#largeClockToggle");
+const analogClockToggle = document.querySelector("#analogClockToggle");
 const alarmHourSelect = document.querySelector("#alarmHour");
 const alarmMinuteSelect = document.querySelector("#alarmMinute");
 const clockAlarmToggle = document.querySelector("#clockAlarmToggle");
@@ -81,6 +83,7 @@ let celebrationUntil = 0;
 let alarmId = 0;
 let largeTimerEnabled = false;
 let largeClockEnabled = false;
+let clockDisplayMode = "digital";
 let audioContext = null;
 let bgmGain = null;
 let bgmOscillators = [];
@@ -541,6 +544,24 @@ function updateLargeClockState() {
   largeClockToggle.classList.toggle("active", largeClockEnabled);
   largeClockToggle.setAttribute("aria-pressed", String(largeClockEnabled));
   largeClockToggle.textContent = largeClockEnabled ? "大画面時計ON" : "大画面時計OFF";
+  updateClockDisplayModeState();
+}
+
+function saveClockDisplayMode() {
+  try {
+    localStorage.setItem("pepaatennkoClockDisplayMode", clockDisplayMode);
+  } catch {
+    // localStorage may be unavailable in some private browsing modes.
+  }
+}
+
+function updateClockDisplayModeState() {
+  const analogVisible = clockDisplayMode === "analog" && !largeClockEnabled && !largeTimerEnabled;
+  analogClock.hidden = !analogVisible;
+  document.body.classList.toggle("analog-clock-mode", analogVisible);
+  analogClockToggle.classList.toggle("active", clockDisplayMode === "analog");
+  analogClockToggle.setAttribute("aria-pressed", String(clockDisplayMode === "analog"));
+  analogClockToggle.textContent = clockDisplayMode === "analog" ? "デジタル時計に戻す" : "アナログ時計にする";
 }
 
 function updateLargeTimerState() {
@@ -551,6 +572,7 @@ function updateLargeTimerState() {
   largeTimerToggle.classList.toggle("active", largeTimerEnabled);
   largeTimerToggle.setAttribute("aria-pressed", String(largeTimerEnabled));
   largeTimerToggle.textContent = largeTimerEnabled ? "大画面ON" : "大画面OFF";
+  updateClockDisplayModeState();
 }
 
 function loadLargeTimerSetting() {
@@ -573,6 +595,16 @@ function loadLargeClockSetting() {
   updateLargeClockState();
 }
 
+function loadClockDisplayMode() {
+  try {
+    const saved = localStorage.getItem("pepaatennkoClockDisplayMode");
+    clockDisplayMode = saved === "analog" ? "analog" : "digital";
+  } catch {
+    clockDisplayMode = "digital";
+  }
+  updateClockDisplayModeState();
+}
+
 function toggleLargeTimer() {
   largeTimerEnabled = !largeTimerEnabled;
   if (largeTimerEnabled && largeClockEnabled) {
@@ -587,6 +619,19 @@ function toggleLargeTimer() {
     hideChefMessage();
     hideAnimalMessage();
     message.textContent = largeTimerEnabled ? "大きく表示するね" : namedPeriodText();
+  }
+}
+
+function toggleClockDisplayMode() {
+  clockDisplayMode = clockDisplayMode === "analog" ? "digital" : "analog";
+  saveClockDisplayMode();
+  updateClockDisplayModeState();
+  updateClockDisplay();
+  if (!alarmRinging && Date.now() >= quoteHoldUntil) {
+    quoteHoldUntil = Date.now() + 6500;
+    hideChefMessage();
+    hideAnimalMessage();
+    message.textContent = clockDisplayMode === "analog" ? "シェフの近くに時計を出すね" : "デジタル時計に戻すね";
   }
 }
 
@@ -1427,6 +1472,12 @@ function updateClockDisplay(now = new Date()) {
   clock.dateTime = now.toTimeString().slice(0, 8);
   largeClockDisplay.textContent = value;
   largeClockDisplay.dateTime = clock.dateTime;
+  const seconds = now.getSeconds();
+  const minutes = now.getMinutes();
+  const hours = now.getHours() % 12;
+  analogClock.style.setProperty("--second-angle", `${seconds * 6}deg`);
+  analogClock.style.setProperty("--minute-angle", `${(minutes + seconds / 60) * 6}deg`);
+  analogClock.style.setProperty("--hour-angle", `${(hours + minutes / 60) * 30}deg`);
 }
 
 function updateClock() {
@@ -1747,6 +1798,7 @@ pauseTimerButton.addEventListener("click", pauseFocusTimer);
 resetTimerButton.addEventListener("click", resetFocusTimer);
 largeTimerToggle.addEventListener("click", toggleLargeTimer);
 largeClockToggle.addEventListener("click", toggleLargeClock);
+analogClockToggle.addEventListener("click", toggleClockDisplayMode);
 clockAlarmToggle.addEventListener("click", toggleClockAlarm);
 alarmHourSelect.addEventListener("change", () => {
   saveClockAlarm();
@@ -1933,6 +1985,7 @@ loadBgmSettings();
 loadTheme();
 loadLargeTimerSetting();
 loadLargeClockSetting();
+loadClockDisplayMode();
 if (largeClockEnabled && largeTimerEnabled) {
   largeTimerEnabled = false;
   saveLargeTimerSetting();
