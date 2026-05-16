@@ -469,6 +469,7 @@ body.theme-season.season-winter .sky::before {
 
 body.theme-night .clock-panel,
 body.theme-night .stage-timer,
+body.theme-night .large-stage-timer,
 body.theme-night .panel,
 body.theme-night .focus-panel {
   border-color: rgba(225, 250, 255, 0.18);
@@ -520,6 +521,7 @@ body.theme-night .theme-choice {
 
 body.theme-night .time-choice.active,
 body.theme-night .theme-choice.active,
+body.theme-night .large-timer-toggle.active,
 body.theme-night .alarm-toggle.active {
   background: #eaf6d6;
   color: #1d3a3a;
@@ -592,6 +594,46 @@ body.theme-night .alarm-toggle.active {
   font-size: clamp(34px, 5vw, 56px);
   font-weight: 900;
   line-height: 0.95;
+}
+
+.large-stage-timer {
+  position: absolute;
+  left: 50%;
+  top: 43%;
+  z-index: 1;
+  display: block;
+  width: min(86vw, 880px);
+  transform: translate(-50%, -50%);
+  color: rgba(42, 67, 70, 0.88);
+  font-size: clamp(96px, 18vw, 240px);
+  font-weight: 950;
+  line-height: 0.82;
+  letter-spacing: 0;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.82;
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  user-select: none;
+}
+
+.large-stage-timer[hidden] {
+  display: none;
+}
+
+.large-stage-timer.paused {
+  opacity: 0.38;
+}
+
+.large-stage-timer.running {
+  opacity: 0.84;
+}
+
+body.theme-night .large-stage-timer {
+  border-color: transparent;
+  background: transparent;
+  color: rgba(244, 255, 252, 0.9);
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.46);
 }
 
 .speech-bubble {
@@ -1196,6 +1238,11 @@ h1 {
   color: #fff;
 }
 
+.large-timer-toggle.active {
+  background: #24484a;
+  color: #fff;
+}
+
 .timer-controls button {
   background: #fff;
 }
@@ -1333,6 +1380,18 @@ h1 {
     font-size: clamp(25px, 8.5vw, 36px);
   }
 
+  .large-stage-timer {
+    top: 44%;
+    width: min(92vw, 430px);
+    font-size: clamp(70px, 23vw, 126px);
+    opacity: 0.82;
+    text-shadow: 0 3px 9px rgba(0, 0, 0, 0.24);
+  }
+
+  body.large-timer-mode .panel:not(.calculator-open) .pet-actions {
+    display: none;
+  }
+
   .speech-bubble {
     max-width: calc(100% - 118px);
     padding: 8px 10px;
@@ -1448,7 +1507,7 @@ h1 {
 
   .timer-controls {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 4px;
   }
 
@@ -1712,6 +1771,11 @@ h1 {
   .calculator-display {
     min-height: 34px;
     font-size: 20px;
+  }
+
+  .large-stage-timer {
+    top: 45%;
+    font-size: clamp(58px, 21vw, 96px);
   }
 
   .calculator-keys button {

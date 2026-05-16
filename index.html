@@ -21,6 +21,7 @@
           <span id="stageTimerLabel">FOCUS</span>
           <output id="stageTimerDisplay" aria-live="polite">05:00</output>
         </div>
+        <output id="largeTimerDisplay" class="large-stage-timer" aria-live="polite" hidden>05:00</output>
         <p id="message" class="speech-bubble pet-bubble" aria-live="polite">クリックすると動きます</p>
         <p id="chefMessage" class="speech-bubble chef-bubble" aria-live="polite" hidden></p>
         <p id="animalMessage" class="speech-bubble animal-bubble" aria-live="polite" hidden></p>
@@ -181,6 +182,7 @@
             <button id="startTimer" type="button">スタート</button>
             <button id="pauseTimer" type="button">一時停止</button>
             <button id="resetTimer" type="button">リセット</button>
+            <button id="largeTimerToggle" class="large-timer-toggle" type="button" aria-pressed="false">大画面OFF</button>
           </div>
         </div>
 

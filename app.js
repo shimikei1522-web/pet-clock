@@ -10,6 +10,7 @@ const energyValue = document.querySelector("#energy");
 const clock = document.querySelector("#clock");
 const stageTimerLabel = document.querySelector("#stageTimerLabel");
 const stageTimerDisplay = document.querySelector("#stageTimerDisplay");
+const largeTimerDisplay = document.querySelector("#largeTimerDisplay");
 const dailyQuoteButton = document.querySelector("#dailyQuoteButton");
 const luckyFortuneButton = document.querySelector("#luckyFortuneButton");
 const nameSettingsButton = document.querySelector("#nameSettingsButton");
@@ -45,6 +46,7 @@ const customMinutes = document.querySelector("#customMinutes");
 const startTimerButton = document.querySelector("#startTimer");
 const pauseTimerButton = document.querySelector("#pauseTimer");
 const resetTimerButton = document.querySelector("#resetTimer");
+const largeTimerToggle = document.querySelector("#largeTimerToggle");
 const alarmHourSelect = document.querySelector("#alarmHour");
 const alarmMinuteSelect = document.querySelector("#alarmMinute");
 const clockAlarmToggle = document.querySelector("#clockAlarmToggle");
@@ -75,6 +77,7 @@ let alarmRinging = false;
 let alarmMode = "";
 let celebrationUntil = 0;
 let alarmId = 0;
+let largeTimerEnabled = false;
 let audioContext = null;
 let bgmGain = null;
 let bgmOscillators = [];
@@ -509,6 +512,48 @@ function populateClockAlarmOptions() {
 function setTimerDisplays(seconds) {
   const value = formatDuration(seconds);
   stageTimerDisplay.textContent = value;
+  largeTimerDisplay.textContent = value;
+  updateLargeTimerState();
+}
+
+function saveLargeTimerSetting() {
+  try {
+    localStorage.setItem("pepaatennkoLargeTimer", JSON.stringify({ enabled: largeTimerEnabled }));
+  } catch {
+    // localStorage may be unavailable in some private browsing modes.
+  }
+}
+
+function updateLargeTimerState() {
+  largeTimerDisplay.hidden = !largeTimerEnabled;
+  largeTimerDisplay.classList.toggle("running", largeTimerEnabled && timerRunning);
+  largeTimerDisplay.classList.toggle("paused", largeTimerEnabled && !timerRunning);
+  document.body.classList.toggle("large-timer-mode", largeTimerEnabled);
+  largeTimerToggle.classList.toggle("active", largeTimerEnabled);
+  largeTimerToggle.setAttribute("aria-pressed", String(largeTimerEnabled));
+  largeTimerToggle.textContent = largeTimerEnabled ? "大画面ON" : "大画面OFF";
+}
+
+function loadLargeTimerSetting() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("pepaatennkoLargeTimer") || "{}");
+    largeTimerEnabled = Boolean(saved.enabled);
+  } catch {
+    largeTimerEnabled = false;
+  }
+  updateLargeTimerState();
+}
+
+function toggleLargeTimer() {
+  largeTimerEnabled = !largeTimerEnabled;
+  saveLargeTimerSetting();
+  updateLargeTimerState();
+  if (!alarmRinging && Date.now() >= quoteHoldUntil) {
+    quoteHoldUntil = Date.now() + 6500;
+    hideChefMessage();
+    hideAnimalMessage();
+    message.textContent = largeTimerEnabled ? "大きく表示するね" : namedPeriodText();
+  }
 }
 
 function getTimePeriod(date = new Date()) {
@@ -1646,6 +1691,7 @@ customMinutes.addEventListener("change", () => {
 startTimerButton.addEventListener("click", startFocusTimer);
 pauseTimerButton.addEventListener("click", pauseFocusTimer);
 resetTimerButton.addEventListener("click", resetFocusTimer);
+largeTimerToggle.addEventListener("click", toggleLargeTimer);
 clockAlarmToggle.addEventListener("click", toggleClockAlarm);
 alarmHourSelect.addEventListener("change", () => {
   saveClockAlarm();
@@ -1830,6 +1876,7 @@ populateClockAlarmOptions();
 loadClockAlarm();
 loadBgmSettings();
 loadTheme();
+loadLargeTimerSetting();
 startClockUpdates();
 showStartupGreeting();
 maybeShowAnniversaryComment(true);
