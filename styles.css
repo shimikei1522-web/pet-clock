@@ -596,23 +596,29 @@ body.theme-night .alarm-toggle.active {
   line-height: 0.95;
 }
 
+body.large-timer-mode .stage-timer {
+  min-width: min(520px, 58vw);
+  padding: 14px 18px 16px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+body.large-timer-mode #stageTimerDisplay {
+  display: none;
+}
+
 .large-stage-timer {
-  position: absolute;
-  left: 50%;
-  top: 43%;
-  z-index: 1;
   display: block;
-  width: min(86vw, 880px);
-  transform: translate(-50%, -50%);
-  color: rgba(42, 67, 70, 0.88);
-  font-size: clamp(96px, 18vw, 240px);
+  color: rgba(39, 66, 70, 0.98);
+  font-size: clamp(86px, 11vw, 148px);
   font-weight: 950;
   line-height: 0.82;
   letter-spacing: 0;
   text-align: center;
   font-variant-numeric: tabular-nums;
-  opacity: 0.82;
-  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+  opacity: 0.96;
+  text-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.24),
+    0 0 1px rgba(255, 255, 255, 0.86);
   pointer-events: none;
   user-select: none;
 }
@@ -622,16 +628,14 @@ body.theme-night .alarm-toggle.active {
 }
 
 .large-stage-timer.paused {
-  opacity: 0.38;
+  opacity: 0.74;
 }
 
 .large-stage-timer.running {
-  opacity: 0.84;
+  opacity: 1;
 }
 
 body.theme-night .large-stage-timer {
-  border-color: transparent;
-  background: transparent;
   color: rgba(244, 255, 252, 0.9);
   text-shadow: 0 3px 12px rgba(0, 0, 0, 0.46);
 }
@@ -1380,12 +1384,19 @@ h1 {
     font-size: clamp(25px, 8.5vw, 36px);
   }
 
+  body.large-timer-mode .stage-timer {
+    bottom: 8px;
+    min-width: min(92vw, 330px);
+    padding: 7px 12px 9px;
+    background: rgba(255, 255, 255, 0.88);
+  }
+
   .large-stage-timer {
-    top: 44%;
-    width: min(92vw, 430px);
-    font-size: clamp(70px, 23vw, 126px);
-    opacity: 0.82;
-    text-shadow: 0 3px 9px rgba(0, 0, 0, 0.24);
+    font-size: clamp(58px, 19vw, 92px);
+    opacity: 0.98;
+    text-shadow:
+      0 3px 9px rgba(0, 0, 0, 0.24),
+      0 0 1px rgba(255, 255, 255, 0.86);
   }
 
   body.large-timer-mode .panel:not(.calculator-open) .pet-actions {
@@ -1774,8 +1785,7 @@ h1 {
   }
 
   .large-stage-timer {
-    top: 45%;
-    font-size: clamp(58px, 21vw, 96px);
+    font-size: clamp(50px, 18vw, 76px);
   }
 
   .calculator-keys button {
