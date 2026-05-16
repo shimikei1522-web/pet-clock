@@ -321,6 +321,58 @@ body.theme-season.season-winter .stage {
   }
 }
 
+@keyframes petCalcThink {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0) rotate(-1deg);
+  }
+  45% {
+    transform: translateX(-50%) translateY(-3px) rotate(1.2deg);
+  }
+  70% {
+    transform: translateX(-50%) translateY(1px) rotate(0deg);
+  }
+}
+
+@keyframes petCalcSuccess {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  38% {
+    transform: translateX(-50%) translateY(-12px) scale(1.04);
+  }
+  68% {
+    transform: translateX(-50%) translateY(2px) scale(0.99);
+  }
+}
+
+@keyframes petCalcTap {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-5px) scale(1.015);
+  }
+}
+
+@keyframes petCalcError {
+  0%,
+  100% {
+    transform: translateX(-50%) rotate(0deg);
+  }
+  25% {
+    transform: translateX(-50%) rotate(-4deg);
+  }
+  55% {
+    transform: translateX(-50%) rotate(4deg);
+  }
+  78% {
+    transform: translateX(-50%) rotate(-2deg);
+  }
+}
+
 body.theme-night .sky {
   background:
     radial-gradient(circle at 16% 22%, #fff 0 2px, transparent 3px),
@@ -636,7 +688,24 @@ body.theme-night .speech-bubble {
   height: auto;
   image-rendering: auto;
   transform: translateX(-50%);
+  transform-origin: center bottom;
   z-index: 2;
+}
+
+.pet.calc-mode {
+  animation: petCalcThink 2.8s ease-in-out infinite;
+}
+
+.pet.calc-success {
+  animation: petCalcSuccess 0.72s ease-out 1;
+}
+
+.pet.calc-tap {
+  animation: petCalcTap 0.42s ease-out 1;
+}
+
+.pet.calc-error {
+  animation: petCalcError 0.68s ease-in-out 1;
 }
 
 .friend {
@@ -1580,6 +1649,10 @@ h1 {
   .stage.season-event .sky::after,
   .friend-chef,
   .animal-friend-image,
+  .pet.calc-mode,
+  .pet.calc-success,
+  .pet.calc-tap,
+  .pet.calc-error,
   .sky::before,
   .stage.season-event .sky::after {
     animation: none;

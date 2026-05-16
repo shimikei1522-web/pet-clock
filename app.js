@@ -89,6 +89,7 @@ let calculatorOperator = "";
 let calculatorWaitingForValue = false;
 let calculatorError = false;
 let calculatorPressCount = 0;
+let calculatorReactionTimer = 0;
 let quoteHoldUntil = 0;
 let chefBubbleTimer = 0;
 let animalBubbleTimer = 0;
@@ -362,6 +363,8 @@ function inputCalculatorOperator(operator) {
     const formatted = formatCalculatorResult(result);
     if (formatted === CALCULATOR_ERROR_TEXT) {
       setCalculatorError();
+      triggerCalculatorPetAnimation("error");
+      showCalculatorResultMessage(true, calculatorOperator === "divide" && current === 0);
       return;
     }
     calculatorStoredValue = Number(formatted);
@@ -382,6 +385,7 @@ function inputCalculatorEquals() {
   const formatted = formatCalculatorResult(result);
   if (formatted === CALCULATOR_ERROR_TEXT) {
     setCalculatorError();
+    triggerCalculatorPetAnimation("error");
     showCalculatorResultMessage(true, calculatorOperator === "divide" && current === 0);
     return;
   }
@@ -391,6 +395,7 @@ function inputCalculatorEquals() {
   calculatorWaitingForValue = true;
   calculatorError = false;
   updateCalculatorDisplay();
+  triggerCalculatorPetAnimation("success");
   showCalculatorResultMessage(false);
 }
 
@@ -427,6 +432,7 @@ function playCalculatorClick() {
 
 function showCalculatorPetMessage(text, holdMs = 6500) {
   if (alarmRinging) return;
+  if (Date.now() < quoteHoldUntil) return;
   quoteHoldUntil = Date.now() + holdMs;
   action = "wave";
   frameIndex = 0;
@@ -439,6 +445,7 @@ function showCalculatorPetMessage(text, holdMs = 6500) {
 function maybeShowCalculatorTypingMessage(action) {
   if (alarmRinging || action === "equals") return;
   calculatorPressCount += 1;
+  if (calculatorPressCount % 4 === 0) triggerCalculatorPetAnimation("tap");
   if (Date.now() < quoteHoldUntil) return;
   if (calculatorPressCount < 4 || calculatorPressCount % 5 !== 0 || Math.random() > 0.35) return;
   showCalculatorPetMessage(randomItem(calculatorTypingMessages), 5500);
@@ -450,6 +457,7 @@ function showCalculatorOpenMessage() {
 
 function showCalculatorResultMessage(isError, isDivideByZero = false) {
   if (alarmRinging) return;
+  quoteHoldUntil = 0;
   if (isError) {
     showCalculatorPetMessage(isDivideByZero ? "\u0030\u3067\u306f\u5272\u308c\u306a\u3044\u3088" : "\u3046\u307e\u304f\u8a08\u7b97\u3067\u304d\u306a\u304b\u3063\u305f\u307f\u305f\u3044", 8000);
     return;
@@ -461,6 +469,26 @@ function showCalculatorResultMessage(isError, isDivideByZero = false) {
     `\u3067\u304d\u305f\uff01\u7b54\u3048\u306f ${result}`,
   ];
   showCalculatorPetMessage(randomItem(texts), 8500);
+}
+
+function setCalculatorMode(isOpen) {
+  canvas.classList.toggle("calc-mode", isOpen && !alarmRinging);
+  if (!isOpen) {
+    canvas.classList.remove("calc-success", "calc-error", "calc-tap");
+    window.clearTimeout(calculatorReactionTimer);
+  }
+}
+
+function triggerCalculatorPetAnimation(type) {
+  if (alarmRinging) return;
+  const className = type === "error" ? "calc-error" : type === "tap" ? "calc-tap" : "calc-success";
+  canvas.classList.remove("calc-success", "calc-error", "calc-tap");
+  void canvas.offsetWidth;
+  canvas.classList.add(className);
+  window.clearTimeout(calculatorReactionTimer);
+  calculatorReactionTimer = window.setTimeout(() => {
+    canvas.classList.remove(className);
+  }, type === "tap" ? 460 : type === "error" ? 760 : 820);
 }
 
 function populateClockAlarmOptions() {
@@ -1041,6 +1069,7 @@ function checkClockAlarm(now) {
   alarmMode = "clock";
   celebrationUntil = 0;
   timerRunning = false;
+  setCalculatorMode(false);
   window.clearInterval(timerId);
   updateMoodDisplay();
   stageTimerLabel.textContent = "タップして止めてね";
@@ -1445,6 +1474,7 @@ function finishFocusTimer() {
   alarmRinging = true;
   alarmMode = "timer";
   celebrationUntil = Date.now() + 30000;
+  setCalculatorMode(false);
   updateMoodDisplay();
   stageTimerLabel.textContent = "タップして止めてね";
   setAction("cheer", `${namePrefix()}${randomItem(extraPetReplies.timerComplete)} ペットをタップしてね`);
@@ -1539,6 +1569,7 @@ function stopAlarm() {
     message.textContent = stoppedMode === "clock" ? `${namePrefix()}予定の合図を止めたよ` : `${namePrefix()}${randomItem(extraPetReplies.timerComplete)}`;
     hideChefMessage();
     setAction("cheer", stoppedMode === "clock" ? `${namePrefix()}知らせを確認できたね` : `${namePrefix()}${randomItem(extraPetReplies.timerComplete)}`);
+    if (!calculatorPanel.hidden) setCalculatorMode(true);
   }
 }
 
@@ -1638,6 +1669,7 @@ nameSettingsButton.addEventListener("click", () => {
     anniversaryPanel.hidden = true;
     calculatorPanel.hidden = true;
     controlPanel.classList.remove("calculator-open");
+    setCalculatorMode(false);
     themeSettingsButton.setAttribute("aria-expanded", "false");
     bgmSettingsButton.setAttribute("aria-expanded", "false");
     anniversarySettingsButton.setAttribute("aria-expanded", "false");
@@ -1663,6 +1695,7 @@ themeSettingsButton.addEventListener("click", () => {
     anniversaryPanel.hidden = true;
     calculatorPanel.hidden = true;
     controlPanel.classList.remove("calculator-open");
+    setCalculatorMode(false);
     nameSettingsButton.setAttribute("aria-expanded", "false");
     bgmSettingsButton.setAttribute("aria-expanded", "false");
     anniversarySettingsButton.setAttribute("aria-expanded", "false");
@@ -1682,6 +1715,7 @@ anniversarySettingsButton.addEventListener("click", () => {
     bgmPanel.hidden = true;
     calculatorPanel.hidden = true;
     controlPanel.classList.remove("calculator-open");
+    setCalculatorMode(false);
     nameSettingsButton.setAttribute("aria-expanded", "false");
     themeSettingsButton.setAttribute("aria-expanded", "false");
     bgmSettingsButton.setAttribute("aria-expanded", "false");
@@ -1702,6 +1736,7 @@ bgmSettingsButton.addEventListener("click", () => {
     anniversaryPanel.hidden = true;
     calculatorPanel.hidden = true;
     controlPanel.classList.remove("calculator-open");
+    setCalculatorMode(false);
     nameSettingsButton.setAttribute("aria-expanded", "false");
     themeSettingsButton.setAttribute("aria-expanded", "false");
     anniversarySettingsButton.setAttribute("aria-expanded", "false");
@@ -1713,6 +1748,7 @@ calculatorButton.addEventListener("click", () => {
   calculatorPanel.hidden = !willOpen;
   calculatorButton.setAttribute("aria-expanded", String(willOpen));
   controlPanel.classList.toggle("calculator-open", willOpen);
+  setCalculatorMode(willOpen);
   if (willOpen) {
     namePanel.hidden = true;
     themePanel.hidden = true;
@@ -1729,6 +1765,7 @@ calculatorCloseButton.addEventListener("click", () => {
   calculatorPanel.hidden = true;
   calculatorButton.setAttribute("aria-expanded", "false");
   controlPanel.classList.remove("calculator-open");
+  setCalculatorMode(false);
 });
 calculatorKeys.addEventListener("click", (event) => {
   const button = event.target.closest("button");
