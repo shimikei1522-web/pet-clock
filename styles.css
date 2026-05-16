@@ -597,9 +597,12 @@ body.theme-night .alarm-toggle.active {
 }
 
 body.large-timer-mode .stage-timer {
-  min-width: min(520px, 58vw);
-  padding: 14px 18px 16px;
-  background: rgba(255, 255, 255, 0.86);
+  min-width: auto;
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 body.large-timer-mode #stageTimerDisplay {
@@ -609,7 +612,7 @@ body.large-timer-mode #stageTimerDisplay {
 .large-stage-timer {
   display: block;
   color: rgba(39, 66, 70, 0.98);
-  font-size: clamp(86px, 11vw, 148px);
+  font-size: clamp(112px, 15vw, 210px);
   font-weight: 950;
   line-height: 0.82;
   letter-spacing: 0;
@@ -621,6 +624,10 @@ body.large-timer-mode #stageTimerDisplay {
     0 0 1px rgba(255, 255, 255, 0.86);
   pointer-events: none;
   user-select: none;
+}
+
+body.large-timer-mode .stage-timer .large-stage-timer {
+  font-size: clamp(112px, 15vw, 210px);
 }
 
 .large-stage-timer[hidden] {
@@ -1386,17 +1393,20 @@ h1 {
 
   body.large-timer-mode .stage-timer {
     bottom: 8px;
-    min-width: min(92vw, 330px);
-    padding: 7px 12px 9px;
-    background: rgba(255, 255, 255, 0.88);
+    width: min(96vw, 420px);
+    padding: 0;
   }
 
   .large-stage-timer {
-    font-size: clamp(58px, 19vw, 92px);
+    font-size: clamp(86px, 26vw, 132px);
     opacity: 0.98;
     text-shadow:
       0 3px 9px rgba(0, 0, 0, 0.24),
       0 0 1px rgba(255, 255, 255, 0.86);
+  }
+
+  body.large-timer-mode .stage-timer .large-stage-timer {
+    font-size: clamp(86px, 26vw, 132px);
   }
 
   body.large-timer-mode .panel:not(.calculator-open) .pet-actions {
@@ -1785,7 +1795,11 @@ h1 {
   }
 
   .large-stage-timer {
-    font-size: clamp(50px, 18vw, 76px);
+    font-size: clamp(74px, 24vw, 104px);
+  }
+
+  body.large-timer-mode .stage-timer .large-stage-timer {
+    font-size: clamp(74px, 24vw, 104px);
   }
 
   .calculator-keys button {
