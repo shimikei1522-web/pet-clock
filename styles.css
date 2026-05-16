@@ -849,20 +849,21 @@ body.theme-night .speech-bubble {
   --minute-angle: 0deg;
   --second-angle: 0deg;
   position: absolute;
-  right: clamp(80px, 13vw, 178px);
-  top: clamp(28px, 6vh, 62px);
+  right: clamp(46px, 9vw, 140px);
+  top: clamp(8px, 2.4vh, 28px);
   z-index: 2;
-  width: clamp(132px, 15vw, 176px);
+  width: clamp(160px, 18vw, 228px);
   aspect-ratio: 1;
-  border: 5px solid rgba(150, 150, 150, 0.96);
+  border: 6px solid rgba(94, 224, 216, 0.95);
   border-radius: 50%;
   background:
     radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.94) 0 6%, transparent 7%),
     linear-gradient(145deg, rgba(255, 252, 236, 0.96), rgba(225, 249, 244, 0.9));
   box-shadow:
-    0 14px 30px rgba(48, 61, 66, 0.18),
+    0 14px 30px rgba(32, 113, 118, 0.22),
+    0 0 0 2px rgba(40, 120, 124, 0.28),
     inset 0 0 0 5px rgba(255, 255, 255, 0.6),
-    inset 0 0 0 9px rgba(160, 160, 160, 0.16);
+    inset 0 0 0 10px rgba(94, 224, 216, 0.16);
   pointer-events: none;
 }
 
@@ -957,14 +958,15 @@ body.theme-night .speech-bubble {
 }
 
 body.theme-night .analog-clock {
-  border-color: rgba(154, 163, 173, 0.96);
+  border-color: rgba(94, 224, 216, 0.95);
   background:
     radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.94) 0 6%, transparent 7%),
     linear-gradient(145deg, rgba(244, 255, 252, 0.96), rgba(192, 228, 238, 0.88));
   box-shadow:
     0 14px 30px rgba(0, 0, 0, 0.34),
+    0 0 0 2px rgba(143, 244, 235, 0.32),
     inset 0 0 0 5px rgba(255, 255, 255, 0.52),
-    inset 0 0 0 9px rgba(143, 152, 163, 0.18);
+    inset 0 0 0 10px rgba(94, 224, 216, 0.18);
 }
 
 .animal-friend {
@@ -1692,10 +1694,10 @@ h1 {
   }
 
   .analog-clock {
-    right: clamp(10px, 4vw, 22px);
-    top: 58px;
-    width: clamp(82px, 25vw, 118px);
-    border-width: 4px;
+    right: clamp(4px, 2vw, 14px);
+    top: 20px;
+    width: clamp(104px, 31vw, 144px);
+    border-width: 5px;
   }
 
   .analog-clock::before {
@@ -2009,9 +2011,9 @@ h1 {
   }
 
   .analog-clock {
-    right: 8px;
-    top: 58px;
-    width: 82px;
+    right: 4px;
+    top: 22px;
+    width: 104px;
   }
 
   .animal-friend {
