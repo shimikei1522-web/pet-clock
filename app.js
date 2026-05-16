@@ -8,6 +8,7 @@ const controlPanel = document.querySelector(".panel");
 const moodValue = document.querySelector("#mood");
 const energyValue = document.querySelector("#energy");
 const clock = document.querySelector("#clock");
+const largeClockDisplay = document.querySelector("#largeClockDisplay");
 const stageTimerLabel = document.querySelector("#stageTimerLabel");
 const stageTimerDisplay = document.querySelector("#stageTimerDisplay");
 const largeTimerDisplay = document.querySelector("#largeTimerDisplay");
@@ -47,6 +48,7 @@ const startTimerButton = document.querySelector("#startTimer");
 const pauseTimerButton = document.querySelector("#pauseTimer");
 const resetTimerButton = document.querySelector("#resetTimer");
 const largeTimerToggle = document.querySelector("#largeTimerToggle");
+const largeClockToggle = document.querySelector("#largeClockToggle");
 const alarmHourSelect = document.querySelector("#alarmHour");
 const alarmMinuteSelect = document.querySelector("#alarmMinute");
 const clockAlarmToggle = document.querySelector("#clockAlarmToggle");
@@ -78,6 +80,7 @@ let alarmMode = "";
 let celebrationUntil = 0;
 let alarmId = 0;
 let largeTimerEnabled = false;
+let largeClockEnabled = false;
 let audioContext = null;
 let bgmGain = null;
 let bgmOscillators = [];
@@ -524,6 +527,22 @@ function saveLargeTimerSetting() {
   }
 }
 
+function saveLargeClockSetting() {
+  try {
+    localStorage.setItem("pepaatennkoLargeClock", JSON.stringify({ enabled: largeClockEnabled }));
+  } catch {
+    // localStorage may be unavailable in some private browsing modes.
+  }
+}
+
+function updateLargeClockState() {
+  largeClockDisplay.hidden = !largeClockEnabled;
+  document.body.classList.toggle("large-clock-mode", largeClockEnabled);
+  largeClockToggle.classList.toggle("active", largeClockEnabled);
+  largeClockToggle.setAttribute("aria-pressed", String(largeClockEnabled));
+  largeClockToggle.textContent = largeClockEnabled ? "大画面時計ON" : "大画面時計OFF";
+}
+
 function updateLargeTimerState() {
   largeTimerDisplay.hidden = !largeTimerEnabled;
   largeTimerDisplay.classList.toggle("running", largeTimerEnabled && timerRunning);
@@ -544,8 +563,23 @@ function loadLargeTimerSetting() {
   updateLargeTimerState();
 }
 
+function loadLargeClockSetting() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("pepaatennkoLargeClock") || "{}");
+    largeClockEnabled = Boolean(saved.enabled);
+  } catch {
+    largeClockEnabled = false;
+  }
+  updateLargeClockState();
+}
+
 function toggleLargeTimer() {
   largeTimerEnabled = !largeTimerEnabled;
+  if (largeTimerEnabled && largeClockEnabled) {
+    largeClockEnabled = false;
+    saveLargeClockSetting();
+    updateLargeClockState();
+  }
   saveLargeTimerSetting();
   updateLargeTimerState();
   if (!alarmRinging && Date.now() >= quoteHoldUntil) {
@@ -553,6 +587,24 @@ function toggleLargeTimer() {
     hideChefMessage();
     hideAnimalMessage();
     message.textContent = largeTimerEnabled ? "大きく表示するね" : namedPeriodText();
+  }
+}
+
+function toggleLargeClock() {
+  largeClockEnabled = !largeClockEnabled;
+  if (largeClockEnabled && largeTimerEnabled) {
+    largeTimerEnabled = false;
+    saveLargeTimerSetting();
+    updateLargeTimerState();
+  }
+  saveLargeClockSetting();
+  updateLargeClockState();
+  updateClockDisplay();
+  if (!alarmRinging && Date.now() >= quoteHoldUntil) {
+    quoteHoldUntil = Date.now() + 6500;
+    hideChefMessage();
+    hideAnimalMessage();
+    message.textContent = largeClockEnabled ? "時計を大きく表示するね" : namedPeriodText();
   }
 }
 
@@ -1373,6 +1425,8 @@ function updateClockDisplay(now = new Date()) {
   const value = formatTime(now);
   clock.textContent = value;
   clock.dateTime = now.toTimeString().slice(0, 8);
+  largeClockDisplay.textContent = value;
+  largeClockDisplay.dateTime = clock.dateTime;
 }
 
 function updateClock() {
@@ -1692,6 +1746,7 @@ startTimerButton.addEventListener("click", startFocusTimer);
 pauseTimerButton.addEventListener("click", pauseFocusTimer);
 resetTimerButton.addEventListener("click", resetFocusTimer);
 largeTimerToggle.addEventListener("click", toggleLargeTimer);
+largeClockToggle.addEventListener("click", toggleLargeClock);
 clockAlarmToggle.addEventListener("click", toggleClockAlarm);
 alarmHourSelect.addEventListener("change", () => {
   saveClockAlarm();
@@ -1877,6 +1932,12 @@ loadClockAlarm();
 loadBgmSettings();
 loadTheme();
 loadLargeTimerSetting();
+loadLargeClockSetting();
+if (largeClockEnabled && largeTimerEnabled) {
+  largeTimerEnabled = false;
+  saveLargeTimerSetting();
+  updateLargeTimerState();
+}
 startClockUpdates();
 showStartupGreeting();
 maybeShowAnniversaryComment(true);
