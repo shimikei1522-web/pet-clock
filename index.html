@@ -47,6 +47,7 @@
           <button id="themeSettingsButton" class="daily-quote-button" type="button" aria-expanded="false" aria-controls="themePanel">背景設定</button>
           <button id="anniversarySettingsButton" class="daily-quote-button" type="button" aria-expanded="false" aria-controls="anniversaryPanel">記念日設定</button>
           <button id="bgmSettingsButton" class="daily-quote-button" type="button" aria-expanded="false" aria-controls="bgmPanel">BGM</button>
+          <button id="calculatorButton" class="daily-quote-button" type="button" aria-expanded="false" aria-controls="calculatorPanel">電卓</button>
         </div>
         <div id="namePanel" class="name-panel" hidden>
           <label for="userNameInput">呼んでほしい名前</label>
@@ -121,6 +122,33 @@
               <option value="0.13">大</option>
             </select>
           </label>
+        </div>
+        <div id="calculatorPanel" class="calculator-panel" hidden>
+          <div class="calculator-header">
+            <span class="calculator-title">電卓</span>
+            <button id="calculatorCloseButton" class="calculator-close" type="button" aria-label="電卓を閉じる">閉じる</button>
+          </div>
+          <output id="calculatorDisplay" class="calculator-display" aria-live="polite">0</output>
+          <div class="calculator-keys" aria-label="電卓キー">
+            <button type="button" data-calc="clear">C</button>
+            <button type="button" data-calc="backspace">⌫</button>
+            <button type="button" data-calc="operator" data-operator="divide">÷</button>
+            <button type="button" data-calc="operator" data-operator="multiply">×</button>
+            <button type="button" data-calc="digit" data-value="7">7</button>
+            <button type="button" data-calc="digit" data-value="8">8</button>
+            <button type="button" data-calc="digit" data-value="9">9</button>
+            <button type="button" data-calc="operator" data-operator="subtract">−</button>
+            <button type="button" data-calc="digit" data-value="4">4</button>
+            <button type="button" data-calc="digit" data-value="5">5</button>
+            <button type="button" data-calc="digit" data-value="6">6</button>
+            <button type="button" data-calc="operator" data-operator="add">＋</button>
+            <button type="button" data-calc="digit" data-value="1">1</button>
+            <button type="button" data-calc="digit" data-value="2">2</button>
+            <button type="button" data-calc="digit" data-value="3">3</button>
+            <button type="button" data-calc="equals" class="calculator-equals">＝</button>
+            <button type="button" data-calc="digit" data-value="0" class="calculator-zero">0</button>
+            <button type="button" data-calc="decimal">.</button>
+          </div>
         </div>
         <div class="meters" aria-label="ペットの状態">
           <div class="meter">

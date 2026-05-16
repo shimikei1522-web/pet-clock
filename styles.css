@@ -449,9 +449,13 @@ body.theme-night .name-panel,
 body.theme-night .theme-panel,
 body.theme-night .anniversary-panel,
 body.theme-night .bgm-panel,
+body.theme-night .calculator-panel,
 body.theme-night .bgm-toggle,
 body.theme-night .bgm-mode select,
 body.theme-night .bgm-volume select,
+body.theme-night .calculator-display,
+body.theme-night .calculator-keys button,
+body.theme-night .calculator-close,
 body.theme-night .anniversary-grid input,
 body.theme-night .anniversary-grid select,
 body.theme-night .name-row input,
@@ -732,7 +736,8 @@ body.theme-night .speech-bubble {
 .name-panel,
 .theme-panel,
 .anniversary-panel,
-.bgm-panel {
+.bgm-panel,
+.calculator-panel {
   grid-column: 1 / -1;
   display: grid;
   gap: 8px;
@@ -745,14 +750,16 @@ body.theme-night .speech-bubble {
 .name-panel[hidden],
 .theme-panel[hidden],
 .anniversary-panel[hidden],
-.bgm-panel[hidden] {
+.bgm-panel[hidden],
+.calculator-panel[hidden] {
   display: none;
 }
 
 .name-panel label,
 .theme-panel-title,
 .anniversary-panel-title,
-.bgm-panel-title {
+.bgm-panel-title,
+.calculator-title {
   color: #557071;
   font-size: 12px;
   font-weight: 800;
@@ -914,6 +921,84 @@ body.theme-night .speech-bubble {
   font-size: 13px;
   font-weight: 800;
   white-space: nowrap;
+}
+
+.calculator-panel {
+  justify-self: end;
+  width: min(300px, 100%);
+  padding: 10px;
+  background: rgba(255, 250, 243, 0.94);
+}
+
+.calculator-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.calculator-close {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid rgba(44, 96, 97, 0.18);
+  border-radius: 8px;
+  background: #fff;
+  color: #24484a;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.calculator-display {
+  display: block;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid rgba(44, 96, 97, 0.18);
+  border-radius: 8px;
+  background: #fff;
+  color: #24484a;
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calculator-keys {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.calculator-keys button {
+  min-height: 42px;
+  border: 1px solid rgba(44, 96, 97, 0.18);
+  border-radius: 8px;
+  background: #fff;
+  color: #24484a;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.calculator-keys button[data-calc="operator"],
+.calculator-keys button[data-calc="equals"] {
+  background: #dff7f0;
+}
+
+.calculator-zero {
+  grid-column: span 2;
+}
+
+.calculator-equals {
+  grid-row: span 2;
 }
 
 .portrait {
@@ -1350,7 +1435,8 @@ h1 {
   .name-panel,
   .theme-panel,
   .anniversary-panel,
-  .bgm-panel {
+  .bgm-panel,
+  .calculator-panel {
     padding: 7px;
   }
 
@@ -1405,6 +1491,32 @@ h1 {
   .bgm-volume {
     gap: 4px;
     font-size: 12px;
+  }
+
+  .calculator-panel {
+    justify-self: stretch;
+    width: 100%;
+    gap: 6px;
+  }
+
+  .calculator-display {
+    min-height: 38px;
+    padding: 6px 8px;
+    font-size: 22px;
+  }
+
+  .calculator-keys {
+    gap: 4px;
+  }
+
+  .calculator-keys button {
+    min-height: 36px;
+    font-size: 15px;
+  }
+
+  .calculator-close {
+    min-height: 30px;
+    font-size: 11px;
   }
 
   .theme-options {
@@ -1514,5 +1626,15 @@ h1 {
 
   .friend {
     bottom: 82px;
+  }
+
+  .calculator-display {
+    min-height: 34px;
+    font-size: 20px;
+  }
+
+  .calculator-keys button {
+    min-height: 32px;
+    font-size: 14px;
   }
 }

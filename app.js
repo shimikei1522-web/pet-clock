@@ -34,6 +34,11 @@ const bgmPanel = document.querySelector("#bgmPanel");
 const bgmToggle = document.querySelector("#bgmToggle");
 const bgmMode = document.querySelector("#bgmMode");
 const bgmVolume = document.querySelector("#bgmVolume");
+const calculatorButton = document.querySelector("#calculatorButton");
+const calculatorPanel = document.querySelector("#calculatorPanel");
+const calculatorCloseButton = document.querySelector("#calculatorCloseButton");
+const calculatorDisplay = document.querySelector("#calculatorDisplay");
+const calculatorKeys = document.querySelector("#calculatorPanel .calculator-keys");
 const timeChoices = document.querySelectorAll(".time-choice");
 const customMinutes = document.querySelector("#customMinutes");
 const startTimerButton = document.querySelector("#startTimer");
@@ -77,6 +82,11 @@ let bgmEnabled = false;
 let bgmStarted = false;
 let bgmModeValue = "off";
 let bgmVolumeValue = 0.04;
+let calculatorValue = "0";
+let calculatorStoredValue = null;
+let calculatorOperator = "";
+let calculatorWaitingForValue = false;
+let calculatorError = false;
 let quoteHoldUntil = 0;
 let chefBubbleTimer = 0;
 let animalBubbleTimer = 0;
@@ -254,6 +264,128 @@ function formatDuration(totalSeconds) {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function formatCalculatorResult(value) {
+  if (!Number.isFinite(value)) return "エラー";
+  const rounded = Math.round((value + Number.EPSILON) * 100000000) / 100000000;
+  const normal = String(rounded);
+  if (normal.length <= 12) return normal;
+  return rounded.toPrecision(10).replace(/\.?0+e/, "e").replace(/\.?0+$/, "");
+}
+
+function updateCalculatorDisplay() {
+  calculatorDisplay.textContent = calculatorValue;
+}
+
+function resetCalculator() {
+  calculatorValue = "0";
+  calculatorStoredValue = null;
+  calculatorOperator = "";
+  calculatorWaitingForValue = false;
+  calculatorError = false;
+  updateCalculatorDisplay();
+}
+
+function calculateValues(left, right, operator) {
+  if (operator === "add") return left + right;
+  if (operator === "subtract") return left - right;
+  if (operator === "multiply") return left * right;
+  if (operator === "divide") return right === 0 ? NaN : left / right;
+  return right;
+}
+
+function setCalculatorError() {
+  calculatorValue = "エラー";
+  calculatorStoredValue = null;
+  calculatorOperator = "";
+  calculatorWaitingForValue = true;
+  calculatorError = true;
+  updateCalculatorDisplay();
+}
+
+function inputCalculatorDigit(value) {
+  if (calculatorError || calculatorWaitingForValue) {
+    calculatorValue = value;
+    calculatorWaitingForValue = false;
+    calculatorError = false;
+  } else if (calculatorValue === "0") {
+    calculatorValue = value;
+  } else if (calculatorValue.replace("-", "").replace(".", "").length < 12) {
+    calculatorValue += value;
+  }
+  updateCalculatorDisplay();
+}
+
+function inputCalculatorDecimal() {
+  if (calculatorError || calculatorWaitingForValue) {
+    calculatorValue = "0.";
+    calculatorWaitingForValue = false;
+    calculatorError = false;
+  } else if (!calculatorValue.includes(".")) {
+    calculatorValue += ".";
+  }
+  updateCalculatorDisplay();
+}
+
+function inputCalculatorBackspace() {
+  if (calculatorError || calculatorWaitingForValue) {
+    resetCalculator();
+    return;
+  }
+  calculatorValue = calculatorValue.length > 1 ? calculatorValue.slice(0, -1) : "0";
+  updateCalculatorDisplay();
+}
+
+function inputCalculatorOperator(operator) {
+  const current = Number(calculatorValue);
+  if (!Number.isFinite(current)) {
+    setCalculatorError();
+    return;
+  }
+  if (calculatorStoredValue !== null && calculatorOperator && !calculatorWaitingForValue) {
+    const result = calculateValues(calculatorStoredValue, current, calculatorOperator);
+    const formatted = formatCalculatorResult(result);
+    if (formatted === "エラー") {
+      setCalculatorError();
+      return;
+    }
+    calculatorStoredValue = Number(formatted);
+    calculatorValue = formatted;
+  } else {
+    calculatorStoredValue = current;
+  }
+  calculatorOperator = operator;
+  calculatorWaitingForValue = true;
+  calculatorError = false;
+  updateCalculatorDisplay();
+}
+
+function inputCalculatorEquals() {
+  if (!calculatorOperator || calculatorStoredValue === null) return;
+  const current = Number(calculatorValue);
+  const result = calculateValues(calculatorStoredValue, current, calculatorOperator);
+  const formatted = formatCalculatorResult(result);
+  if (formatted === "エラー") {
+    setCalculatorError();
+    return;
+  }
+  calculatorValue = formatted;
+  calculatorStoredValue = null;
+  calculatorOperator = "";
+  calculatorWaitingForValue = true;
+  calculatorError = false;
+  updateCalculatorDisplay();
+}
+
+function handleCalculatorInput(button) {
+  const action = button.dataset.calc;
+  if (action === "digit") inputCalculatorDigit(button.dataset.value);
+  if (action === "decimal") inputCalculatorDecimal();
+  if (action === "operator") inputCalculatorOperator(button.dataset.operator);
+  if (action === "equals") inputCalculatorEquals();
+  if (action === "clear") resetCalculator();
+  if (action === "backspace") inputCalculatorBackspace();
 }
 
 function populateClockAlarmOptions() {
@@ -1429,9 +1561,11 @@ nameSettingsButton.addEventListener("click", () => {
     themePanel.hidden = true;
     bgmPanel.hidden = true;
     anniversaryPanel.hidden = true;
+    calculatorPanel.hidden = true;
     themeSettingsButton.setAttribute("aria-expanded", "false");
     bgmSettingsButton.setAttribute("aria-expanded", "false");
     anniversarySettingsButton.setAttribute("aria-expanded", "false");
+    calculatorButton.setAttribute("aria-expanded", "false");
   }
   if (willOpen) userNameInput.focus();
 });
@@ -1451,9 +1585,11 @@ themeSettingsButton.addEventListener("click", () => {
     namePanel.hidden = true;
     bgmPanel.hidden = true;
     anniversaryPanel.hidden = true;
+    calculatorPanel.hidden = true;
     nameSettingsButton.setAttribute("aria-expanded", "false");
     bgmSettingsButton.setAttribute("aria-expanded", "false");
     anniversarySettingsButton.setAttribute("aria-expanded", "false");
+    calculatorButton.setAttribute("aria-expanded", "false");
   }
 });
 themeChoices.forEach((button) => {
@@ -1467,9 +1603,11 @@ anniversarySettingsButton.addEventListener("click", () => {
     namePanel.hidden = true;
     themePanel.hidden = true;
     bgmPanel.hidden = true;
+    calculatorPanel.hidden = true;
     nameSettingsButton.setAttribute("aria-expanded", "false");
     themeSettingsButton.setAttribute("aria-expanded", "false");
     bgmSettingsButton.setAttribute("aria-expanded", "false");
+    calculatorButton.setAttribute("aria-expanded", "false");
     fillAnniversaryForm();
   }
 });
@@ -1484,10 +1622,36 @@ bgmSettingsButton.addEventListener("click", () => {
     namePanel.hidden = true;
     themePanel.hidden = true;
     anniversaryPanel.hidden = true;
+    calculatorPanel.hidden = true;
     nameSettingsButton.setAttribute("aria-expanded", "false");
     themeSettingsButton.setAttribute("aria-expanded", "false");
     anniversarySettingsButton.setAttribute("aria-expanded", "false");
+    calculatorButton.setAttribute("aria-expanded", "false");
   }
+});
+calculatorButton.addEventListener("click", () => {
+  const willOpen = calculatorPanel.hidden;
+  calculatorPanel.hidden = !willOpen;
+  calculatorButton.setAttribute("aria-expanded", String(willOpen));
+  if (willOpen) {
+    namePanel.hidden = true;
+    themePanel.hidden = true;
+    anniversaryPanel.hidden = true;
+    bgmPanel.hidden = true;
+    nameSettingsButton.setAttribute("aria-expanded", "false");
+    themeSettingsButton.setAttribute("aria-expanded", "false");
+    anniversarySettingsButton.setAttribute("aria-expanded", "false");
+    bgmSettingsButton.setAttribute("aria-expanded", "false");
+  }
+});
+calculatorCloseButton.addEventListener("click", () => {
+  calculatorPanel.hidden = true;
+  calculatorButton.setAttribute("aria-expanded", "false");
+});
+calculatorKeys.addEventListener("click", (event) => {
+  const button = event.target.closest("button");
+  if (!button) return;
+  handleCalculatorInput(button);
 });
 bgmToggle.addEventListener("click", toggleBgm);
 bgmMode.addEventListener("change", () => {
