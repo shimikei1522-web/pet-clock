@@ -491,7 +491,9 @@ body.theme-night .label {
 body.theme-night .daily-quote-button,
 body.theme-night .time-choice,
 body.theme-night .timer-controls button,
+body.theme-night .clock-settings-controls button,
 body.theme-night .timer-card,
+body.theme-night .clock-settings-card,
 body.theme-night .clock-alarm-card,
 body.theme-night .clock-alarm-panel,
 body.theme-night .clock-alarm-panel select,
@@ -1354,7 +1356,7 @@ h1 {
 
 .focus-panel {
   display: grid;
-  grid-template-columns: minmax(0, 1.8fr) minmax(260px, 0.9fr);
+  grid-template-columns: minmax(0, 1.45fr) minmax(210px, 0.75fr) minmax(260px, 0.9fr);
   gap: 12px;
   padding: 14px 16px;
   border: 1px solid rgba(44, 96, 97, 0.18);
@@ -1364,6 +1366,7 @@ h1 {
 }
 
 .timer-card,
+.clock-settings-card,
 .clock-alarm-card {
   display: grid;
   gap: 10px;
@@ -1381,6 +1384,10 @@ h1 {
   background: rgba(255, 236, 224, 0.72);
 }
 
+.clock-settings-card {
+  background: rgba(230, 251, 247, 0.78);
+}
+
 .panel-title {
   display: block;
   font-size: 13px;
@@ -1394,7 +1401,8 @@ h1 {
 }
 
 .timer-options,
-.timer-controls {
+.timer-controls,
+.clock-settings-controls {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -1402,7 +1410,8 @@ h1 {
 }
 
 .time-choice,
-.timer-controls button {
+.timer-controls button,
+.clock-settings-controls button {
   min-height: 42px;
   padding: 0 16px;
   border: 1px solid rgba(44, 96, 97, 0.18);
@@ -1444,8 +1453,8 @@ h1 {
 }
 
 .timer-controls .large-timer-toggle.active,
-.timer-controls .large-clock-toggle.active,
-.timer-controls .analog-clock-toggle.active {
+.clock-settings-controls .large-clock-toggle.active,
+.clock-settings-controls .analog-clock-toggle.active {
   background: #24484a;
   color: #fff;
 }
@@ -1754,6 +1763,7 @@ h1 {
   }
 
   .timer-card,
+  .clock-settings-card,
   .clock-alarm-card {
     gap: 5px;
     padding: 6px;
@@ -1768,6 +1778,12 @@ h1 {
   .timer-controls {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .clock-settings-controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 4px;
   }
 
@@ -1787,7 +1803,8 @@ h1 {
   }
 
   .time-choice,
-  .timer-controls button {
+  .timer-controls button,
+  .clock-settings-controls button {
     min-height: 37px;
     padding: 0 6px;
     font-size: 13px;
