@@ -849,19 +849,20 @@ body.theme-night .speech-bubble {
   --minute-angle: 0deg;
   --second-angle: 0deg;
   position: absolute;
-  right: clamp(92px, 15vw, 188px);
-  top: clamp(70px, 13vh, 120px);
+  right: clamp(80px, 13vw, 178px);
+  top: clamp(28px, 6vh, 62px);
   z-index: 2;
-  width: clamp(72px, 8vw, 98px);
+  width: clamp(132px, 15vw, 176px);
   aspect-ratio: 1;
-  border: 3px solid rgba(36, 72, 74, 0.5);
+  border: 5px solid rgba(150, 150, 150, 0.96);
   border-radius: 50%;
   background:
     radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.94) 0 6%, transparent 7%),
     linear-gradient(145deg, rgba(255, 252, 236, 0.96), rgba(225, 249, 244, 0.9));
   box-shadow:
-    0 12px 26px rgba(31, 88, 82, 0.15),
-    inset 0 0 0 4px rgba(255, 255, 255, 0.58);
+    0 14px 30px rgba(48, 61, 66, 0.18),
+    inset 0 0 0 5px rgba(255, 255, 255, 0.6),
+    inset 0 0 0 9px rgba(160, 160, 160, 0.16);
   pointer-events: none;
 }
 
@@ -872,45 +873,45 @@ body.theme-night .speech-bubble {
 .analog-clock::before {
   content: "";
   position: absolute;
-  inset: 9px;
+  inset: 14px;
   border-radius: 50%;
   background:
-    linear-gradient(#24484a 0 0) 50% 0 / 2px 8px no-repeat,
-    linear-gradient(#24484a 0 0) 100% 50% / 8px 2px no-repeat,
-    linear-gradient(#24484a 0 0) 50% 100% / 2px 8px no-repeat,
-    linear-gradient(#24484a 0 0) 0 50% / 8px 2px no-repeat;
+    linear-gradient(#24484a 0 0) 50% 0 / 3px 12px no-repeat,
+    linear-gradient(#24484a 0 0) 100% 50% / 12px 3px no-repeat,
+    linear-gradient(#24484a 0 0) 50% 100% / 3px 12px no-repeat,
+    linear-gradient(#24484a 0 0) 0 50% / 12px 3px no-repeat;
   opacity: 0.62;
 }
 
 .analog-number {
   position: absolute;
   color: #24484a;
-  font-size: clamp(10px, 1.2vw, 13px);
+  font-size: clamp(14px, 1.7vw, 21px);
   font-weight: 900;
   line-height: 1;
 }
 
 .analog-number-12 {
-  top: 8px;
+  top: 12px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .analog-number-3 {
   top: 50%;
-  right: 8px;
+  right: 13px;
   transform: translateY(-50%);
 }
 
 .analog-number-6 {
-  bottom: 7px;
+  bottom: 11px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .analog-number-9 {
   top: 50%;
-  left: 8px;
+  left: 13px;
   transform: translateY(-50%);
 }
 
@@ -918,7 +919,7 @@ body.theme-night .speech-bubble {
   position: absolute;
   left: 50%;
   bottom: 50%;
-  width: 3px;
+  width: 4px;
   border-radius: 99px;
   transform-origin: 50% 100%;
   box-shadow: 0 1px 2px rgba(28, 55, 58, 0.2);
@@ -947,8 +948,8 @@ body.theme-night .speech-bubble {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 10px;
-  height: 10px;
+  width: 15px;
+  height: 15px;
   border: 2px solid rgba(255, 255, 255, 0.82);
   border-radius: 50%;
   background: #d94b35;
@@ -956,13 +957,14 @@ body.theme-night .speech-bubble {
 }
 
 body.theme-night .analog-clock {
-  border-color: rgba(229, 250, 255, 0.56);
+  border-color: rgba(154, 163, 173, 0.96);
   background:
     radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.94) 0 6%, transparent 7%),
     linear-gradient(145deg, rgba(244, 255, 252, 0.96), rgba(192, 228, 238, 0.88));
   box-shadow:
-    0 12px 28px rgba(0, 0, 0, 0.32),
-    inset 0 0 0 4px rgba(255, 255, 255, 0.5);
+    0 14px 30px rgba(0, 0, 0, 0.34),
+    inset 0 0 0 5px rgba(255, 255, 255, 0.52),
+    inset 0 0 0 9px rgba(143, 152, 163, 0.18);
 }
 
 .animal-friend {
@@ -1690,45 +1692,45 @@ h1 {
   }
 
   .analog-clock {
-    right: clamp(34px, 11vw, 52px);
-    top: 104px;
-    width: clamp(50px, 16vw, 66px);
-    border-width: 2px;
+    right: clamp(10px, 4vw, 22px);
+    top: 58px;
+    width: clamp(82px, 25vw, 118px);
+    border-width: 4px;
   }
 
   .analog-clock::before {
-    inset: 7px;
+    inset: 10px;
     background:
-      linear-gradient(#24484a 0 0) 50% 0 / 2px 6px no-repeat,
-      linear-gradient(#24484a 0 0) 100% 50% / 6px 2px no-repeat,
-      linear-gradient(#24484a 0 0) 50% 100% / 2px 6px no-repeat,
-      linear-gradient(#24484a 0 0) 0 50% / 6px 2px no-repeat;
+      linear-gradient(#24484a 0 0) 50% 0 / 2px 9px no-repeat,
+      linear-gradient(#24484a 0 0) 100% 50% / 9px 2px no-repeat,
+      linear-gradient(#24484a 0 0) 50% 100% / 2px 9px no-repeat,
+      linear-gradient(#24484a 0 0) 0 50% / 9px 2px no-repeat;
   }
 
   .analog-number {
-    font-size: 9px;
+    font-size: clamp(11px, 3.2vw, 15px);
   }
 
   .analog-number-12 {
-    top: 6px;
+    top: 9px;
   }
 
   .analog-number-3 {
-    right: 6px;
+    right: 9px;
   }
 
   .analog-number-6 {
-    bottom: 5px;
+    bottom: 8px;
   }
 
   .analog-number-9 {
-    left: 6px;
+    left: 9px;
   }
 
   .analog-center {
-    width: 8px;
-    height: 8px;
-    border-width: 1px;
+    width: 11px;
+    height: 11px;
+    border-width: 2px;
   }
 
   .friend-chef {
@@ -2007,9 +2009,9 @@ h1 {
   }
 
   .analog-clock {
-    right: 28px;
-    top: 102px;
-    width: 48px;
+    right: 8px;
+    top: 58px;
+    width: 82px;
   }
 
   .animal-friend {
