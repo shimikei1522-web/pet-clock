@@ -1420,6 +1420,10 @@ h1 {
     min-width: 0;
   }
 
+  .panel.calculator-open .pet-actions {
+    display: none;
+  }
+
   .daily-quote-button,
   .name-row button {
     min-height: 36px;
@@ -1496,7 +1500,8 @@ h1 {
   .calculator-panel {
     justify-self: stretch;
     width: 100%;
-    gap: 6px;
+    gap: 7px;
+    padding: 8px;
   }
 
   .calculator-display {
@@ -1506,17 +1511,17 @@ h1 {
   }
 
   .calculator-keys {
-    gap: 4px;
+    gap: 5px;
   }
 
   .calculator-keys button {
-    min-height: 36px;
-    font-size: 15px;
+    min-height: 54px;
+    font-size: 18px;
   }
 
   .calculator-close {
-    min-height: 30px;
-    font-size: 11px;
+    min-height: 36px;
+    font-size: 12px;
   }
 
   .theme-options {
@@ -1634,7 +1639,7 @@ h1 {
   }
 
   .calculator-keys button {
-    min-height: 32px;
-    font-size: 14px;
+    min-height: 48px;
+    font-size: 16px;
   }
 }

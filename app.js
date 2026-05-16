@@ -4,6 +4,7 @@ const stage = document.querySelector("#stage");
 const message = document.querySelector("#message");
 const chefMessage = document.querySelector("#chefMessage");
 const animalMessage = document.querySelector("#animalMessage");
+const controlPanel = document.querySelector(".panel");
 const moodValue = document.querySelector("#mood");
 const energyValue = document.querySelector("#energy");
 const clock = document.querySelector("#clock");
@@ -1562,6 +1563,7 @@ nameSettingsButton.addEventListener("click", () => {
     bgmPanel.hidden = true;
     anniversaryPanel.hidden = true;
     calculatorPanel.hidden = true;
+    controlPanel.classList.remove("calculator-open");
     themeSettingsButton.setAttribute("aria-expanded", "false");
     bgmSettingsButton.setAttribute("aria-expanded", "false");
     anniversarySettingsButton.setAttribute("aria-expanded", "false");
@@ -1586,6 +1588,7 @@ themeSettingsButton.addEventListener("click", () => {
     bgmPanel.hidden = true;
     anniversaryPanel.hidden = true;
     calculatorPanel.hidden = true;
+    controlPanel.classList.remove("calculator-open");
     nameSettingsButton.setAttribute("aria-expanded", "false");
     bgmSettingsButton.setAttribute("aria-expanded", "false");
     anniversarySettingsButton.setAttribute("aria-expanded", "false");
@@ -1604,6 +1607,7 @@ anniversarySettingsButton.addEventListener("click", () => {
     themePanel.hidden = true;
     bgmPanel.hidden = true;
     calculatorPanel.hidden = true;
+    controlPanel.classList.remove("calculator-open");
     nameSettingsButton.setAttribute("aria-expanded", "false");
     themeSettingsButton.setAttribute("aria-expanded", "false");
     bgmSettingsButton.setAttribute("aria-expanded", "false");
@@ -1623,6 +1627,7 @@ bgmSettingsButton.addEventListener("click", () => {
     themePanel.hidden = true;
     anniversaryPanel.hidden = true;
     calculatorPanel.hidden = true;
+    controlPanel.classList.remove("calculator-open");
     nameSettingsButton.setAttribute("aria-expanded", "false");
     themeSettingsButton.setAttribute("aria-expanded", "false");
     anniversarySettingsButton.setAttribute("aria-expanded", "false");
@@ -1633,6 +1638,7 @@ calculatorButton.addEventListener("click", () => {
   const willOpen = calculatorPanel.hidden;
   calculatorPanel.hidden = !willOpen;
   calculatorButton.setAttribute("aria-expanded", String(willOpen));
+  controlPanel.classList.toggle("calculator-open", willOpen);
   if (willOpen) {
     namePanel.hidden = true;
     themePanel.hidden = true;
@@ -1647,6 +1653,7 @@ calculatorButton.addEventListener("click", () => {
 calculatorCloseButton.addEventListener("click", () => {
   calculatorPanel.hidden = true;
   calculatorButton.setAttribute("aria-expanded", "false");
+  controlPanel.classList.remove("calculator-open");
 });
 calculatorKeys.addEventListener("click", (event) => {
   const button = event.target.closest("button");
