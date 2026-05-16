@@ -88,6 +88,7 @@ let calculatorStoredValue = null;
 let calculatorOperator = "";
 let calculatorWaitingForValue = false;
 let calculatorError = false;
+let calculatorPressCount = 0;
 let quoteHoldUntil = 0;
 let chefBubbleTimer = 0;
 let animalBubbleTimer = 0;
@@ -267,8 +268,20 @@ function formatDuration(totalSeconds) {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
+const CALCULATOR_ERROR_TEXT = "\u30a8\u30e9\u30fc";
+const calculatorOpenMessages = [
+  "\u8a08\u7b97\u306e\u304a\u624b\u4f1d\u3044\u3059\u308b\u306d",
+  "\u6570\u5b57\u3001\u307e\u304b\u305b\u3066\uff01",
+  "\u3044\u3063\u3057\u3087\u306b\u8a08\u7b97\u3057\u3088\u3046",
+];
+const calculatorTypingMessages = [
+  "\u3044\u3044\u611f\u3058\u306b\u5165\u529b\u3067\u304d\u3066\u308b\u3088",
+  "\u8a08\u7b97\u4e2d\u3060\u306d",
+  "\u6570\u5b57\u304c\u306a\u3089\u3093\u3067\u304d\u305f\u306d",
+];
+
 function formatCalculatorResult(value) {
-  if (!Number.isFinite(value)) return "エラー";
+  if (!Number.isFinite(value)) return CALCULATOR_ERROR_TEXT;
   const rounded = Math.round((value + Number.EPSILON) * 100000000) / 100000000;
   const normal = String(rounded);
   if (normal.length <= 12) return normal;
@@ -297,7 +310,7 @@ function calculateValues(left, right, operator) {
 }
 
 function setCalculatorError() {
-  calculatorValue = "エラー";
+  calculatorValue = CALCULATOR_ERROR_TEXT;
   calculatorStoredValue = null;
   calculatorOperator = "";
   calculatorWaitingForValue = true;
@@ -347,7 +360,7 @@ function inputCalculatorOperator(operator) {
   if (calculatorStoredValue !== null && calculatorOperator && !calculatorWaitingForValue) {
     const result = calculateValues(calculatorStoredValue, current, calculatorOperator);
     const formatted = formatCalculatorResult(result);
-    if (formatted === "エラー") {
+    if (formatted === CALCULATOR_ERROR_TEXT) {
       setCalculatorError();
       return;
     }
@@ -367,8 +380,9 @@ function inputCalculatorEquals() {
   const current = Number(calculatorValue);
   const result = calculateValues(calculatorStoredValue, current, calculatorOperator);
   const formatted = formatCalculatorResult(result);
-  if (formatted === "エラー") {
+  if (formatted === CALCULATOR_ERROR_TEXT) {
     setCalculatorError();
+    showCalculatorResultMessage(true, calculatorOperator === "divide" && current === 0);
     return;
   }
   calculatorValue = formatted;
@@ -377,16 +391,76 @@ function inputCalculatorEquals() {
   calculatorWaitingForValue = true;
   calculatorError = false;
   updateCalculatorDisplay();
+  showCalculatorResultMessage(false);
 }
 
 function handleCalculatorInput(button) {
   const action = button.dataset.calc;
+  playCalculatorClick();
   if (action === "digit") inputCalculatorDigit(button.dataset.value);
   if (action === "decimal") inputCalculatorDecimal();
   if (action === "operator") inputCalculatorOperator(button.dataset.operator);
   if (action === "equals") inputCalculatorEquals();
   if (action === "clear") resetCalculator();
   if (action === "backspace") inputCalculatorBackspace();
+  maybeShowCalculatorTypingMessage(action);
+}
+
+function playCalculatorClick() {
+  if (alarmRinging) return;
+  const context = ensureAudioContext();
+  if (!context || context.state !== "running") return;
+  const now = context.currentTime;
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(880, now);
+  oscillator.frequency.exponentialRampToValueAtTime(1320, now + 0.045);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.055, now + 0.012);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.085);
+  oscillator.connect(gain);
+  gain.connect(context.destination);
+  oscillator.start(now);
+  oscillator.stop(now + 0.09);
+}
+
+function showCalculatorPetMessage(text, holdMs = 6500) {
+  if (alarmRinging) return;
+  quoteHoldUntil = Date.now() + holdMs;
+  action = "wave";
+  frameIndex = 0;
+  window.clearTimeout(setAction.timer);
+  hideChefMessage();
+  hideAnimalMessage();
+  message.textContent = text;
+}
+
+function maybeShowCalculatorTypingMessage(action) {
+  if (alarmRinging || action === "equals") return;
+  calculatorPressCount += 1;
+  if (Date.now() < quoteHoldUntil) return;
+  if (calculatorPressCount < 4 || calculatorPressCount % 5 !== 0 || Math.random() > 0.35) return;
+  showCalculatorPetMessage(randomItem(calculatorTypingMessages), 5500);
+}
+
+function showCalculatorOpenMessage() {
+  showCalculatorPetMessage(randomItem(calculatorOpenMessages), 6500);
+}
+
+function showCalculatorResultMessage(isError, isDivideByZero = false) {
+  if (alarmRinging) return;
+  if (isError) {
+    showCalculatorPetMessage(isDivideByZero ? "\u0030\u3067\u306f\u5272\u308c\u306a\u3044\u3088" : "\u3046\u307e\u304f\u8a08\u7b97\u3067\u304d\u306a\u304b\u3063\u305f\u307f\u305f\u3044", 8000);
+    return;
+  }
+  const result = calculatorValue.length > 14 ? calculatorValue.slice(0, 14) : calculatorValue;
+  const texts = [
+    `\u7b54\u3048\u306f ${result} \u3060\u3088`,
+    `\u8a08\u7b97\u3067\u304d\u305f\u3088\u3002\u7b54\u3048\u306f ${result}`,
+    `\u3067\u304d\u305f\uff01\u7b54\u3048\u306f ${result}`,
+  ];
+  showCalculatorPetMessage(randomItem(texts), 8500);
 }
 
 function populateClockAlarmOptions() {
@@ -1648,6 +1722,7 @@ calculatorButton.addEventListener("click", () => {
     themeSettingsButton.setAttribute("aria-expanded", "false");
     anniversarySettingsButton.setAttribute("aria-expanded", "false");
     bgmSettingsButton.setAttribute("aria-expanded", "false");
+    showCalculatorOpenMessage();
   }
 });
 calculatorCloseButton.addEventListener("click", () => {

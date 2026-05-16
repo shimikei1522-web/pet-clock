@@ -976,13 +976,16 @@ body.theme-night .speech-bubble {
 }
 
 .calculator-keys button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 42px;
   border: 1px solid rgba(44, 96, 97, 0.18);
   border-radius: 8px;
   background: #fff;
   color: #24484a;
   font: inherit;
-  font-size: 17px;
+  font-size: 21px;
   font-weight: 900;
   cursor: pointer;
   white-space: nowrap;
@@ -1516,7 +1519,7 @@ h1 {
 
   .calculator-keys button {
     min-height: 54px;
-    font-size: 18px;
+    font-size: 23px;
   }
 
   .calculator-close {
@@ -1640,6 +1643,6 @@ h1 {
 
   .calculator-keys button {
     min-height: 48px;
-    font-size: 16px;
+    font-size: 20px;
   }
 }
