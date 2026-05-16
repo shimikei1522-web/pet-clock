@@ -564,6 +564,23 @@ body.theme-night .alarm-toggle.active {
   line-height: 0.95;
 }
 
+.large-clock-display,
+.large-stage-timer {
+  color: rgba(39, 66, 70, 0.98);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(112px, 15vw, 210px);
+  font-weight: 950;
+  line-height: 0.82;
+  letter-spacing: 0;
+  text-align: center;
+  opacity: 0.96;
+  text-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.24),
+    0 0 1px rgba(255, 255, 255, 0.86);
+  pointer-events: none;
+  user-select: none;
+}
+
 .large-clock-display {
   position: fixed;
   top: clamp(76px, 12vh, 132px);
@@ -572,30 +589,16 @@ body.theme-night .alarm-toggle.active {
   display: block;
   width: min(92vw, 860px);
   transform: translateX(-50%);
-  color: rgba(39, 66, 70, 0.98);
-  font-variant-numeric: tabular-nums;
-  font-size: clamp(76px, 13vw, 190px);
-  font-weight: 950;
-  line-height: 0.85;
-  letter-spacing: 0;
-  text-align: center;
-  opacity: 0.98;
-  text-shadow:
-    0 4px 14px rgba(0, 0, 0, 0.26),
-    0 0 2px rgba(255, 255, 255, 0.9);
-  pointer-events: none;
-  user-select: none;
 }
 
 .large-clock-display[hidden] {
   display: none;
 }
 
-body.theme-night .large-clock-display {
-  color: rgba(244, 255, 252, 0.94);
-  text-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.5),
-    0 0 2px rgba(35, 57, 63, 0.9);
+body.theme-night .large-clock-display,
+body.theme-night .large-stage-timer {
+  color: rgba(244, 255, 252, 0.9);
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.46);
 }
 
 body.large-clock-mode .clock-panel {
@@ -671,19 +674,6 @@ body.large-timer-mode #stageTimerDisplay {
 
 .large-stage-timer {
   display: block;
-  color: rgba(39, 66, 70, 0.98);
-  font-size: clamp(112px, 15vw, 210px);
-  font-weight: 950;
-  line-height: 0.82;
-  letter-spacing: 0;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-  opacity: 0.96;
-  text-shadow:
-    0 3px 10px rgba(0, 0, 0, 0.24),
-    0 0 1px rgba(255, 255, 255, 0.86);
-  pointer-events: none;
-  user-select: none;
 }
 
 body.large-timer-mode .stage-timer .large-stage-timer {
@@ -700,11 +690,6 @@ body.large-timer-mode .stage-timer .large-stage-timer {
 
 .large-stage-timer.running {
   opacity: 1;
-}
-
-body.theme-night .large-stage-timer {
-  color: rgba(244, 255, 252, 0.9);
-  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.46);
 }
 
 .speech-bubble {
@@ -1582,11 +1567,6 @@ h1 {
   .large-clock-display {
     top: 58px;
     width: min(96vw, 430px);
-    font-size: clamp(58px, 17vw, 94px);
-    line-height: 0.9;
-    text-shadow:
-      0 3px 11px rgba(0, 0, 0, 0.26),
-      0 0 2px rgba(255, 255, 255, 0.9);
   }
 
   .stage-timer {
@@ -1615,6 +1595,10 @@ h1 {
     text-shadow:
       0 3px 9px rgba(0, 0, 0, 0.24),
       0 0 1px rgba(255, 255, 255, 0.86);
+  }
+
+  .large-clock-display {
+    font-size: clamp(86px, 26vw, 132px);
   }
 
   body.large-timer-mode .stage-timer .large-stage-timer {
@@ -2065,7 +2049,7 @@ h1 {
 
   .large-clock-display {
     top: 54px;
-    font-size: clamp(48px, 16vw, 74px);
+    font-size: clamp(74px, 24vw, 104px);
   }
 
   .calculator-keys button {

@@ -272,6 +272,13 @@ function formatTime(date) {
   return [date.getHours(), date.getMinutes(), date.getSeconds()].map((value) => String(value).padStart(2, "0")).join(":");
 }
 
+function formatLargeClockTime(date) {
+  const hour = String(date.getHours());
+  const minute = String(date.getMinutes()).padStart(2, "0");
+  const second = String(date.getSeconds()).padStart(2, "0");
+  return `${hour}:${minute}:${second}`;
+}
+
 function formatDuration(totalSeconds) {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
@@ -1470,7 +1477,7 @@ function updateClockDisplay(now = new Date()) {
   const value = formatTime(now);
   clock.textContent = value;
   clock.dateTime = now.toTimeString().slice(0, 8);
-  largeClockDisplay.textContent = value;
+  largeClockDisplay.textContent = formatLargeClockTime(now);
   largeClockDisplay.dateTime = clock.dateTime;
   const seconds = now.getSeconds();
   const minutes = now.getMinutes();
