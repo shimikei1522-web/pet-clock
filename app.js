@@ -39,6 +39,7 @@ const bgmPanel = document.querySelector("#bgmPanel");
 const bgmToggle = document.querySelector("#bgmToggle");
 const bgmMode = document.querySelector("#bgmMode");
 const bgmVolume = document.querySelector("#bgmVolume");
+const speechToggleButton = document.querySelector("#speechToggleButton");
 const calculatorButton = document.querySelector("#calculatorButton");
 const calculatorPanel = document.querySelector("#calculatorPanel");
 const calculatorCloseButton = document.querySelector("#calculatorCloseButton");
@@ -93,6 +94,12 @@ let bgmEnabled = false;
 let bgmStarted = false;
 let bgmModeValue = "off";
 let bgmVolumeValue = 0.04;
+let speechEnabled = false;
+let speechSupported = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+let speechVoices = [];
+let pendingSpeechItems = [];
+let speechFlushQueued = false;
+let speechVoiceListenerReady = false;
 let calculatorValue = "0";
 let calculatorStoredValue = null;
 let calculatorOperator = "";
@@ -491,6 +498,195 @@ function showCalculatorResultMessage(isError, isDivideByZero = false) {
     `\u3067\u304d\u305f\uff01\u7b54\u3048\u306f ${result}`,
   ];
   showCalculatorPetMessage(randomItem(texts), 8500);
+}
+
+function loadSpeechSettings() {
+  try {
+    speechEnabled = localStorage.getItem("pepaatennkoSpeechEnabled") === "true";
+  } catch {
+    speechEnabled = false;
+  }
+  if (!speechSupported) speechEnabled = false;
+  updateSpeechToggleUi();
+}
+
+function saveSpeechSettings() {
+  try {
+    localStorage.setItem("pepaatennkoSpeechEnabled", String(speechEnabled));
+  } catch {
+    // localStorage may be unavailable in some private browsing modes.
+  }
+}
+
+function updateSpeechToggleUi() {
+  if (!speechToggleButton) return;
+  speechToggleButton.disabled = !speechSupported;
+  speechToggleButton.classList.toggle("active", speechEnabled);
+  speechToggleButton.setAttribute("aria-pressed", String(speechEnabled));
+  speechToggleButton.textContent = speechSupported
+    ? speechEnabled
+      ? "セリフ音声ON"
+      : "セリフ音声OFF"
+    : "音声非対応";
+}
+
+function refreshSpeechVoices() {
+  if (!speechSupported) return;
+  speechVoices = window.speechSynthesis.getVoices();
+}
+
+function ensureSpeechVoiceListener() {
+  if (!speechSupported || speechVoiceListenerReady) return;
+  if (typeof window.speechSynthesis.addEventListener === "function") {
+    window.speechSynthesis.addEventListener("voiceschanged", refreshSpeechVoices);
+  } else {
+    window.speechSynthesis.onvoiceschanged = refreshSpeechVoices;
+  }
+  speechVoiceListenerReady = true;
+}
+
+function pickSpeechVoice(character) {
+  const japaneseVoices = speechVoices.filter((voice) => /ja|japanese|日本/i.test(`${voice.lang} ${voice.name}`));
+  const pool = japaneseVoices.length ? japaneseVoices : speechVoices;
+  if (!pool.length) return null;
+  if (character === "chef") {
+    return (
+      pool.find((voice) => /male|男性|otoya|ichiro/i.test(voice.name) && !/female|女性/i.test(voice.name)) ||
+      pool.find((voice) => /ja|japanese|日本/i.test(`${voice.lang} ${voice.name}`)) ||
+      pool[0]
+    );
+  }
+  if (character === "animal") {
+    return (
+      pool.find((voice) => /female|女性|haruka|nanami|kyoko|sayaka|yuna/i.test(voice.name)) ||
+      pool.find((voice) => /ja|japanese|日本/i.test(`${voice.lang} ${voice.name}`)) ||
+      pool[0]
+    );
+  }
+  return (
+    pool.find((voice) => /female|女性|haruka|nanami|kyoko|sayaka|yuna/i.test(voice.name)) ||
+    pool.find((voice) => /ja|japanese|日本/i.test(`${voice.lang} ${voice.name}`)) ||
+    pool[0]
+  );
+}
+
+function getSpeechProfile(character) {
+  if (character === "chef") {
+    return { pitch: 0.82, rate: 0.9, volume: 0.95 };
+  }
+  if (character === "animal") {
+    return { pitch: 1.58, rate: 1.18, volume: 0.82 };
+  }
+  return { pitch: 1.34, rate: 1.08, volume: 0.95 };
+}
+
+function cleanSpeechText(text) {
+  return String(text || "")
+    .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, "")
+    .replace(/[♪♫★☆◆◇■□●○]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function shouldSpeakText(text) {
+  if (!speechEnabled || !speechSupported || !text) return false;
+  if (!alarmRinging) return true;
+  return /アラーム|タップ|止め|時間|合図/.test(text);
+}
+
+function queueSpeech(character, text) {
+  const cleanText = cleanSpeechText(text);
+  if (!shouldSpeakText(cleanText)) return;
+  pendingSpeechItems.push({ character, text: cleanText });
+  if (speechFlushQueued) return;
+  speechFlushQueued = true;
+  if (typeof window.queueMicrotask === "function") {
+    window.queueMicrotask(flushSpeechQueue);
+  } else {
+    window.setTimeout(flushSpeechQueue, 0);
+  }
+}
+
+function flushSpeechQueue() {
+  speechFlushQueued = false;
+  if (!speechEnabled || !speechSupported || !pendingSpeechItems.length) {
+    pendingSpeechItems = [];
+    return;
+  }
+  const order = { pet: 0, chef: 1, animal: 2 };
+  const items = pendingSpeechItems
+    .splice(0)
+    .sort((a, b) => (order[a.character] ?? 9) - (order[b.character] ?? 9))
+    .slice(0, 3);
+  try {
+    window.speechSynthesis.cancel();
+    items.forEach(({ character, text }) => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      const profile = getSpeechProfile(character);
+      const voice = pickSpeechVoice(character);
+      if (voice) utterance.voice = voice;
+      utterance.lang = voice?.lang || "ja-JP";
+      utterance.pitch = profile.pitch;
+      utterance.rate = profile.rate;
+      utterance.volume = alarmRinging ? Math.min(profile.volume, 0.55) : profile.volume;
+      window.speechSynthesis.speak(utterance);
+    });
+  } catch {
+    // Some mobile browsers block synthesis until a user gesture; keep the app running.
+  }
+}
+
+function stopSpeech() {
+  pendingSpeechItems = [];
+  if (!speechSupported) return;
+  try {
+    window.speechSynthesis.cancel();
+  } catch {
+    // Ignore browser-specific speech cancellation errors.
+  }
+}
+
+function toggleSpeech() {
+  if (!speechSupported) return;
+  speechEnabled = !speechEnabled;
+  saveSpeechSettings();
+  updateSpeechToggleUi();
+  if (!speechEnabled) {
+    stopSpeech();
+    return;
+  }
+  ensureSpeechVoiceListener();
+  refreshSpeechVoices();
+  if (!alarmRinging) {
+    quoteHoldUntil = Date.now() + 6500;
+    hideChefMessage();
+    hideAnimalMessage();
+    message.textContent = "声でもお手伝いするね";
+  }
+}
+
+function watchBubbleSpeech(element, character) {
+  if (!element) return;
+  const handleChange = () => {
+    if (element.hidden) return;
+    queueSpeech(character, element.textContent);
+  };
+  const observer = new MutationObserver(handleChange);
+  observer.observe(element, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ["hidden"] });
+}
+
+function setupSpeechSynthesis() {
+  if (!speechSupported) {
+    updateSpeechToggleUi();
+    return;
+  }
+  if (speechEnabled) {
+    ensureSpeechVoiceListener();
+    refreshSpeechVoices();
+  }
+  watchBubbleSpeech(message, "pet");
+  watchBubbleSpeech(chefMessage, "chef");
+  watchBubbleSpeech(animalMessage, "animal");
 }
 
 function setCalculatorMode(isOpen) {
@@ -1958,6 +2154,7 @@ calculatorKeys.addEventListener("click", (event) => {
   if (!button) return;
   handleCalculatorInput(button);
 });
+speechToggleButton?.addEventListener("click", toggleSpeech);
 bgmToggle.addEventListener("click", toggleBgm);
 bgmMode.addEventListener("change", () => {
   bgmModeValue = bgmMode.value;
@@ -2015,6 +2212,7 @@ loadAnniversaries();
 populateClockAlarmOptions();
 loadClockAlarm();
 loadBgmSettings();
+loadSpeechSettings();
 loadTheme();
 loadLargeTimerSetting();
 loadLargeClockSetting();
@@ -2024,6 +2222,7 @@ if (largeClockEnabled && largeTimerEnabled) {
   saveLargeTimerSetting();
   updateLargeTimerState();
 }
+setupSpeechSynthesis();
 startClockUpdates();
 showStartupGreeting();
 maybeShowAnniversaryComment(true);

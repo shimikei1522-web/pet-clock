@@ -523,6 +523,7 @@ body.theme-night .theme-choice {
 
 body.theme-night .time-choice.active,
 body.theme-night .theme-choice.active,
+body.theme-night .daily-quote-button.active,
 body.theme-night .large-timer-toggle.active,
 body.theme-night .large-clock-toggle.active,
 body.theme-night .analog-clock-toggle.active,
@@ -1054,6 +1055,16 @@ body.theme-night .analog-clock {
   font-weight: 800;
   cursor: pointer;
   white-space: nowrap;
+}
+
+.daily-quote-button.active {
+  background: #24484a;
+  color: #fff;
+}
+
+.daily-quote-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
 }
 
 .name-panel,
