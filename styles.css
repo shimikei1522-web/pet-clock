@@ -2,6 +2,16 @@
   color: #1c2c2d;
   background: #f8fbf4;
   font-family: "Segoe UI", system-ui, sans-serif;
+  --ui-panel-bg: rgba(255, 255, 255, 0.76);
+  --ui-panel-border: rgba(44, 96, 97, 0.18);
+  --ui-text: #24484a;
+  --ui-muted: #557071;
+  --ui-control-bg: #fff;
+  --ui-control-border: rgba(44, 96, 97, 0.18);
+  --ui-card-timer: rgba(217, 245, 239, 0.58);
+  --ui-card-clock: rgba(230, 251, 247, 0.78);
+  --ui-card-alarm: rgba(255, 236, 224, 0.72);
+  --ui-shadow-text: none;
 }
 
 * {
@@ -21,6 +31,16 @@ body {
 
 body.theme-night {
   color: #eefafa;
+  --ui-panel-bg: rgba(15, 28, 49, 0.82);
+  --ui-panel-border: rgba(225, 250, 255, 0.2);
+  --ui-text: #eefafa;
+  --ui-muted: #d8f3ff;
+  --ui-control-bg: rgba(255, 255, 255, 0.12);
+  --ui-control-border: rgba(225, 250, 255, 0.24);
+  --ui-card-timer: rgba(23, 45, 72, 0.9);
+  --ui-card-clock: rgba(25, 49, 80, 0.88);
+  --ui-card-alarm: rgba(73, 49, 69, 0.86);
+  --ui-shadow-text: 0 1px 3px rgba(0, 0, 0, 0.6);
   background:
     radial-gradient(circle at 78% 14%, rgba(255, 246, 178, 0.72), transparent 7rem),
     radial-gradient(circle at 18% 22%, rgba(120, 220, 230, 0.2), transparent 16rem),
@@ -28,36 +48,92 @@ body.theme-night {
 }
 
 body.theme-forest {
+  --ui-panel-bg: rgba(17, 56, 42, 0.74);
+  --ui-panel-border: rgba(205, 244, 220, 0.24);
+  --ui-text: #effff5;
+  --ui-muted: #d2f1dd;
+  --ui-control-bg: rgba(255, 255, 255, 0.16);
+  --ui-control-border: rgba(205, 244, 220, 0.24);
+  --ui-card-timer: rgba(16, 78, 52, 0.78);
+  --ui-card-clock: rgba(21, 87, 60, 0.74);
+  --ui-card-alarm: rgba(82, 86, 40, 0.72);
+  --ui-shadow-text: 0 1px 3px rgba(0, 0, 0, 0.45);
   background:
     radial-gradient(circle at 20% 18%, rgba(245, 230, 160, 0.5), transparent 18rem),
     linear-gradient(135deg, #eaf6d6 0%, #a9d790 45%, #d8f5ef 100%);
 }
 
 body.theme-cafe {
+  --ui-panel-bg: rgba(84, 56, 33, 0.72);
+  --ui-panel-border: rgba(255, 230, 202, 0.3);
+  --ui-text: #fff6ea;
+  --ui-muted: #ffe5c6;
+  --ui-control-bg: rgba(255, 248, 236, 0.2);
+  --ui-control-border: rgba(255, 230, 202, 0.28);
+  --ui-card-timer: rgba(129, 89, 52, 0.64);
+  --ui-card-clock: rgba(119, 78, 44, 0.64);
+  --ui-card-alarm: rgba(148, 80, 52, 0.62);
+  --ui-shadow-text: 0 1px 2px rgba(0, 0, 0, 0.35);
   background:
     radial-gradient(circle at 24% 18%, rgba(255, 236, 194, 0.75), transparent 18rem),
     linear-gradient(135deg, #fff4df 0%, #e8cba9 48%, #f9efe5 100%);
 }
 
 body.theme-season.season-spring {
+  --ui-panel-bg: rgba(255, 255, 255, 0.84);
+  --ui-panel-border: rgba(223, 141, 181, 0.24);
+  --ui-text: #4f3548;
+  --ui-muted: #7b5570;
+  --ui-control-bg: rgba(255, 255, 255, 0.94);
+  --ui-control-border: rgba(203, 136, 169, 0.24);
+  --ui-card-timer: rgba(255, 228, 240, 0.82);
+  --ui-card-clock: rgba(239, 250, 233, 0.85);
+  --ui-card-alarm: rgba(255, 235, 221, 0.84);
   background:
     radial-gradient(circle at 18% 18%, rgba(255, 205, 220, 0.58), transparent 20rem),
     linear-gradient(135deg, #fff4f8 0%, #d9f5df 50%, #fff 100%);
 }
 
 body.theme-season.season-summer {
+  --ui-panel-bg: rgba(235, 255, 255, 0.84);
+  --ui-panel-border: rgba(88, 166, 187, 0.24);
+  --ui-text: #1d4f57;
+  --ui-muted: #3b6e74;
+  --ui-control-bg: rgba(255, 255, 255, 0.9);
+  --ui-control-border: rgba(88, 166, 187, 0.24);
+  --ui-card-timer: rgba(220, 251, 244, 0.86);
+  --ui-card-clock: rgba(225, 248, 252, 0.86);
+  --ui-card-alarm: rgba(255, 241, 224, 0.86);
   background:
     radial-gradient(circle at 20% 16%, rgba(255, 231, 108, 0.58), transparent 18rem),
     linear-gradient(135deg, #fff9d8 0%, #9fe9ed 52%, #f4fff9 100%);
 }
 
 body.theme-season.season-autumn {
+  --ui-panel-bg: rgba(255, 247, 235, 0.84);
+  --ui-panel-border: rgba(192, 118, 73, 0.24);
+  --ui-text: #5c3f2a;
+  --ui-muted: #81604b;
+  --ui-control-bg: rgba(255, 255, 255, 0.9);
+  --ui-control-border: rgba(192, 118, 73, 0.24);
+  --ui-card-timer: rgba(255, 234, 212, 0.84);
+  --ui-card-clock: rgba(245, 230, 209, 0.86);
+  --ui-card-alarm: rgba(255, 226, 205, 0.88);
   background:
     radial-gradient(circle at 20% 16%, rgba(255, 188, 102, 0.55), transparent 18rem),
     linear-gradient(135deg, #fff5de 0%, #efba83 50%, #f8efe3 100%);
 }
 
 body.theme-season.season-winter {
+  --ui-panel-bg: rgba(239, 250, 255, 0.86);
+  --ui-panel-border: rgba(126, 171, 196, 0.25);
+  --ui-text: #2d4d62;
+  --ui-muted: #537186;
+  --ui-control-bg: rgba(255, 255, 255, 0.92);
+  --ui-control-border: rgba(126, 171, 196, 0.25);
+  --ui-card-timer: rgba(227, 245, 252, 0.9);
+  --ui-card-clock: rgba(233, 249, 255, 0.9);
+  --ui-card-alarm: rgba(244, 246, 255, 0.9);
   background:
     radial-gradient(circle at 20% 16%, rgba(255, 255, 255, 0.8), transparent 16rem),
     linear-gradient(135deg, #f6fbff 0%, #b8dff0 52%, #f4fff9 100%);
@@ -1090,10 +1166,11 @@ body.theme-night .analog-clock {
   align-items: center;
   gap: 14px;
   padding: 16px 18px;
-  border: 1px solid rgba(44, 96, 97, 0.18);
+  border: 1px solid var(--ui-panel-border);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.76);
+  background: var(--ui-panel-bg);
   backdrop-filter: blur(14px);
+  color: var(--ui-text);
 }
 
 .pet-actions {
@@ -1108,10 +1185,10 @@ body.theme-night .analog-clock {
   flex: 0 0 auto;
   min-height: 40px;
   padding: 0 14px;
-  border: 1px solid rgba(44, 96, 97, 0.18);
+  border: 1px solid var(--ui-control-border);
   border-radius: 8px;
-  background: #fff;
-  color: #24484a;
+  background: var(--ui-control-bg);
+  color: var(--ui-text);
   font: inherit;
   font-size: 14px;
   font-weight: 800;
@@ -1138,9 +1215,9 @@ body.theme-night .analog-clock {
   display: grid;
   gap: 8px;
   padding: 10px;
-  border: 1px solid rgba(44, 96, 97, 0.16);
+  border: 1px solid var(--ui-panel-border);
   border-radius: 8px;
-  background: #f2fbf8;
+  background: color-mix(in srgb, var(--ui-panel-bg) 85%, white 15%);
 }
 
 .name-panel[hidden],
@@ -1156,7 +1233,7 @@ body.theme-night .analog-clock {
 .anniversary-panel-title,
 .bgm-panel-title,
 .calculator-title {
-  color: #557071;
+  color: var(--ui-muted);
   font-size: 12px;
   font-weight: 800;
 }
@@ -1173,10 +1250,10 @@ body.theme-night .analog-clock {
   min-width: 160px;
   min-height: 40px;
   padding: 0 10px;
-  border: 1px solid rgba(44, 96, 97, 0.18);
+  border: 1px solid var(--ui-control-border);
   border-radius: 8px;
-  background: #fff;
-  color: #24484a;
+  background: var(--ui-control-bg);
+  color: var(--ui-text);
   font: inherit;
   font-size: 16px;
 }
@@ -1194,10 +1271,10 @@ body.theme-night .analog-clock {
 .theme-choice {
   min-height: 38px;
   padding: 0 10px;
-  border: 1px solid rgba(44, 96, 97, 0.18);
+  border: 1px solid var(--ui-control-border);
   border-radius: 8px;
-  background: #fff;
-  color: #24484a;
+  background: var(--ui-control-bg);
+  color: var(--ui-text);
   font: inherit;
   font-size: 13px;
   font-weight: 800;
@@ -1230,7 +1307,7 @@ body.theme-night .analog-clock {
   display: grid;
   gap: 4px;
   min-width: 0;
-  color: #557071;
+  color: var(--ui-muted);
   font-size: 12px;
   font-weight: 800;
 }
@@ -1239,10 +1316,10 @@ body.theme-night .analog-clock {
 .anniversary-grid select {
   width: 100%;
   min-height: 36px;
-  border: 1px solid rgba(44, 96, 97, 0.18);
+  border: 1px solid var(--ui-control-border);
   border-radius: 8px;
-  background: #fff;
-  color: #24484a;
+  background: var(--ui-control-bg);
+  color: var(--ui-text);
   font: inherit;
   font-size: 14px;
   font-weight: 800;
@@ -1257,10 +1334,10 @@ body.theme-night .analog-clock {
 .anniversary-actions button {
   min-height: 36px;
   padding: 0 12px;
-  border: 1px solid rgba(44, 96, 97, 0.18);
+  border: 1px solid var(--ui-control-border);
   border-radius: 8px;
-  background: #fff;
-  color: #24484a;
+  background: var(--ui-control-bg);
+  color: var(--ui-text);
   font-weight: 900;
   white-space: nowrap;
 }
@@ -1273,10 +1350,10 @@ body.theme-night .analog-clock {
 .anniversary-empty {
   min-height: 32px;
   padding: 7px 9px;
-  border: 1px solid rgba(44, 96, 97, 0.14);
+  border: 1px solid var(--ui-panel-border);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.72);
-  color: #24484a;
+  background: color-mix(in srgb, var(--ui-control-bg) 70%, transparent);
+  color: var(--ui-text);
   font-size: 12px;
   font-weight: 800;
   text-align: left;
@@ -1288,10 +1365,10 @@ body.theme-night .analog-clock {
 .bgm-mode select,
 .bgm-volume select {
   min-height: 38px;
-  border: 1px solid rgba(44, 96, 97, 0.18);
+  border: 1px solid var(--ui-control-border);
   border-radius: 8px;
-  background: #fff;
-  color: #24484a;
+  background: var(--ui-control-bg);
+  color: var(--ui-text);
   font: inherit;
   font-size: 13px;
   font-weight: 800;
@@ -1313,7 +1390,7 @@ body.theme-night .analog-clock {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: #557071;
+  color: var(--ui-muted);
   font-size: 13px;
   font-weight: 800;
   white-space: nowrap;
@@ -1323,7 +1400,7 @@ body.theme-night .analog-clock {
   justify-self: end;
   width: min(300px, 100%);
   padding: 10px;
-  background: rgba(255, 250, 243, 0.94);
+  background: color-mix(in srgb, var(--ui-panel-bg) 80%, #fff1de 20%);
 }
 
 .calculator-header {
@@ -1336,10 +1413,10 @@ body.theme-night .analog-clock {
 .calculator-close {
   min-height: 32px;
   padding: 0 10px;
-  border: 1px solid rgba(44, 96, 97, 0.18);
+  border: 1px solid var(--ui-control-border);
   border-radius: 8px;
-  background: #fff;
-  color: #24484a;
+  background: var(--ui-control-bg);
+  color: var(--ui-text);
   font: inherit;
   font-size: 12px;
   font-weight: 900;
@@ -1351,10 +1428,10 @@ body.theme-night .analog-clock {
   display: block;
   min-height: 44px;
   padding: 8px 10px;
-  border: 1px solid rgba(44, 96, 97, 0.18);
+  border: 1px solid var(--ui-control-border);
   border-radius: 8px;
-  background: #fff;
-  color: #24484a;
+  background: var(--ui-control-bg);
+  color: var(--ui-text);
   font-size: 26px;
   font-weight: 900;
   line-height: 1;
@@ -1376,10 +1453,10 @@ body.theme-night .analog-clock {
   align-items: center;
   justify-content: center;
   min-height: 42px;
-  border: 1px solid rgba(44, 96, 97, 0.18);
+  border: 1px solid var(--ui-control-border);
   border-radius: 8px;
-  background: #fff;
-  color: #24484a;
+  background: var(--ui-control-bg);
+  color: var(--ui-text);
   font: inherit;
   font-size: 21px;
   font-weight: 900;
@@ -1436,8 +1513,8 @@ h1 {
   width: 112px;
   padding: 10px 12px;
   border-radius: 8px;
-  background: #f2fbf8;
-  border: 1px solid rgba(44, 96, 97, 0.16);
+  background: color-mix(in srgb, var(--ui-panel-bg) 80%, white 20%);
+  border: 1px solid var(--ui-panel-border);
 }
 
 .meter span,
@@ -1446,7 +1523,7 @@ h1 {
 }
 
 .meter span {
-  color: #557071;
+  color: var(--ui-muted);
   font-size: 12px;
   font-weight: 700;
 }
@@ -1461,10 +1538,11 @@ h1 {
   grid-template-columns: minmax(0, 1.45fr) minmax(210px, 0.75fr) minmax(260px, 0.9fr);
   gap: 12px;
   padding: 14px 16px;
-  border: 1px solid rgba(44, 96, 97, 0.18);
+  border: 1px solid var(--ui-panel-border);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.78);
+  background: var(--ui-panel-bg);
   backdrop-filter: blur(14px);
+  color: var(--ui-text);
 }
 
 .timer-card,
@@ -1474,20 +1552,20 @@ h1 {
   gap: 10px;
   min-width: 0;
   padding: 10px;
-  border: 1px solid rgba(44, 96, 97, 0.14);
+  border: 1px solid var(--ui-panel-border);
   border-radius: 8px;
 }
 
 .timer-card {
-  background: rgba(217, 245, 239, 0.58);
+  background: var(--ui-card-timer);
 }
 
 .clock-alarm-card {
-  background: rgba(255, 236, 224, 0.72);
+  background: var(--ui-card-alarm);
 }
 
 .clock-settings-card {
-  background: rgba(230, 251, 247, 0.78);
+  background: var(--ui-card-clock);
 }
 
 .panel-title {
@@ -1499,7 +1577,7 @@ h1 {
 }
 
 .timer-title {
-  color: #24484a;
+  color: var(--ui-text);
 }
 
 .timer-options,
@@ -1516,10 +1594,10 @@ h1 {
 .clock-settings-controls button {
   min-height: 42px;
   padding: 0 16px;
-  border: 1px solid rgba(44, 96, 97, 0.18);
+  border: 1px solid var(--ui-control-border);
   border-radius: 8px;
-  background: #f2fbf8;
-  color: #24484a;
+  background: var(--ui-control-bg);
+  color: var(--ui-text);
   font: inherit;
   font-weight: 800;
   cursor: pointer;
@@ -1546,7 +1624,7 @@ h1 {
 }
 
 .timer-controls button {
-  background: #fff;
+  background: var(--ui-control-bg);
 }
 
 .timer-controls #startTimer {
@@ -1572,7 +1650,7 @@ h1 {
   gap: 8px;
   align-items: center;
   padding: 0;
-  color: #24484a;
+  color: var(--ui-text);
   font-size: 14px;
   font-weight: 800;
 }
@@ -1591,10 +1669,10 @@ h1 {
 
 .clock-alarm-panel select {
   min-height: 34px;
-  border: 1px solid rgba(44, 96, 97, 0.18);
+  border: 1px solid var(--ui-control-border);
   border-radius: 8px;
-  background: #f2fbf8;
-  color: #24484a;
+  background: var(--ui-control-bg);
+  color: var(--ui-text);
   font: inherit;
   font-size: 14px;
 }
@@ -1602,10 +1680,10 @@ h1 {
 .clock-alarm-toggle {
   min-height: 34px;
   padding: 0 12px;
-  border: 1px solid rgba(44, 96, 97, 0.18);
+  border: 1px solid var(--ui-control-border);
   border-radius: 8px;
-  background: #fff7f3;
-  color: #24484a;
+  background: var(--ui-control-bg);
+  color: var(--ui-text);
   font: inherit;
   font-weight: 900;
   cursor: pointer;
@@ -1623,12 +1701,23 @@ h1 {
   gap: 8px;
   min-height: 42px;
   padding: 0 12px;
-  border: 1px solid rgba(44, 96, 97, 0.18);
+  border: 1px solid var(--ui-control-border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--ui-control-bg);
   color: #557071;
   font-size: 14px;
   font-weight: 800;
+}
+
+body.theme-night .timer-title,
+body.theme-night .stage-timer,
+body.theme-night .stage-timer span,
+body.theme-night .stage-timer output,
+body.theme-night .stage-timer .date-display,
+body.theme-night .panel-title,
+body.theme-night .clock-alarm-label {
+  color: #f4fdff;
+  text-shadow: var(--ui-shadow-text);
 }
 
 .custom-time input {
