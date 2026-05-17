@@ -577,17 +577,42 @@ function getSpeechProfile(character) {
     return { pitch: 0.84, rate: 0.9, volume: 0.95 };
   }
   if (character === "animal") {
-    return { pitch: 1.68, rate: 1.15, volume: 0.82 };
+    return { pitch: 1.9, rate: 1.15, volume: 0.85 };
   }
   return { pitch: 1.65, rate: 1.05, volume: 1 };
 }
 
+const speechReplacementDictionary = [
+  ["集中タイマー", "しゅうちゅうタイマー"],
+  ["時刻アラーム", "じこくアラーム"],
+  ["水分補給", "すいぶんほきゅう"],
+  ["集中力", "しゅうちゅうりょく"],
+  ["作業台", "さぎょうだい"],
+  ["記念日", "きねんび"],
+  ["焼き色", "やきいろ"],
+  ["大丈夫", "だいじょうぶ"],
+  ["一日", "いちにち"],
+  ["今日", "きょう"],
+  ["明日", "あした"],
+  ["上手", "じょうず"],
+  ["音声", "おんせい"],
+  ["生地", "きじ"],
+  ["発酵", "はっこう"],
+  ["焼成", "しょうせい"],
+  ["体", "からだ"],
+];
+
+function normalizeSpeechText(text) {
+  return speechReplacementDictionary.reduce((result, [from, to]) => result.replaceAll(from, to), text);
+}
+
 function cleanSpeechText(text) {
-  return String(text || "")
+  const cleaned = String(text || "")
     .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, "")
     .replace(/[♪♫★☆◆◇■□●○]/g, "")
     .replace(/\s+/g, " ")
     .trim();
+  return normalizeSpeechText(cleaned);
 }
 
 function shouldSpeakText(text) {
