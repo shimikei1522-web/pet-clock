@@ -12,6 +12,9 @@
   --ui-card-clock: rgba(230, 251, 247, 0.78);
   --ui-card-alarm: rgba(255, 236, 224, 0.72);
   --ui-shadow-text: none;
+  --pet-outline-shadow:
+    drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35))
+    drop-shadow(0 0 1px rgba(0, 0, 0, 0.65));
 }
 
 * {
@@ -41,6 +44,7 @@ body.theme-night {
   --ui-card-clock: rgba(25, 49, 80, 0.88);
   --ui-card-alarm: rgba(73, 49, 69, 0.86);
   --ui-shadow-text: 0 1px 3px rgba(0, 0, 0, 0.6);
+  --pet-outline-shadow: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
   background:
     radial-gradient(circle at 78% 14%, rgba(255, 246, 178, 0.72), transparent 7rem),
     radial-gradient(circle at 18% 22%, rgba(120, 220, 230, 0.2), transparent 16rem),
@@ -939,6 +943,7 @@ body.theme-night .speech-bubble {
   width: min(33vw, 205px);
   height: auto;
   image-rendering: auto;
+  filter: var(--pet-outline-shadow);
   transform: translateX(-50%);
   transform-origin: center bottom;
   z-index: 2;
