@@ -2151,7 +2151,75 @@ function setFocusMinutesMaybeStart(minutes, commandText) {
   }
 }
 
+function parseKanjiNumber(value) {
+  const map = { "零": 0, "〇": 0, "一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9 };
+  if (!value) return null;
+  if (/^\d+$/.test(value)) return Number(value);
+  if (value === "十") return 10;
+  if (value.endsWith("十")) {
+    const head = value.slice(0, -1);
+    const tens = head ? map[head] : 1;
+    return tens == null ? null : tens * 10;
+  }
+  if (value.includes("十")) {
+    const [head, tail] = value.split("十");
+    const tens = head ? map[head] : 1;
+    const ones = tail ? map[tail] : 0;
+    if (tens == null || ones == null) return null;
+    return tens * 10 + ones;
+  }
+  return map[value] ?? null;
+}
+
+function parseVoiceAlarmTime(commandText) {
+  const source = String(commandText || "");
+  const hasAlarmContext = /(アラーム|目覚まし|めざまし)/.test(source);
+  const hasClockShape = /時/.test(source);
+  if (!hasClockShape) return null;
+  if (/(分タイマー|集中|タイマー)/.test(source) && !hasAlarmContext) return null;
+
+  const meridiem = source.includes("午後") ? "pm" : source.includes("午前") ? "am" : "";
+  const timeMatch = source.match(/([0-9一二三四五六七八九十〇零]+)時(?:(半)|([0-9一二三四五六七八九十〇零]+)分?)?/);
+  if (!timeMatch) return null;
+  const hour = parseKanjiNumber(timeMatch[1]);
+  if (hour == null || hour < 0 || hour > 23) return null;
+  let minute = 0;
+  if (timeMatch[2]) {
+    minute = 30;
+  } else if (timeMatch[3]) {
+    const parsedMinute = parseKanjiNumber(timeMatch[3]);
+    if (parsedMinute == null || parsedMinute < 0 || parsedMinute > 59) return null;
+    minute = parsedMinute;
+  }
+
+  let normalizedHour = hour;
+  if (meridiem === "am" && normalizedHour === 12) normalizedHour = 0;
+  if (meridiem === "pm" && normalizedHour < 12) normalizedHour += 12;
+  if (!meridiem && normalizedHour > 23) return null;
+
+  return { hour: normalizedHour, minute };
+}
+
+function setClockAlarmFromVoice(commandText) {
+  const parsed = parseVoiceAlarmTime(commandText);
+  if (!parsed) return false;
+  alarmHourSelect.value = String(parsed.hour).padStart(2, "0");
+  alarmMinuteSelect.value = String(parsed.minute).padStart(2, "0");
+  clockAlarmEnabled = true;
+  enableAlarmSound();
+  saveClockAlarm();
+  updateClockAlarmUi();
+  quoteHoldUntil = Date.now() + 8000;
+  hideChefMessage();
+  message.textContent = `${parsed.hour}時${parsed.minute ? `${parsed.minute}分` : ""}にアラームをセットしたよ`;
+  return true;
+}
+
 function handleShortVoiceCommand(commandText) {
+  if (setClockAlarmFromVoice(commandText)) {
+    return true;
+  }
+
   if (voiceIncludes(commandText, ["リセット", "タイマーリセット", "集中タイマーリセット", "最初に戻して", "はじめに戻して", "タイマーを戻して", "時間を戻して", "もう一度最初から", "最初から"])) {
     resetFocusTimerFromVoice();
     return true;
@@ -2278,7 +2346,18 @@ function handleShortVoiceCommand(commandText) {
     showVoiceCommandResponse("タイマーの大画面をやめるね");
     return true;
   }
-  if (voiceIncludes(commandText, ["大画面", "大きく", "時計大きく", "時計を大きく", "時刻大画面"])) {
+  const timerLargeKeywords = ["タイマー", "集中タイマー", "カウント", "カウントダウン"];
+  const clockLargeKeywords = ["時計", "時刻", "時間"];
+  const hasTimerLargeKeyword = voiceIncludes(commandText, timerLargeKeywords);
+  const hasClockLargeKeyword = voiceIncludes(commandText, clockLargeKeywords);
+  const asksLarge = voiceIncludes(commandText, ["大画面", "大きく", "時計大きく", "時計を大きく", "時刻大画面"]);
+
+  if (asksLarge) {
+    if (hasTimerLargeKeyword || ((!hasClockLargeKeyword) && (timerRunning || isFocusTimerPaused()))) {
+      setLargeTimerMode(true);
+      showVoiceCommandResponse("集中タイマーを大きく表示するね");
+      return true;
+    }
     setLargeClockMode(true);
     showVoiceCommandResponse("時計を大きく表示するね");
     return true;
