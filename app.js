@@ -2141,7 +2141,127 @@ function clearCalculatorFromVoice() {
     return;
   }
   resetCalculator();
+  updateCalculatorDisplay();
   showVoiceCommandResponse("電卓をクリアしたよ");
+}
+
+function calculatorOperatorFromVoice(text) {
+  if (/(足す|たす|ぷらす|プラス|加える)/.test(text)) return "add";
+  if (/(引く|ひく|まいなす|マイナス)/.test(text)) return "subtract";
+  if (/(かける|掛ける|かけて|乗算|×)/.test(text)) return "multiply";
+  if (/(割る|わる|割って|除算|÷)/.test(text)) return "divide";
+  return "";
+}
+
+function normalizeCalculatorVoiceDigits(text) {
+  return String(text || "")
+    .replace(/全角/g, "")
+    .replace(/ゼロ|ぜろ/g, "0")
+    .replace(/いち/g, "1")
+    .replace(/に/g, "2")
+    .replace(/さん/g, "3")
+    .replace(/よん/g, "4")
+    .replace(/し/g, "4")
+    .replace(/ご/g, "5")
+    .replace(/ろく/g, "6")
+    .replace(/なな/g, "7")
+    .replace(/しち/g, "7")
+    .replace(/はち/g, "8")
+    .replace(/きゅう/g, "9")
+    .replace(/く/g, "9")
+    .replace(/小数点|しょうすうてん|どっと|ドット|点|てん/g, ".")
+    .replace(/[^\d.]/g, "");
+}
+
+function inputCalculatorDigitsFromVoice(rawDigits) {
+  const normalized = normalizeCalculatorVoiceDigits(rawDigits);
+  if (!normalized) return false;
+  for (const char of normalized) {
+    if (char === ".") inputCalculatorDecimal();
+    else inputCalculatorDigit(char);
+  }
+  updateCalculatorDisplay();
+  maybeShowCalculatorTypingMessage("digit");
+  return true;
+}
+
+function tryBulkCalculatorExpression(commandText) {
+  const operator = calculatorOperatorFromVoice(commandText);
+  if (!operator) return false;
+  const parts = commandText.split(/足す|たす|ぷらす|プラス|加える|引く|ひく|まいなす|マイナス|かける|掛ける|かけて|乗算|×|割る|わる|割って|除算|÷/);
+  if (parts.length < 2) return false;
+  const left = normalizeCalculatorVoiceDigits(parts[0]);
+  const right = normalizeCalculatorVoiceDigits(parts.slice(1).join(""));
+  if (!left || !right) return false;
+  if (calculatorPanel.hidden) openCalculatorPanel({ announce: false });
+  resetCalculator();
+  updateCalculatorDisplay();
+  inputCalculatorDigitsFromVoice(left);
+  inputCalculatorOperator(operator);
+  inputCalculatorDigitsFromVoice(right);
+  inputCalculatorEquals();
+  return true;
+}
+
+function handleCalculatorVoiceCommand(commandText) {
+  const hasCalculatorContext = voiceIncludes(commandText, ["電卓", "計算", "けいさん"]);
+  const canOperateCalculator = !calculatorPanel.hidden || hasCalculatorContext;
+
+  if (voiceIncludes(commandText, ["電卓を開いて", "電卓開いて", "電卓", "計算", "計算したい"])) {
+    if (calculatorPanel.hidden) {
+      openCalculatorPanel({ announce: false });
+      showVoiceCommandResponse("電卓を開くね");
+    } else {
+      showVoiceCommandResponse("もう電卓は開いているよ");
+    }
+    return true;
+  }
+
+  if (!calculatorPanel.hidden && voiceIncludes(commandText, ["電卓を閉じて", "電卓閉じて", "閉じて", "とじて", "しまって", "閉じる"])) {
+    closeCalculatorPanel();
+    showVoiceCommandResponse("電卓を閉じるね");
+    return true;
+  }
+
+  if (canOperateCalculator && voiceIncludes(commandText, ["電卓クリア", "電卓リセット", "計算消して"])) {
+    if (calculatorPanel.hidden) openCalculatorPanel({ announce: false });
+    clearCalculatorFromVoice();
+    return true;
+  }
+
+  if (!calculatorPanel.hidden && voiceIncludes(commandText, ["1文字消して", "一文字消して", "ひとつ消して", "バックスペース", "削除", "戻る"])) {
+    inputCalculatorBackspace();
+    updateCalculatorDisplay();
+    showVoiceCommandResponse("1文字消したよ");
+    return true;
+  }
+
+  if (!calculatorPanel.hidden && voiceIncludes(commandText, ["クリア", "ac", "消して", "全部消して"])) {
+    clearCalculatorFromVoice();
+    return true;
+  }
+
+  if (!calculatorPanel.hidden && voiceIncludes(commandText, ["いこーる", "イコール", "計算して", "答え", "答えを出して", "結果"])) {
+    inputCalculatorEquals();
+    return true;
+  }
+
+  if (canOperateCalculator && tryBulkCalculatorExpression(commandText)) {
+    return true;
+  }
+
+  if (!calculatorPanel.hidden) {
+    const operator = calculatorOperatorFromVoice(commandText);
+    if (operator) {
+      inputCalculatorOperator(operator);
+      return true;
+    }
+    if (inputCalculatorDigitsFromVoice(commandText)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function setFocusMinutesMaybeStart(minutes, commandText) {
@@ -2216,6 +2336,10 @@ function setClockAlarmFromVoice(commandText) {
 }
 
 function handleShortVoiceCommand(commandText) {
+  if (handleCalculatorVoiceCommand(commandText)) {
+    return true;
+  }
+
   if (setClockAlarmFromVoice(commandText)) {
     return true;
   }
@@ -2251,27 +2375,6 @@ function handleShortVoiceCommand(commandText) {
 
   if (voiceIncludes(commandText, ["止めて", "とめて", "ストップ", "停止", "一時停止", "休憩", "待って", "いったん止めて"])) {
     pauseFocusTimerFromVoice();
-    return true;
-  }
-
-  if (!calculatorPanel.hidden && voiceIncludes(commandText, ["閉じて", "とじて", "閉じる", "しまって"])) {
-    closeCalculatorPanel();
-    showVoiceCommandResponse("電卓を閉じるね");
-    return true;
-  }
-
-  if (!calculatorPanel.hidden && voiceIncludes(commandText, ["クリア", "ac", "消して", "計算消して"])) {
-    clearCalculatorFromVoice();
-    return true;
-  }
-
-  if (voiceIncludes(commandText, ["電卓", "計算", "計算する", "計算したい", "開いて"])) {
-    if (calculatorPanel.hidden) {
-      openCalculatorPanel({ announce: false });
-      showVoiceCommandResponse("電卓を開くね");
-    } else {
-      showVoiceCommandResponse("もう電卓は開いているよ");
-    }
     return true;
   }
 
