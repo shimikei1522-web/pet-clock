@@ -4,6 +4,8 @@ const stage = document.querySelector("#stage");
 const message = document.querySelector("#message");
 const chefMessage = document.querySelector("#chefMessage");
 const animalMessage = document.querySelector("#animalMessage");
+const chefFriend = document.querySelector(".friend");
+const animalFriend = document.querySelector(".animal-friend");
 const analogClock = document.querySelector("#analogClock");
 const controlPanel = document.querySelector(".panel");
 const moodValue = document.querySelector("#mood");
@@ -572,12 +574,12 @@ function pickSpeechVoice(character) {
 
 function getSpeechProfile(character) {
   if (character === "chef") {
-    return { pitch: 0.82, rate: 0.9, volume: 0.95 };
+    return { pitch: 0.84, rate: 0.9, volume: 0.95 };
   }
   if (character === "animal") {
-    return { pitch: 1.58, rate: 1.18, volume: 0.82 };
+    return { pitch: 1.68, rate: 1.15, volume: 0.82 };
   }
-  return { pitch: 1.34, rate: 1.08, volume: 0.95 };
+  return { pitch: 1.55, rate: 1.08, volume: 1 };
 }
 
 function cleanSpeechText(text) {
@@ -592,6 +594,70 @@ function shouldSpeakText(text) {
   if (!speechEnabled || !speechSupported || !text) return false;
   if (!alarmRinging) return true;
   return /アラーム|タップ|止め|時間|合図/.test(text);
+}
+
+function getSpeechTargets(character) {
+  if (character === "chef") return { characterElement: chefFriend, bubbleElement: chefMessage };
+  if (character === "animal") return { characterElement: animalFriend, bubbleElement: animalMessage };
+  return { characterElement: canvas, bubbleElement: message };
+}
+
+function clearSpeakingState() {
+  [canvas, chefFriend, animalFriend, message, chefMessage, animalMessage].forEach((element) => {
+    element?.classList.remove("speaking");
+  });
+}
+
+function setSpeakingState(character, active) {
+  if (!active) {
+    clearSpeakingState();
+    return;
+  }
+  clearSpeakingState();
+  const { characterElement, bubbleElement } = getSpeechTargets(character);
+  characterElement?.classList.add("speaking");
+  bubbleElement?.classList.add("speaking");
+}
+
+function playSpeechCue(character) {
+  if (!speechEnabled || alarmRinging) return;
+  const context = ensureAudioContext();
+  if (!context || context.state !== "running") return;
+  try {
+    const now = context.currentTime;
+    const gain = context.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(character === "animal" ? 0.045 : 0.055, now + 0.018);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+    gain.connect(context.destination);
+
+    const notes =
+      character === "chef"
+        ? [
+            [392, 0],
+            [523.25, 0.08],
+          ]
+        : character === "animal"
+          ? [
+              [880, 0],
+              [1174.66, 0.055],
+            ]
+          : [
+              [659.25, 0],
+              [987.77, 0.07],
+            ];
+
+    notes.forEach(([frequency, offset]) => {
+      const oscillator = context.createOscillator();
+      oscillator.type = character === "chef" ? "sine" : "triangle";
+      oscillator.frequency.setValueAtTime(frequency, now + offset);
+      oscillator.connect(gain);
+      oscillator.start(now + offset);
+      oscillator.stop(now + offset + 0.12);
+    });
+  } catch {
+    // Speech cue is decorative; ignore browser audio restrictions.
+  }
 }
 
 function queueSpeech(character, text) {
@@ -619,6 +685,7 @@ function flushSpeechQueue() {
     .sort((a, b) => (order[a.character] ?? 9) - (order[b.character] ?? 9))
     .slice(0, 3);
   try {
+    clearSpeakingState();
     window.speechSynthesis.cancel();
     items.forEach(({ character, text }) => {
       const utterance = new SpeechSynthesisUtterance(text);
@@ -629,15 +696,23 @@ function flushSpeechQueue() {
       utterance.pitch = profile.pitch;
       utterance.rate = profile.rate;
       utterance.volume = alarmRinging ? Math.min(profile.volume, 0.55) : profile.volume;
+      utterance.onstart = () => {
+        setSpeakingState(character, true);
+        playSpeechCue(character);
+      };
+      utterance.onend = () => clearSpeakingState();
+      utterance.onerror = () => clearSpeakingState();
       window.speechSynthesis.speak(utterance);
     });
   } catch {
+    clearSpeakingState();
     // Some mobile browsers block synthesis until a user gesture; keep the app running.
   }
 }
 
 function stopSpeech() {
   pendingSpeechItems = [];
+  clearSpeakingState();
   if (!speechSupported) return;
   try {
     window.speechSynthesis.cancel();
