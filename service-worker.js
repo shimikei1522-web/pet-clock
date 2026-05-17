@@ -1,4 +1,4 @@
-const CACHE_NAME = "pepaatennko-cache-v79";
+const CACHE_NAME = "pepaatennko-cache-v80";
 const APP_FILES = [
   "./",
   "./index.html",
@@ -6,6 +6,7 @@ const APP_FILES = [
   "./app.js",
   "./manifest.json",
   "./assets/spritesheet.webp",
+  "./assets/pepaatennko-newstyle-spritesheet.png.png",
   "./assets/pet-reference.png",
   "./assets/chef-friend-standing.png.png",
   "./assets/animal-friend-transparent.png",

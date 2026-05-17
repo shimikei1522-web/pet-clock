@@ -43,6 +43,7 @@ const bgmMode = document.querySelector("#bgmMode");
 const bgmVolume = document.querySelector("#bgmVolume");
 const speechToggleButton = document.querySelector("#speechToggleButton");
 const voiceCommandButton = document.querySelector("#voiceCommandButton");
+const petStyleToggleButton = document.querySelector("#petStyleToggleButton");
 const calculatorButton = document.querySelector("#calculatorButton");
 const calculatorPanel = document.querySelector("#calculatorPanel");
 const calculatorCloseButton = document.querySelector("#calculatorCloseButton");
@@ -62,6 +63,10 @@ const clockAlarmToggle = document.querySelector("#clockAlarmToggle");
 
 const sheet = new Image();
 sheet.src = "./assets/spritesheet.webp";
+const petStyleSources = {
+  classic: "./assets/spritesheet.webp",
+  new: "./assets/pepaatennko-newstyle-spritesheet.png.png",
+};
 
 const columns = 8;
 const rows = 9;
@@ -69,6 +74,7 @@ let frameWidth = 1;
 let frameHeight = 1;
 let frameIndex = 0;
 let action = "idle";
+let animationStarted = false;
 let lastTick = 0;
 let x = 0;
 let targetX = 0;
@@ -123,6 +129,7 @@ let clockAlarmLastKey = "";
 let userName = "";
 let anniversaries = {};
 let selectedTheme = "fresh";
+let selectedPetStyle = "classic";
 const PET_REACTION_HOLD_MS = 9000;
 
 const bgmPatterns = {
@@ -1865,6 +1872,51 @@ function startVoiceCommandRecognition() {
   }
 }
 
+function updatePetStyleUi() {
+  if (!petStyleToggleButton) return;
+  const isNewStyle = selectedPetStyle === "new";
+  petStyleToggleButton.classList.toggle("active", isNewStyle);
+  petStyleToggleButton.setAttribute("aria-pressed", String(isNewStyle));
+  petStyleToggleButton.textContent = isNewStyle ? "新スタイル" : "通常スタイル";
+}
+
+function savePetStyle() {
+  try {
+    localStorage.setItem("pepaatennkoPetStyle", selectedPetStyle);
+  } catch {
+    // localStorage may be unavailable in some private browsing modes.
+  }
+}
+
+function applyPetStyle(style, { announce = false } = {}) {
+  selectedPetStyle = petStyleSources[style] ? style : "classic";
+  const source = petStyleSources[selectedPetStyle];
+  if (!sheet.src.endsWith(source.replace("./", ""))) {
+    sheet.src = source;
+  }
+  updatePetStyleUi();
+  if (announce && !alarmRinging) {
+    quoteHoldUntil = Date.now() + 7000;
+    hideChefMessage();
+    hideAnimalMessage();
+    message.textContent = selectedPetStyle === "new" ? "新しい姿になったよ" : "いつもの姿に戻ったよ";
+  }
+}
+
+function loadPetStyle() {
+  try {
+    selectedPetStyle = localStorage.getItem("pepaatennkoPetStyle") || "classic";
+  } catch {
+    selectedPetStyle = "classic";
+  }
+  applyPetStyle(selectedPetStyle);
+}
+
+function togglePetStyle() {
+  applyPetStyle(selectedPetStyle === "new" ? "classic" : "new", { announce: true });
+  savePetStyle();
+}
+
 function getTodayKey() {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
@@ -2547,6 +2599,7 @@ calculatorKeys.addEventListener("click", (event) => {
 });
 speechToggleButton?.addEventListener("click", toggleSpeech);
 voiceCommandButton?.addEventListener("click", startVoiceCommandRecognition);
+petStyleToggleButton?.addEventListener("click", togglePetStyle);
 bgmToggle.addEventListener("click", toggleBgm);
 bgmMode.addEventListener("change", () => {
   bgmModeValue = bgmMode.value;
@@ -2572,7 +2625,10 @@ sheet.addEventListener("load", () => {
   canvas.width = Math.max(1, Math.round(frameWidth * 2));
   canvas.height = Math.max(1, Math.round(frameHeight * 2));
   drawFrame();
-  requestAnimationFrame(animate);
+  if (!animationStarted) {
+    animationStarted = true;
+    requestAnimationFrame(animate);
+  }
 });
 
 sheet.addEventListener("error", () => {
@@ -2607,6 +2663,7 @@ loadBgmSettings();
 loadSpeechSettings();
 updateVoiceCommandUi();
 loadTheme();
+loadPetStyle();
 loadLargeTimerSetting();
 loadLargeClockSetting();
 loadClockDisplayMode();
