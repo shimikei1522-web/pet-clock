@@ -9,6 +9,7 @@ const controlPanel = document.querySelector(".panel");
 const moodValue = document.querySelector("#mood");
 const energyValue = document.querySelector("#energy");
 const clock = document.querySelector("#clock");
+const currentDateDisplay = document.querySelector("#currentDate");
 const largeClockDisplay = document.querySelector("#largeClockDisplay");
 const stageTimerLabel = document.querySelector("#stageTimerLabel");
 const stageTimerDisplay = document.querySelector("#stageTimerDisplay");
@@ -277,6 +278,11 @@ function formatLargeClockTime(date) {
   const minute = String(date.getMinutes()).padStart(2, "0");
   const second = String(date.getSeconds()).padStart(2, "0");
   return `${hour}:${minute}:${second}`;
+}
+
+function formatDateLabel(date) {
+  const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+  return `${date.getMonth() + 1}月${date.getDate()}日（${weekdays[date.getDay()]}）`;
 }
 
 function formatDuration(totalSeconds) {
@@ -1477,6 +1483,8 @@ function updateClockDisplay(now = new Date()) {
   const value = formatTime(now);
   clock.textContent = value;
   clock.dateTime = now.toTimeString().slice(0, 8);
+  currentDateDisplay.textContent = formatDateLabel(now);
+  currentDateDisplay.dateTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   largeClockDisplay.textContent = formatLargeClockTime(now);
   largeClockDisplay.dateTime = clock.dateTime;
   const seconds = now.getSeconds();

@@ -1388,6 +1388,25 @@ h1 {
   background: rgba(230, 251, 247, 0.78);
 }
 
+.date-display {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  z-index: 3;
+  display: inline-flex;
+  padding: 9px 15px;
+  border: 1px solid rgba(44, 96, 97, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  color: #365e60;
+  font-size: clamp(22px, 2.4vw, 32px);
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 12px 28px rgba(38, 91, 87, 0.12);
+  backdrop-filter: blur(8px);
+}
+
 .panel-title {
   display: block;
   font-size: 13px;
@@ -1785,6 +1804,13 @@ h1 {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 4px;
+  }
+
+  .date-display {
+    left: 8px;
+    top: 58px;
+    padding: 6px 10px;
+    font-size: clamp(16px, 5vw, 22px);
   }
 
   .clock-alarm-panel {
