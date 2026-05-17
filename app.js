@@ -533,6 +533,7 @@ function setTimerDisplays(seconds) {
   stageTimerDisplay.textContent = value;
   largeTimerDisplay.textContent = value;
   updateLargeTimerState();
+  updateStageTimerDisplayMode();
 }
 
 function saveLargeTimerSetting() {
@@ -586,6 +587,22 @@ function updateLargeTimerState() {
   largeTimerToggle.setAttribute("aria-pressed", String(largeTimerEnabled));
   largeTimerToggle.textContent = largeTimerEnabled ? "大画面ON" : "大画面OFF";
   updateClockDisplayModeState();
+  updateStageTimerDisplayMode();
+}
+
+function isFocusTimerUnused() {
+  return !largeTimerEnabled && !timerRunning && timerEndAt === 0 && remainingSeconds === selectedMinutes * 60;
+}
+
+function updateStageTimerDisplayMode() {
+  const showDate = isFocusTimerUnused();
+  currentDateDisplay.hidden = !showDate;
+  stageTimerDisplay.hidden = showDate;
+  if (showDate) {
+    stageTimerLabel.textContent = "DATE";
+  } else if (stageTimerLabel.textContent === "DATE") {
+    stageTimerLabel.textContent = "FOCUS";
+  }
 }
 
 function loadLargeTimerSetting() {
@@ -1619,6 +1636,7 @@ function resetFocusTimer() {
   quoteHoldUntil = 0;
   timerRunning = false;
   window.clearInterval(timerId);
+  timerEndAt = 0;
   remainingSeconds = selectedMinutes * 60;
   stageTimerLabel.textContent = "FOCUS";
   setTimerDisplays(remainingSeconds);

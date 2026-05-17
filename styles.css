@@ -541,7 +541,7 @@ body.theme-night .alarm-toggle.active {
   border: 1px solid rgba(44, 96, 97, 0.16);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.68);
-  color: #24484a;
+  color: inherit;
   text-align: center;
   box-shadow: 0 14px 36px rgba(38, 91, 87, 0.14);
   backdrop-filter: blur(10px);
@@ -661,6 +661,31 @@ body.analog-clock-mode .clock-panel > .clock {
   line-height: 0.95;
 }
 
+#stageTimerDisplay[hidden] {
+  display: none;
+}
+
+.stage-timer .date-display {
+  position: static;
+  z-index: auto;
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-size: clamp(22px, 3vw, 34px);
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.stage-timer .date-display[hidden] {
+  display: none;
+}
+
 body.large-timer-mode .stage-timer {
   min-width: auto;
   padding: 0;
@@ -671,6 +696,10 @@ body.large-timer-mode .stage-timer {
 }
 
 body.large-timer-mode #stageTimerDisplay {
+  display: none;
+}
+
+body.large-timer-mode .stage-timer .date-display {
   display: none;
 }
 
@@ -1388,25 +1417,6 @@ h1 {
   background: rgba(230, 251, 247, 0.78);
 }
 
-.date-display {
-  position: absolute;
-  left: 18px;
-  top: 18px;
-  z-index: 5;
-  display: inline-flex;
-  padding: 9px 15px;
-  border: 1px solid rgba(44, 96, 97, 0.16);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.7);
-  color: #365e60;
-  font-size: clamp(22px, 2.4vw, 32px);
-  font-weight: 900;
-  line-height: 1;
-  white-space: nowrap;
-  box-shadow: 0 12px 28px rgba(38, 91, 87, 0.12);
-  backdrop-filter: blur(8px);
-}
-
 .panel-title {
   display: block;
   font-size: 13px;
@@ -1612,6 +1622,10 @@ h1 {
     font-size: clamp(25px, 8.5vw, 36px);
   }
 
+  .stage-timer .date-display {
+    font-size: clamp(20px, 5.6vw, 28px);
+  }
+
   body.large-timer-mode .stage-timer {
     bottom: 8px;
     width: min(96vw, 420px);
@@ -1627,7 +1641,8 @@ h1 {
   }
 
   .large-clock-display {
-    font-size: clamp(48px, 17vw, 86px);
+    width: calc(100vw - 8px);
+    font-size: clamp(60px, 21vw, 108px);
     white-space: nowrap;
   }
 
@@ -1808,13 +1823,8 @@ h1 {
     gap: 4px;
   }
 
-  .date-display {
-    left: 8px;
-    top: auto;
-    bottom: 112px;
-    padding: 6px 10px;
-    font-size: clamp(16px, 5vw, 22px);
-    z-index: 5;
+  .stage-timer .date-display {
+    font-size: clamp(18px, 5.4vw, 24px);
   }
 
   .clock-alarm-panel {
@@ -2096,8 +2106,8 @@ h1 {
 
   .large-clock-display {
     top: 56px;
-    width: calc(100vw - 12px);
-    font-size: clamp(44px, 16vw, 64px);
+    width: calc(100vw - 8px);
+    font-size: clamp(56px, 20vw, 82px);
   }
 
   .calculator-keys button {
