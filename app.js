@@ -111,6 +111,10 @@ let speechFlushQueued = false;
 let speechVoiceListenerReady = false;
 let voiceRecognition = null;
 let voiceCommandListening = false;
+let voiceCommandEnabled = false;
+let voiceCommandRestartTimer = 0;
+let lastVoiceCommandName = "";
+let lastVoiceCommandAt = 0;
 const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
 let calculatorValue = "0";
 let calculatorStoredValue = null;
@@ -1917,6 +1921,267 @@ function togglePetStyle() {
   savePetStyle();
 }
 
+function setPetStyleFromVoice(style) {
+  const target = petStyleSources[style] ? style : "classic";
+  if (selectedPetStyle === target) {
+    showVoiceCommandResponse(target === "new" ? "もう新スタイルだよ" : "もう通常スタイルだよ");
+    return;
+  }
+  applyPetStyle(target);
+  savePetStyle();
+  showVoiceCommandResponse(target === "new" ? "新しいスタイルにするね" : "いつものスタイルに戻すね");
+}
+
+function setFocusMinutesFromVoice(minutes) {
+  setActiveChoice(minutes);
+  customMinutes.value = "";
+  setSelectedMinutes(minutes);
+  showVoiceCommandResponse(`${minutes}分タイマーにしたよ`);
+}
+
+function setClockDisplayModeFromVoice(mode) {
+  clockDisplayMode = mode === "analog" ? "analog" : "digital";
+  if (clockDisplayMode === "analog" && largeClockEnabled) {
+    setLargeClockMode(false);
+  }
+  saveClockDisplayMode();
+  updateClockDisplayModeState();
+  updateClockDisplay();
+  showVoiceCommandResponse(clockDisplayMode === "analog" ? "アナログ時計にするね" : "デジタル時計にするね");
+}
+
+function setBgmFromVoice(enabled) {
+  bgmEnabled = Boolean(enabled);
+  if (bgmEnabled) {
+    if (bgmModeValue === "off") bgmModeValue = "gentle";
+    startBgm();
+  } else {
+    bgmModeValue = "off";
+    stopBgm();
+  }
+  saveBgmSettings();
+  updateBgmUi();
+  showVoiceCommandResponse(bgmEnabled ? "BGMを流すね" : "BGMを止めるね");
+}
+
+function setVoiceSpeechFromVoice(enabled) {
+  setSpeechEnabled(enabled);
+  showVoiceCommandResponse(enabled ? "セリフ音声をオンにするね" : "音声をオフにしたよ");
+}
+
+function saveVoiceCommandSetting() {
+  try {
+    localStorage.setItem("pepaatennkoVoiceCommandEnabled", String(voiceCommandEnabled));
+  } catch {
+    // localStorage may be unavailable in some private browsing modes.
+  }
+}
+
+function loadVoiceCommandSetting() {
+  // For privacy, never auto-start the microphone on page load.
+  voiceCommandEnabled = false;
+  updateVoiceCommandUi();
+}
+
+function stopVoiceRecognition() {
+  window.clearTimeout(voiceCommandRestartTimer);
+  voiceCommandRestartTimer = 0;
+  voiceCommandEnabled = false;
+  voiceCommandListening = false;
+  if (voiceRecognition) {
+    const recognition = voiceRecognition;
+    voiceRecognition = null;
+    try {
+      recognition.onend = null;
+      recognition.onerror = null;
+      recognition.abort?.();
+      recognition.stop?.();
+    } catch {
+      // Browser implementations vary; stopping is best effort.
+    }
+  }
+  saveVoiceCommandSetting();
+  updateVoiceCommandUi();
+}
+
+const continuousVoiceThemeCommands = [
+  { name: "themeNight", theme: "night", response: "夜空に変えるね", patterns: ["夜空にして", "背景を夜空にして", "夜の背景にして", "夜っぽくして", "夜空"] },
+  { name: "themeFresh", theme: "fresh", response: "さわやかな背景にするね", patterns: ["さわやかにして", "爽やかにして", "背景をさわやかにして", "明るい背景にして", "さわやか"] },
+  { name: "themeForest", theme: "forest", response: "森の背景にするね", patterns: ["森にして", "背景を森にして", "森の背景にして", "自然っぽくして"] },
+  { name: "themeCafe", theme: "cafe", response: "カフェの背景にするね", patterns: ["カフェにして", "背景をカフェにして", "カフェの背景にして", "お店っぽくして"] },
+  { name: "themeSeason", theme: "season", response: "季節の背景にするね", patterns: ["季節にして", "背景を季節にして", "季節の背景にして", "季節感のある背景にして"] },
+];
+
+const continuousVoiceCommands = [
+  { name: "voiceCommandOff", patterns: ["音声操作オフ", "音声操作をオフ", "マイクオフ", "マイクをオフ", "聞き取りをやめて"], action: () => { showVoiceCommandResponse("音声操作をオフにするね"); stopVoiceRecognition(); } },
+  { name: "voiceCommandOn", patterns: ["音声操作オン", "音声操作をオン", "マイクオン", "マイクをオン"], action: () => showVoiceCommandResponse("音声操作はもうオンだよ") },
+  { name: "newPetStyle", patterns: ["新スタイルにして", "新しいスタイルにして", "新しいPepaatennkoにして", "新しいペパーてんこにして", "新しい姿にして", "スタイルを新しくして"], action: () => setPetStyleFromVoice("new") },
+  { name: "classicPetStyle", patterns: ["通常スタイルにして", "いつものスタイルにして", "普通のスタイルにして", "いつものPepaatennkoにして", "いつものペパーてんこにして", "通常版に戻して"], action: () => setPetStyleFromVoice("classic") },
+  { name: "timer5", patterns: ["5分タイマーにして", "5分にして", "タイマー5分", "集中タイマー5分", "5分集中", "五分タイマーにして", "ごふんタイマーにして", "ごぶんタイマーにして"], action: () => setFocusMinutesFromVoice(5) },
+  { name: "timer10", patterns: ["10分タイマーにして", "10分にして", "タイマー10分", "集中タイマー10分", "10分集中", "十分タイマーにして", "じゅっぷんタイマーにして"], action: () => setFocusMinutesFromVoice(10) },
+  { name: "timer15", patterns: ["15分タイマーにして", "15分にして", "タイマー15分", "集中タイマー15分", "15分集中", "十五分タイマーにして", "じゅうごふんタイマーにして"], action: () => setFocusMinutesFromVoice(15) },
+  { name: "timer25", patterns: ["25分タイマーにして", "25分にして", "タイマー25分", "集中タイマー25分", "25分集中", "二十五分タイマーにして", "にじゅうごふんタイマーにして"], action: () => setFocusMinutesFromVoice(25) },
+  { name: "timer45", patterns: ["45分タイマーにして", "45分にして", "タイマー45分", "集中タイマー45分", "45分集中", "四十五分タイマーにして", "よんじゅうごふんタイマーにして"], action: () => setFocusMinutesFromVoice(45) },
+  { name: "analogClock", patterns: ["アナログ時計にして", "アナログにして", "時計をアナログにして", "丸い時計にして"], action: () => setClockDisplayModeFromVoice("analog") },
+  { name: "digitalClock", patterns: ["デジタル時計にして", "デジタルにして", "時計をデジタルにして", "数字の時計にして"], action: () => setClockDisplayModeFromVoice("digital") },
+  { name: "bgmOn", patterns: ["BGMを流して", "BGMつけて", "音楽を流して", "音楽つけて", "BGMオン", "音楽オン"], action: () => setBgmFromVoice(true) },
+  { name: "bgmOff", patterns: ["BGMを止めて", "BGM消して", "音楽を止めて", "音楽消して", "BGMオフ", "音楽オフ"], action: () => setBgmFromVoice(false) },
+  { name: "themeReset", patterns: ["背景を戻して", "背景を元に戻して", "元の背景にして", "デフォルト背景にして", "背景リセット"], action: () => { saveTheme("fresh"); showVoiceCommandResponse("背景を戻すね"); } },
+  { name: "alarmStop", patterns: ["アラームを止めて", "アラーム止めて", "アラーム消して", "鳴ってる音を止めて", "目覚まし止めて"], action: () => { if (alarmRinging) { stopAlarm(); showVoiceCommandResponse("アラームを止めるね"); } else { showVoiceCommandResponse("今はアラームは鳴っていないよ"); } } },
+  { name: "speechOn", patterns: ["音声オン", "声を出して", "読み上げオン", "セリフを読んで", "声ありにして"], action: () => setVoiceSpeechFromVoice(true) },
+  { name: "speechOff", patterns: ["音声オフ", "音声をオフ", "音声切って", "読み上げオフ", "声を切って"], action: () => setVoiceSpeechFromVoice(false) },
+  { name: "timerLargeOff", patterns: ["タイマーの大画面をやめて", "集中タイマーの大画面をやめて", "タイマー大画面をやめて"], action: () => { setLargeTimerMode(false); showVoiceCommandResponse("タイマーの大画面をやめるね"); } },
+  { name: "timerLargeOn", patterns: ["タイマーを大画面にして", "集中タイマーを大画面にして", "タイマーを大きくして"], action: () => { setLargeTimerMode(true); showVoiceCommandResponse("集中タイマーを大きく表示するね"); } },
+  { name: "clockLargeOff", patterns: ["大画面をやめて", "時計の大画面をやめて", "時刻の大画面をやめて"], action: () => { if (!largeClockEnabled && largeTimerEnabled) setLargeTimerMode(false); else setLargeClockMode(false); showVoiceCommandResponse("大画面をやめるね"); } },
+  { name: "clockLargeOn", patterns: ["大画面にして", "大きくして", "時計を大画面にして", "時刻を大画面にして", "時計を大きくして"], action: () => { setLargeClockMode(true); showVoiceCommandResponse("時計を大きく表示するね"); } },
+  { name: "volumeUp", patterns: ["音量を上げて", "音量上げて", "音を大きくして", "ボリューム上げて"], action: () => { changeAppVolume(1); showVoiceCommandResponse("音量を少し上げたよ"); } },
+  { name: "volumeDown", patterns: ["音量を小さくして", "音を小さくして", "音量下げて", "ボリューム下げて"], action: () => { changeAppVolume(-1); showVoiceCommandResponse("音量を少し小さくしたよ"); } },
+  { name: "focusStart", patterns: ["集中タイマーを始めて", "タイマー始めて", "集中始めて", "タイマーをスタート"], action: () => { startFocusTimer(); showVoiceCommandResponse("集中タイマーを始めるね"); } },
+  { name: "focusPause", patterns: ["タイマーを止めて", "タイマー止めて", "一時停止", "タイマーを一時停止"], action: () => { if (timerRunning) { pauseFocusTimer(); showVoiceCommandResponse("タイマーを止めるね"); } else { showVoiceCommandResponse("今はタイマーは動いていないよ"); } } },
+  { name: "calculatorOpen", patterns: ["電卓を開いて", "電卓開いて", "計算機を開いて"], action: () => { openCalculatorPanel({ announce: false }); showVoiceCommandResponse("電卓を開くね"); } },
+  { name: "calculatorClose", patterns: ["電卓を閉じて", "電卓閉じて", "計算機を閉じて"], action: () => { closeCalculatorPanel(); showVoiceCommandResponse("電卓を閉じるね"); } },
+];
+
+function normalizeContinuousVoiceCommandText(text) {
+  const katakanaToHiragana = (value) => value.replace(/[\u30a1-\u30f6]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 0x60));
+  return katakanaToHiragana(String(text || ""))
+    .toLowerCase()
+    .replace(/[ 　\t\r\n、。,.!?！？「」『』（）()]/g, "")
+    .replace(/５/g, "5")
+    .replace(/１０|十/g, "10")
+    .replace(/１５|十五/g, "15")
+    .replace(/２５|二十五/g, "25")
+    .replace(/４５|四十五/g, "45")
+    .trim();
+}
+
+function executeContinuousVoiceCommand(name, action) {
+  const now = Date.now();
+  if (lastVoiceCommandName === name && now - lastVoiceCommandAt < 1600) return;
+  lastVoiceCommandName = name;
+  lastVoiceCommandAt = now;
+  action();
+}
+
+function runVoiceCommand(rawText) {
+  const commandText = normalizeContinuousVoiceCommandText(rawText);
+  if (commandText.length < 2) return;
+
+  const themeCommand = continuousVoiceThemeCommands.find((item) =>
+    item.patterns.some((pattern) => commandText.includes(normalizeContinuousVoiceCommandText(pattern))),
+  );
+  if (themeCommand) {
+    executeContinuousVoiceCommand(themeCommand.name, () => {
+      saveTheme(themeCommand.theme);
+      showVoiceCommandResponse(themeCommand.response);
+    });
+    return;
+  }
+
+  const priorityNames = ["voiceCommandOff", "voiceCommandOn", "volumeUp", "volumeDown", "timerLargeOff", "timerLargeOn"];
+  const orderedCommands = [
+    ...continuousVoiceCommands.filter((item) => priorityNames.includes(item.name)),
+    ...continuousVoiceCommands.filter((item) => !priorityNames.includes(item.name)),
+  ];
+  const command = orderedCommands.find((item) =>
+    item.patterns.some((pattern) => commandText.includes(normalizeContinuousVoiceCommandText(pattern))),
+  );
+
+  if (command) {
+    executeContinuousVoiceCommand(command.name, command.action);
+    return;
+  }
+
+  if (Date.now() - lastVoiceCommandAt > 4500) {
+    showVoiceCommandResponse("ごめんね、もう一回言ってね", { holdMs: 3500 });
+  }
+}
+
+function updateVoiceCommandUi() {
+  if (!voiceCommandButton) return;
+  const supported = Boolean(SpeechRecognitionClass);
+  voiceCommandButton.disabled = !supported;
+  voiceCommandButton.classList.toggle("active", voiceCommandEnabled);
+  voiceCommandButton.setAttribute("aria-pressed", String(voiceCommandEnabled));
+  if (!supported) {
+    voiceCommandButton.textContent = "音声操作非対応";
+  } else if (voiceCommandEnabled) {
+    voiceCommandButton.textContent = voiceCommandListening ? "音声操作ON" : "音声操作ON";
+  } else {
+    voiceCommandButton.textContent = "音声操作OFF";
+  }
+}
+
+function scheduleVoiceRecognitionRestart(delay = 750) {
+  window.clearTimeout(voiceCommandRestartTimer);
+  if (!voiceCommandEnabled || !SpeechRecognitionClass) return;
+  voiceCommandRestartTimer = window.setTimeout(() => {
+    if (voiceCommandEnabled && !voiceCommandListening) startVoiceRecognitionSession();
+  }, delay);
+}
+
+function startVoiceRecognitionSession() {
+  if (!voiceCommandEnabled || !SpeechRecognitionClass || voiceCommandListening) return;
+  try {
+    const recognition = new SpeechRecognitionClass();
+    voiceRecognition = recognition;
+    recognition.lang = "ja-JP";
+    recognition.interimResults = false;
+    recognition.continuous = true;
+    recognition.maxAlternatives = 1;
+    recognition.onstart = () => {
+      voiceCommandListening = true;
+      updateVoiceCommandUi();
+    };
+    recognition.onresult = (event) => {
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        if (!event.results[index].isFinal) continue;
+        runVoiceCommand(event.results[index][0]?.transcript || "");
+      }
+    };
+    recognition.onerror = (event) => {
+      voiceCommandListening = false;
+      updateVoiceCommandUi();
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        stopVoiceRecognition();
+        showVoiceCommandResponse("マイクの許可が必要みたい");
+        return;
+      }
+      scheduleVoiceRecognitionRestart(event.error === "no-speech" ? 900 : 1500);
+    };
+    recognition.onend = () => {
+      voiceCommandListening = false;
+      voiceRecognition = null;
+      updateVoiceCommandUi();
+      scheduleVoiceRecognitionRestart();
+    };
+    recognition.start();
+  } catch {
+    voiceCommandListening = false;
+    voiceRecognition = null;
+    updateVoiceCommandUi();
+    scheduleVoiceRecognitionRestart(1500);
+  }
+}
+
+function startVoiceCommandRecognition() {
+  if (!SpeechRecognitionClass) {
+    showVoiceCommandResponse("このブラウザでは音声操作が使えないみたい");
+    updateVoiceCommandUi();
+    return;
+  }
+  if (voiceCommandEnabled) {
+    showVoiceCommandResponse("音声操作をオフにするね");
+    stopVoiceRecognition();
+    return;
+  }
+  voiceCommandEnabled = true;
+  saveVoiceCommandSetting();
+  updateVoiceCommandUi();
+  showVoiceCommandResponse("音声操作ON。聞き取り中だよ", { holdMs: 4500 });
+  startVoiceRecognitionSession();
+}
+
 function getTodayKey() {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
@@ -2661,7 +2926,7 @@ populateClockAlarmOptions();
 loadClockAlarm();
 loadBgmSettings();
 loadSpeechSettings();
-updateVoiceCommandUi();
+loadVoiceCommandSetting();
 loadTheme();
 loadPetStyle();
 loadLargeTimerSetting();
