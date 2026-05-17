@@ -579,7 +579,7 @@ function getSpeechProfile(character) {
   if (character === "animal") {
     return { pitch: 1.68, rate: 1.15, volume: 0.82 };
   }
-  return { pitch: 1.55, rate: 1.08, volume: 1 };
+  return { pitch: 1.65, rate: 1.05, volume: 1 };
 }
 
 function cleanSpeechText(text) {
