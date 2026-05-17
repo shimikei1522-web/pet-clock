@@ -1392,7 +1392,7 @@ h1 {
   position: absolute;
   left: 18px;
   top: 18px;
-  z-index: 3;
+  z-index: 5;
   display: inline-flex;
   padding: 9px 15px;
   border: 1px solid rgba(44, 96, 97, 0.16);
@@ -1593,8 +1593,9 @@ h1 {
   }
 
   .large-clock-display {
-    top: 58px;
-    width: min(96vw, 430px);
+    top: 60px;
+    width: calc(100vw - 16px);
+    max-width: 430px;
   }
 
   .stage-timer {
@@ -1626,7 +1627,8 @@ h1 {
   }
 
   .large-clock-display {
-    font-size: clamp(86px, 26vw, 132px);
+    font-size: clamp(48px, 17vw, 86px);
+    white-space: nowrap;
   }
 
   body.large-timer-mode .stage-timer .large-stage-timer {
@@ -1808,9 +1810,11 @@ h1 {
 
   .date-display {
     left: 8px;
-    top: 58px;
+    top: auto;
+    bottom: 112px;
     padding: 6px 10px;
     font-size: clamp(16px, 5vw, 22px);
+    z-index: 5;
   }
 
   .clock-alarm-panel {
@@ -2091,8 +2095,9 @@ h1 {
   }
 
   .large-clock-display {
-    top: 54px;
-    font-size: clamp(74px, 24vw, 104px);
+    top: 56px;
+    width: calc(100vw - 12px);
+    font-size: clamp(44px, 16vw, 64px);
   }
 
   .calculator-keys button {
