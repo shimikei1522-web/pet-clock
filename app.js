@@ -42,6 +42,7 @@ const bgmToggle = document.querySelector("#bgmToggle");
 const bgmMode = document.querySelector("#bgmMode");
 const bgmVolume = document.querySelector("#bgmVolume");
 const speechToggleButton = document.querySelector("#speechToggleButton");
+const voiceCommandButton = document.querySelector("#voiceCommandButton");
 const calculatorButton = document.querySelector("#calculatorButton");
 const calculatorPanel = document.querySelector("#calculatorPanel");
 const calculatorCloseButton = document.querySelector("#calculatorCloseButton");
@@ -102,6 +103,9 @@ let speechVoices = [];
 let pendingSpeechItems = [];
 let speechFlushQueued = false;
 let speechVoiceListenerReady = false;
+let voiceRecognition = null;
+let voiceCommandListening = false;
+const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
 let calculatorValue = "0";
 let calculatorStoredValue = null;
 let calculatorOperator = "";
@@ -768,6 +772,14 @@ function toggleSpeech() {
   }
 }
 
+function setSpeechEnabled(enabled) {
+  if (!speechSupported) return;
+  speechEnabled = Boolean(enabled);
+  saveSpeechSettings();
+  updateSpeechToggleUi();
+  if (!speechEnabled) stopSpeech();
+}
+
 function watchBubbleSpeech(element, character) {
   if (!element) return;
   const handleChange = () => {
@@ -798,6 +810,29 @@ function setCalculatorMode(isOpen) {
     canvas.classList.remove("calc-success", "calc-error", "calc-tap");
     window.clearTimeout(calculatorReactionTimer);
   }
+}
+
+function closeCalculatorPanel() {
+  calculatorPanel.hidden = true;
+  calculatorButton.setAttribute("aria-expanded", "false");
+  controlPanel.classList.remove("calculator-open");
+  setCalculatorMode(false);
+}
+
+function openCalculatorPanel({ announce = true } = {}) {
+  calculatorPanel.hidden = false;
+  calculatorButton.setAttribute("aria-expanded", "true");
+  controlPanel.classList.add("calculator-open");
+  setCalculatorMode(true);
+  namePanel.hidden = true;
+  themePanel.hidden = true;
+  anniversaryPanel.hidden = true;
+  bgmPanel.hidden = true;
+  nameSettingsButton.setAttribute("aria-expanded", "false");
+  themeSettingsButton.setAttribute("aria-expanded", "false");
+  anniversarySettingsButton.setAttribute("aria-expanded", "false");
+  bgmSettingsButton.setAttribute("aria-expanded", "false");
+  if (announce) showCalculatorOpenMessage();
 }
 
 function triggerCalculatorPetAnimation(type) {
@@ -980,6 +1015,51 @@ function toggleLargeClock() {
     hideAnimalMessage();
     message.textContent = largeClockEnabled ? "時計を大きく表示するね" : namedPeriodText();
   }
+}
+
+function setLargeTimerMode(enabled) {
+  largeTimerEnabled = Boolean(enabled);
+  if (largeTimerEnabled && largeClockEnabled) {
+    largeClockEnabled = false;
+    saveLargeClockSetting();
+    updateLargeClockState();
+  }
+  saveLargeTimerSetting();
+  updateLargeTimerState();
+}
+
+function setLargeClockMode(enabled) {
+  largeClockEnabled = Boolean(enabled);
+  if (largeClockEnabled && largeTimerEnabled) {
+    largeTimerEnabled = false;
+    saveLargeTimerSetting();
+    updateLargeTimerState();
+  }
+  saveLargeClockSetting();
+  updateLargeClockState();
+  updateClockDisplay();
+}
+
+function showVoiceCommandResponse(text, options = {}) {
+  quoteHoldUntil = Date.now() + (options.holdMs || 7000);
+  hideChefMessage();
+  hideAnimalMessage();
+  message.textContent = text;
+}
+
+function changeAppVolume(direction) {
+  const levels = [0.04, 0.08, 0.13];
+  const nearestIndex = levels.reduce((best, level, index) => {
+    return Math.abs(level - bgmVolumeValue) < Math.abs(levels[best] - bgmVolumeValue) ? index : best;
+  }, 0);
+  const nextIndex = clamp(nearestIndex + direction, 0, levels.length - 1);
+  bgmVolumeValue = levels[nextIndex];
+  bgmVolume.value = String(bgmVolumeValue);
+  if (bgmGain && audioContext) {
+    bgmGain.gain.setTargetAtTime(alarmRinging ? bgmVolumeValue * 0.02 : bgmVolumeValue, audioContext.currentTime, 0.16);
+  }
+  saveBgmSettings();
+  updateBgmUi();
 }
 
 function getTimePeriod(date = new Date()) {
@@ -1562,6 +1642,227 @@ function saveTheme(theme) {
   const labels = { fresh: "さわやか", night: "夜空", forest: "森", cafe: "カフェ", season: "季節" };
   message.textContent = `${namePrefix()}背景を「${labels[selectedTheme]}」にしたよ`;
   showChefSolo("theme", 9000, 0.65);
+}
+
+const voiceThemeCommands = [
+  {
+    theme: "night",
+    response: "夜空に変えるね",
+    patterns: ["夜空", "夜の背景", "夜っぽく", "背景を夜空"],
+  },
+  {
+    theme: "fresh",
+    response: "さわやかな背景にするね",
+    patterns: ["さわやか", "爽やか", "明るい背景", "背景をさわやか"],
+  },
+  {
+    theme: "forest",
+    response: "森の背景にするね",
+    patterns: ["森にして", "森の背景", "背景を森", "自然っぽく"],
+  },
+  {
+    theme: "cafe",
+    response: "カフェの背景にするね",
+    patterns: ["カフェ", "カフェの背景", "背景をカフェ", "お店っぽく"],
+  },
+  {
+    theme: "season",
+    response: "季節の背景にするね",
+    patterns: ["季節にして", "季節の背景", "背景を季節", "季節感"],
+  },
+];
+
+const voiceCommandDefinitions = [
+  {
+    name: "timerLargeOff",
+    patterns: ["タイマーの大画面をやめ", "集中タイマーの大画面をやめ", "タイマー大画面をやめ"],
+    action: () => {
+      setLargeTimerMode(false);
+      showVoiceCommandResponse("タイマーの大画面をやめるね");
+    },
+  },
+  {
+    name: "timerLargeOn",
+    patterns: ["タイマーを大画面", "集中タイマーを大画面", "タイマーを大きく"],
+    action: () => {
+      setLargeTimerMode(true);
+      showVoiceCommandResponse("集中タイマーを大きく表示するね");
+    },
+  },
+  {
+    name: "clockLargeOff",
+    patterns: ["大画面をやめ", "時計の大画面をやめ", "時刻の大画面をやめ", "大きい時計をやめ"],
+    action: () => {
+      if (!largeClockEnabled && largeTimerEnabled) {
+        setLargeTimerMode(false);
+      } else {
+        setLargeClockMode(false);
+      }
+      showVoiceCommandResponse("大画面をやめるね");
+    },
+  },
+  {
+    name: "clockLargeOn",
+    patterns: ["大画面にして", "大きくして", "時計を大画面", "時刻を大画面", "時計を大きく"],
+    action: () => {
+      setLargeClockMode(true);
+      showVoiceCommandResponse("時計を大きく表示するね");
+    },
+  },
+  {
+    name: "volumeUp",
+    patterns: ["音量を上げ", "音量上げ", "音を大きく", "ボリューム上げ"],
+    action: () => {
+      changeAppVolume(1);
+      showVoiceCommandResponse("音量を少し上げたよ");
+    },
+  },
+  {
+    name: "volumeDown",
+    patterns: ["音量を小さく", "音を小さく", "音量下げ", "ボリューム下げ"],
+    action: () => {
+      changeAppVolume(-1);
+      showVoiceCommandResponse("音量を少し小さくしたよ");
+    },
+  },
+  {
+    name: "focusStart",
+    patterns: ["集中タイマーを始め", "タイマー始め", "集中始め", "タイマーをスタート"],
+    action: () => {
+      startFocusTimer();
+      showVoiceCommandResponse("集中タイマーを始めるね");
+    },
+  },
+  {
+    name: "focusPause",
+    patterns: ["タイマーを止め", "タイマー止め", "一時停止", "タイマーを一時停止"],
+    action: () => {
+      if (timerRunning) {
+        pauseFocusTimer();
+        showVoiceCommandResponse("タイマーを止めるね");
+      } else {
+        showVoiceCommandResponse("今はタイマーは動いていないよ");
+      }
+    },
+  },
+  {
+    name: "calculatorOpen",
+    patterns: ["電卓を開", "電卓開", "計算機を開"],
+    action: () => {
+      openCalculatorPanel({ announce: false });
+      showVoiceCommandResponse("電卓を開くね");
+    },
+  },
+  {
+    name: "calculatorClose",
+    patterns: ["電卓を閉じ", "電卓閉じ", "計算機を閉じ"],
+    action: () => {
+      closeCalculatorPanel();
+      showVoiceCommandResponse("電卓を閉じるね");
+    },
+  },
+  {
+    name: "speechOff",
+    patterns: ["音声オフ", "音声をオフ", "音声切って", "読み上げオフ", "声を切って"],
+    action: () => {
+      setSpeechEnabled(false);
+      showVoiceCommandResponse("音声をオフにしたよ");
+    },
+  },
+];
+
+function normalizeVoiceCommandText(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/[ 　\t\r\n、。,.!?！？「」『』（）()]/g, "")
+    .replace(/ヴ/g, "ブ")
+    .trim();
+}
+
+function runVoiceCommand(rawText) {
+  const commandText = normalizeVoiceCommandText(rawText);
+  if (!commandText) {
+    showVoiceCommandResponse("ごめんね、もう一回言ってね");
+    return;
+  }
+
+  const themeCommand = voiceThemeCommands.find((item) => item.patterns.some((pattern) => commandText.includes(normalizeVoiceCommandText(pattern))));
+  if (themeCommand) {
+    saveTheme(themeCommand.theme);
+    showVoiceCommandResponse(themeCommand.response);
+    return;
+  }
+
+  const volumeCommand = voiceCommandDefinitions
+    .filter((item) => item.name === "volumeUp" || item.name === "volumeDown")
+    .find((item) => item.patterns.some((pattern) => commandText.includes(normalizeVoiceCommandText(pattern))));
+  if (volumeCommand) {
+    volumeCommand.action();
+    return;
+  }
+
+  const command = voiceCommandDefinitions
+    .filter((item) => item.name !== "volumeUp" && item.name !== "volumeDown")
+    .find((item) => item.patterns.some((pattern) => commandText.includes(normalizeVoiceCommandText(pattern))));
+  if (command) {
+    command.action();
+    return;
+  }
+
+  showVoiceCommandResponse("ごめんね、もう一回言ってね");
+}
+
+function updateVoiceCommandUi() {
+  if (!voiceCommandButton) return;
+  const supported = Boolean(SpeechRecognitionClass);
+  voiceCommandButton.disabled = !supported;
+  voiceCommandButton.classList.toggle("active", voiceCommandListening);
+  voiceCommandButton.setAttribute("aria-pressed", String(voiceCommandListening));
+  voiceCommandButton.textContent = supported ? (voiceCommandListening ? "聞いています…" : "音声操作") : "音声操作非対応";
+}
+
+function startVoiceCommandRecognition() {
+  if (!SpeechRecognitionClass) {
+    showVoiceCommandResponse("このブラウザでは音声操作が使えないみたい");
+    updateVoiceCommandUi();
+    return;
+  }
+  if (voiceCommandListening) {
+    voiceRecognition?.abort?.();
+    return;
+  }
+
+  try {
+    const recognition = new SpeechRecognitionClass();
+    voiceRecognition = recognition;
+    recognition.lang = "ja-JP";
+    recognition.interimResults = false;
+    recognition.continuous = false;
+    recognition.maxAlternatives = 1;
+    recognition.onstart = () => {
+      voiceCommandListening = true;
+      updateVoiceCommandUi();
+      showVoiceCommandResponse("聞いています…", { holdMs: 3000 });
+    };
+    recognition.onresult = (event) => {
+      const transcript = event.results?.[0]?.[0]?.transcript || "";
+      runVoiceCommand(transcript);
+    };
+    recognition.onerror = () => {
+      showVoiceCommandResponse("ごめんね、もう一回言ってね");
+    };
+    recognition.onend = () => {
+      voiceCommandListening = false;
+      voiceRecognition = null;
+      updateVoiceCommandUi();
+    };
+    recognition.start();
+  } catch {
+    voiceCommandListening = false;
+    voiceRecognition = null;
+    updateVoiceCommandUi();
+    showVoiceCommandResponse("音声操作を始められなかったみたい");
+  }
 }
 
 function getTodayKey() {
@@ -2230,27 +2531,14 @@ bgmSettingsButton.addEventListener("click", () => {
 });
 calculatorButton.addEventListener("click", () => {
   const willOpen = calculatorPanel.hidden;
-  calculatorPanel.hidden = !willOpen;
-  calculatorButton.setAttribute("aria-expanded", String(willOpen));
-  controlPanel.classList.toggle("calculator-open", willOpen);
-  setCalculatorMode(willOpen);
   if (willOpen) {
-    namePanel.hidden = true;
-    themePanel.hidden = true;
-    anniversaryPanel.hidden = true;
-    bgmPanel.hidden = true;
-    nameSettingsButton.setAttribute("aria-expanded", "false");
-    themeSettingsButton.setAttribute("aria-expanded", "false");
-    anniversarySettingsButton.setAttribute("aria-expanded", "false");
-    bgmSettingsButton.setAttribute("aria-expanded", "false");
-    showCalculatorOpenMessage();
+    openCalculatorPanel();
+  } else {
+    closeCalculatorPanel();
   }
 });
 calculatorCloseButton.addEventListener("click", () => {
-  calculatorPanel.hidden = true;
-  calculatorButton.setAttribute("aria-expanded", "false");
-  controlPanel.classList.remove("calculator-open");
-  setCalculatorMode(false);
+  closeCalculatorPanel();
 });
 calculatorKeys.addEventListener("click", (event) => {
   const button = event.target.closest("button");
@@ -2258,6 +2546,7 @@ calculatorKeys.addEventListener("click", (event) => {
   handleCalculatorInput(button);
 });
 speechToggleButton?.addEventListener("click", toggleSpeech);
+voiceCommandButton?.addEventListener("click", startVoiceCommandRecognition);
 bgmToggle.addEventListener("click", toggleBgm);
 bgmMode.addEventListener("change", () => {
   bgmModeValue = bgmMode.value;
@@ -2316,6 +2605,7 @@ populateClockAlarmOptions();
 loadClockAlarm();
 loadBgmSettings();
 loadSpeechSettings();
+updateVoiceCommandUi();
 loadTheme();
 loadLargeTimerSetting();
 loadLargeClockSetting();
