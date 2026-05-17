@@ -577,9 +577,9 @@ function getSpeechProfile(character) {
     return { pitch: 0.84, rate: 0.9, volume: 0.95 };
   }
   if (character === "animal") {
-    return { pitch: 1.9, rate: 1.15, volume: 0.85 };
+    return { pitch: 2, rate: 1.25, volume: 0.8 };
   }
-  return { pitch: 1.65, rate: 1.05, volume: 1 };
+  return { pitch: 1.85, rate: 1.03, volume: 1 };
 }
 
 const speechReplacementDictionary = [
@@ -599,6 +599,9 @@ const speechReplacementDictionary = [
   ["生地", "きじ"],
   ["発酵", "はっこう"],
   ["焼成", "しょうせい"],
+  ["戻れる", "もどれる"],
+  ["大事", "だいじ"],
+  ["出る", "でる"],
   ["体", "からだ"],
 ];
 
