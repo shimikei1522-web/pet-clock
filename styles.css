@@ -1936,8 +1936,8 @@ h1 {
   .pet-actions {
     grid-column: 1 / -1;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 5px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
     min-width: 0;
   }
 
@@ -1947,9 +1947,9 @@ h1 {
 
   .daily-quote-button,
   .name-row button {
-    min-height: 36px;
-    padding: 0 5px;
-    font-size: clamp(11px, 3.2vw, 13px);
+    min-height: 31px;
+    padding: 0 4px;
+    font-size: clamp(10px, 2.8vw, 12px);
     white-space: nowrap;
   }
 
@@ -2171,6 +2171,18 @@ h1 {
   .calculator-display {
     min-height: 34px;
     font-size: 20px;
+  }
+
+  .pet-actions {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 3px;
+  }
+
+  .daily-quote-button,
+  .name-row button {
+    min-height: 29px;
+    padding: 0 3px;
+    font-size: 10px;
   }
 
   .large-stage-timer {

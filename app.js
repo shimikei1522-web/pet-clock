@@ -2005,11 +2005,11 @@ function stopVoiceRecognition() {
 }
 
 const continuousVoiceThemeCommands = [
-  { name: "themeNight", theme: "night", response: "夜空に変えるね", patterns: ["夜空にして", "背景を夜空にして", "夜の背景にして", "夜っぽくして", "夜空"] },
-  { name: "themeFresh", theme: "fresh", response: "さわやかな背景にするね", patterns: ["さわやかにして", "爽やかにして", "背景をさわやかにして", "明るい背景にして", "さわやか"] },
-  { name: "themeForest", theme: "forest", response: "森の背景にするね", patterns: ["森にして", "背景を森にして", "森の背景にして", "自然っぽくして"] },
-  { name: "themeCafe", theme: "cafe", response: "カフェの背景にするね", patterns: ["カフェにして", "背景をカフェにして", "カフェの背景にして", "お店っぽくして"] },
-  { name: "themeSeason", theme: "season", response: "季節の背景にするね", patterns: ["季節にして", "背景を季節にして", "季節の背景にして", "季節感のある背景にして"] },
+  { name: "themeNight", theme: "night", response: "夜空に変えるね", patterns: ["夜空にして", "背景を夜空にして", "夜の背景にして", "夜っぽくして", "夜空", "よぞら", "夜", "夜の背景"] },
+  { name: "themeFresh", theme: "fresh", response: "さわやかな背景にするね", patterns: ["さわやかにして", "爽やかにして", "背景をさわやかにして", "明るい背景にして", "さわやか", "爽やか", "明るい", "すっきり", "青空", "やさしい", "優しい"] },
+  { name: "themeForest", theme: "forest", response: "森の背景にするね", patterns: ["森にして", "背景を森にして", "森の背景にして", "自然っぽくして", "森", "もり", "自然", "緑", "みどり"] },
+  { name: "themeCafe", theme: "cafe", response: "カフェの背景にするね", patterns: ["カフェにして", "背景をカフェにして", "カフェの背景にして", "お店っぽくして", "カフェ", "お店", "店", "喫茶店"] },
+  { name: "themeSeason", theme: "season", response: "季節の背景にするね", patterns: ["季節にして", "背景を季節にして", "季節の背景にして", "季節感のある背景にして", "季節", "きせつ", "季節感"] },
 ];
 
 const continuousVoiceCommands = [
@@ -2047,12 +2047,222 @@ function normalizeContinuousVoiceCommandText(text) {
   return katakanaToHiragana(String(text || ""))
     .toLowerCase()
     .replace(/[ 　\t\r\n、。,.!?！？「」『』（）()]/g, "")
-    .replace(/５/g, "5")
-    .replace(/１０|十/g, "10")
-    .replace(/１５|十五/g, "15")
-    .replace(/２５|二十五/g, "25")
     .replace(/４５|四十五/g, "45")
+    .replace(/２５|二十五/g, "25")
+    .replace(/１５|十五/g, "15")
+    .replace(/１０|十分|十/g, "10")
+    .replace(/５|五/g, "5")
     .trim();
+}
+
+function voiceIncludes(commandText, patterns) {
+  return patterns.some((pattern) => commandText.includes(normalizeContinuousVoiceCommandText(pattern)));
+}
+
+function isFocusTimerPaused() {
+  return !timerRunning && timerEndAt > 0 && remainingSeconds > 0 && remainingSeconds < selectedMinutes * 60;
+}
+
+function startFocusTimerFromVoice() {
+  if (timerRunning) {
+    showVoiceCommandResponse("もう動いているよ");
+    return;
+  }
+  const wasPaused = isFocusTimerPaused();
+  startFocusTimer();
+  showVoiceCommandResponse(wasPaused ? "続きから始めるね" : "タイマーを始めるね");
+}
+
+function pauseFocusTimerFromVoice() {
+  if (alarmRinging) {
+    stopAlarm();
+    showVoiceCommandResponse("アラームを止めるね");
+    return;
+  }
+  if (timerRunning) {
+    pauseFocusTimer();
+    showVoiceCommandResponse("タイマーを止めるね");
+    return;
+  }
+  if (bgmEnabled) {
+    setBgmFromVoice(false);
+    return;
+  }
+  showVoiceCommandResponse("今は止めるものがないよ");
+}
+
+function resetFocusTimerFromVoice() {
+  resetFocusTimer();
+  showVoiceCommandResponse("タイマーをリセットしたよ");
+}
+
+function clearCalculatorFromVoice() {
+  if (calculatorPanel.hidden) {
+    showVoiceCommandResponse("電卓はまだ開いていないよ");
+    return;
+  }
+  resetCalculator();
+  showVoiceCommandResponse("電卓をクリアしたよ");
+}
+
+function setFocusMinutesMaybeStart(minutes, commandText) {
+  setFocusMinutesFromVoice(minutes);
+  if (voiceIncludes(commandText, ["スタート", "始めて", "はじめて", "開始", "再開"])) {
+    startFocusTimerFromVoice();
+  }
+}
+
+function handleShortVoiceCommand(commandText) {
+  if (voiceIncludes(commandText, ["リセット", "タイマーリセット", "集中タイマーリセット", "最初に戻して", "はじめに戻して", "タイマーを戻して", "時間を戻して", "もう一度最初から", "最初から"])) {
+    resetFocusTimerFromVoice();
+    return true;
+  }
+
+  const timerMinuteCommands = [
+    [45, ["45分", "45分タイマー", "45分集中", "よんじゅうごふん", "四十五分"]],
+    [25, ["25分", "25分タイマー", "25分集中", "にじゅうごふん", "二十五分"]],
+    [15, ["15分", "15分タイマー", "15分集中", "じゅうごふん", "十五分"]],
+    [10, ["10分", "10分タイマー", "10分集中", "じゅっぷん", "十分"]],
+    [5, ["5分", "5分タイマー", "5分集中", "ごふん", "ごぶん", "五分"]],
+  ];
+  const minuteCommand = timerMinuteCommands.find(([, patterns]) => voiceIncludes(commandText, patterns));
+  if (minuteCommand) {
+    setFocusMinutesMaybeStart(minuteCommand[0], commandText);
+    return true;
+  }
+
+  if (alarmRinging && voiceIncludes(commandText, ["止めて", "とめて", "ストップ", "停止", "アラーム止めて", "アラームを止めて", "うるさい", "目覚まし止めて"])) {
+    stopAlarm();
+    showVoiceCommandResponse("アラームを止めるね");
+    return true;
+  }
+
+  if (voiceIncludes(commandText, ["スタート", "タイマースタート", "始めて", "はじめて", "開始", "再開", "もう一回", "もう一度", "動かして", "続けて"])) {
+    startFocusTimerFromVoice();
+    return true;
+  }
+
+  if (voiceIncludes(commandText, ["止めて", "とめて", "ストップ", "停止", "一時停止", "休憩", "待って", "いったん止めて"])) {
+    pauseFocusTimerFromVoice();
+    return true;
+  }
+
+  if (!calculatorPanel.hidden && voiceIncludes(commandText, ["閉じて", "とじて", "閉じる", "しまって"])) {
+    closeCalculatorPanel();
+    showVoiceCommandResponse("電卓を閉じるね");
+    return true;
+  }
+
+  if (!calculatorPanel.hidden && voiceIncludes(commandText, ["クリア", "ac", "消して", "計算消して"])) {
+    clearCalculatorFromVoice();
+    return true;
+  }
+
+  if (voiceIncludes(commandText, ["電卓", "計算", "計算する", "計算したい", "開いて"])) {
+    if (calculatorPanel.hidden) {
+      openCalculatorPanel({ announce: false });
+      showVoiceCommandResponse("電卓を開くね");
+    } else {
+      showVoiceCommandResponse("もう電卓は開いているよ");
+    }
+    return true;
+  }
+
+  if (voiceIncludes(commandText, ["背景戻して", "背景を戻して", "元に戻して", "デフォルト", "背景リセット"])) {
+    saveTheme("fresh");
+    showVoiceCommandResponse("背景を戻すね");
+    return true;
+  }
+
+  const shortThemeCommand = continuousVoiceThemeCommands.find((item) => voiceIncludes(commandText, item.patterns));
+  if (shortThemeCommand) {
+    saveTheme(shortThemeCommand.theme);
+    showVoiceCommandResponse(shortThemeCommand.response);
+    return true;
+  }
+
+  if (bgmEnabled && voiceIncludes(commandText, ["上げて", "あげて", "大きくして", "もっと大きく", "聞こえない"])) {
+    changeAppVolume(1);
+    showVoiceCommandResponse("音量を少し上げたよ");
+    return true;
+  }
+  if (voiceIncludes(commandText, ["音量上げて", "音量を上げて"])) {
+    changeAppVolume(1);
+    showVoiceCommandResponse("音量を少し上げたよ");
+    return true;
+  }
+  if (bgmEnabled && voiceIncludes(commandText, ["下げて", "さげて", "小さくして", "うるさい", "静かにして"])) {
+    changeAppVolume(-1);
+    showVoiceCommandResponse("音量を少し小さくしたよ");
+    return true;
+  }
+  if (voiceIncludes(commandText, ["音量下げて", "音量を下げて"])) {
+    changeAppVolume(-1);
+    showVoiceCommandResponse("音量を少し小さくしたよ");
+    return true;
+  }
+
+  if (voiceIncludes(commandText, ["bgm止めて", "bgm消して", "bgmオフ", "音楽止めて", "音楽消して", "音楽オフ"])) {
+    setBgmFromVoice(false);
+    return true;
+  }
+
+  if (voiceIncludes(commandText, ["bgm", "音楽", "流して", "かけて"])) {
+    setBgmFromVoice(true);
+    return true;
+  }
+
+  if (voiceIncludes(commandText, ["小さく", "大画面やめて", "普通に戻して", "戻して"])) {
+    if (largeClockEnabled) {
+      setLargeClockMode(false);
+      showVoiceCommandResponse("大画面をやめるね");
+      return true;
+    }
+    if (largeTimerEnabled) {
+      setLargeTimerMode(false);
+      showVoiceCommandResponse("タイマーの大画面をやめるね");
+      return true;
+    }
+    if (selectedPetStyle === "new" && voiceIncludes(commandText, ["戻して", "いつもの", "通常版", "元のペパーてんこ"])) {
+      setPetStyleFromVoice("classic");
+      return true;
+    }
+  }
+
+  if (voiceIncludes(commandText, ["タイマー大画面", "タイマー大きく", "カウント大きく"])) {
+    setLargeTimerMode(true);
+    showVoiceCommandResponse("集中タイマーを大きく表示するね");
+    return true;
+  }
+  if (voiceIncludes(commandText, ["タイマー小さく", "タイマー大画面やめて"])) {
+    setLargeTimerMode(false);
+    showVoiceCommandResponse("タイマーの大画面をやめるね");
+    return true;
+  }
+  if (voiceIncludes(commandText, ["大画面", "大きく", "時計大きく", "時計を大きく", "時刻大画面"])) {
+    setLargeClockMode(true);
+    showVoiceCommandResponse("時計を大きく表示するね");
+    return true;
+  }
+
+  if (voiceIncludes(commandText, ["アナログ", "丸い時計", "アナログ時計"])) {
+    setClockDisplayModeFromVoice("analog");
+    return true;
+  }
+  if (voiceIncludes(commandText, ["デジタル", "数字の時計", "デジタル時計"])) {
+    setClockDisplayModeFromVoice("digital");
+    return true;
+  }
+  if (voiceIncludes(commandText, ["新スタイル", "新しいスタイル", "新しい姿", "新しいペパーてんこ"])) {
+    setPetStyleFromVoice("new");
+    return true;
+  }
+  if (voiceIncludes(commandText, ["通常スタイル", "いつもの", "いつもの姿", "通常版", "元のペパーてんこ"])) {
+    setPetStyleFromVoice("classic");
+    return true;
+  }
+
+  return false;
 }
 
 function executeContinuousVoiceCommand(name, action) {
@@ -2067,8 +2277,10 @@ function runVoiceCommand(rawText) {
   const commandText = normalizeContinuousVoiceCommandText(rawText);
   if (commandText.length < 2) return;
 
+  if (handleShortVoiceCommand(commandText)) return;
+
   const themeCommand = continuousVoiceThemeCommands.find((item) =>
-    item.patterns.some((pattern) => commandText.includes(normalizeContinuousVoiceCommandText(pattern))),
+    voiceIncludes(commandText, item.patterns),
   );
   if (themeCommand) {
     executeContinuousVoiceCommand(themeCommand.name, () => {
@@ -2084,7 +2296,7 @@ function runVoiceCommand(rawText) {
     ...continuousVoiceCommands.filter((item) => !priorityNames.includes(item.name)),
   ];
   const command = orderedCommands.find((item) =>
-    item.patterns.some((pattern) => commandText.includes(normalizeContinuousVoiceCommandText(pattern))),
+    voiceIncludes(commandText, item.patterns),
   );
 
   if (command) {
