@@ -113,6 +113,8 @@ let voiceRecognition = null;
 let voiceCommandListening = false;
 let voiceCommandEnabled = false;
 let voiceCommandRestartTimer = 0;
+let lastVoiceCommandFailAt = 0;
+let voiceCommandFailureGuideShown = false;
 let lastVoiceCommandName = "";
 let lastVoiceCommandAt = 0;
 const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1065,6 +1067,29 @@ function showVoiceCommandResponse(text, options = {}) {
   message.textContent = text;
 }
 
+function speakVoiceCommandResponse(text, options = {}) {
+  showVoiceCommandResponse(text, options);
+  if (!speechEnabled || !speechSupported || alarmRinging) return;
+  queueSpeech("pet", text);
+}
+
+function announcePetStyleChange(text, options = {}) {
+  showVoiceCommandResponse(text, options);
+  if (!speechEnabled || !speechSupported || alarmRinging) return;
+  queueSpeech("pet", text);
+}
+
+function handleVoiceCommandFailure(reason = "unknown") {
+  if (!voiceCommandEnabled) return;
+  const now = Date.now();
+  if (now - lastVoiceCommandFailAt < 15000) return;
+  lastVoiceCommandFailAt = now;
+
+  const text = "ん？";
+  voiceCommandFailureGuideShown = true;
+  showVoiceCommandResponse(text, { holdMs: 2200 });
+}
+
 function changeAppVolume(direction) {
   const levels = [0.04, 0.08, 0.13];
   const nearestIndex = levels.reduce((best, level, index) => {
@@ -1800,7 +1825,7 @@ function normalizeVoiceCommandText(text) {
 function runVoiceCommand(rawText) {
   const commandText = normalizeVoiceCommandText(rawText);
   if (!commandText) {
-    showVoiceCommandResponse("ごめんね、もう一回言ってね");
+    handleVoiceCommandFailure("empty");
     return;
   }
 
@@ -1827,7 +1852,7 @@ function runVoiceCommand(rawText) {
     return;
   }
 
-  showVoiceCommandResponse("ごめんね、もう一回言ってね");
+  handleVoiceCommandFailure("unknown");
 }
 
 function updateVoiceCommandUi() {
@@ -1860,14 +1885,19 @@ function startVoiceCommandRecognition() {
     recognition.onstart = () => {
       voiceCommandListening = true;
       updateVoiceCommandUi();
-      showVoiceCommandResponse("聞いています…", { holdMs: 3000 });
     };
     recognition.onresult = (event) => {
       const transcript = event.results?.[0]?.[0]?.transcript || "";
       runVoiceCommand(transcript);
     };
-    recognition.onerror = () => {
-      showVoiceCommandResponse("ごめんね、もう一回言ってね");
+    recognition.onerror = (event) => {
+      if (event?.error === "not-allowed" || event?.error === "service-not-allowed") {
+        showVoiceCommandResponse("マイクの許可が必要みたい");
+        return;
+      }
+      if (event?.error !== "no-speech") {
+        handleVoiceCommandFailure(event?.error || "unknown");
+      }
     };
     recognition.onend = () => {
       voiceCommandListening = false;
@@ -1910,7 +1940,7 @@ function applyPetStyle(style, { announce = false } = {}) {
     quoteHoldUntil = Date.now() + 7000;
     hideChefMessage();
     hideAnimalMessage();
-    message.textContent = selectedPetStyle === "new" ? "新しい姿になったよ" : "いつもの姿に戻ったよ";
+    announcePetStyleChange(selectedPetStyle === "new" ? "ちょっと成長したよ！" : "いつもの姿に戻ったよ");
   }
 }
 
@@ -1931,12 +1961,12 @@ function togglePetStyle() {
 function setPetStyleFromVoice(style) {
   const target = petStyleSources[style] ? style : "classic";
   if (selectedPetStyle === target) {
-    showVoiceCommandResponse(target === "new" ? "もう新スタイルだよ" : "もう通常スタイルだよ");
+    speakVoiceCommandResponse(target === "new" ? "もう新スタイルだよ" : "もう通常スタイルだよ");
     return;
   }
   applyPetStyle(target);
   savePetStyle();
-  showVoiceCommandResponse(target === "new" ? "新しいスタイルにするね" : "いつものスタイルに戻すね");
+  speakVoiceCommandResponse(target === "new" ? "ちょっと成長したよ！" : "いつものスタイルに戻すね");
 }
 
 function setFocusMinutesFromVoice(minutes) {
@@ -1995,6 +2025,8 @@ function stopVoiceRecognition() {
   voiceCommandRestartTimer = 0;
   voiceCommandEnabled = false;
   voiceCommandListening = false;
+  voiceCommandFailureGuideShown = false;
+  lastVoiceCommandFailAt = 0;
   if (voiceRecognition) {
     const recognition = voiceRecognition;
     voiceRecognition = null;
@@ -2311,9 +2343,7 @@ function runVoiceCommand(rawText) {
     return;
   }
 
-  if (Date.now() - lastVoiceCommandAt > 4500) {
-    showVoiceCommandResponse("ごめんね、もう一回言ってね", { holdMs: 3500 });
-  }
+  handleVoiceCommandFailure("unknown");
 }
 
 function updateVoiceCommandUi() {
@@ -2366,6 +2396,9 @@ function startVoiceRecognitionSession() {
         showVoiceCommandResponse("マイクの許可が必要みたい");
         return;
       }
+      if (event.error !== "no-speech") {
+        handleVoiceCommandFailure(event.error || "unknown");
+      }
       scheduleVoiceRecognitionRestart(event.error === "no-speech" ? 900 : 1500);
     };
     recognition.onend = () => {
@@ -2397,7 +2430,12 @@ function startVoiceCommandRecognition() {
   voiceCommandEnabled = true;
   saveVoiceCommandSetting();
   updateVoiceCommandUi();
-  showVoiceCommandResponse("音声操作ON。聞き取り中だよ", { holdMs: 4500 });
+  voiceCommandFailureGuideShown = false;
+  lastVoiceCommandFailAt = 0;
+  showVoiceCommandResponse("音声操作オンだよ。聞いてるよ", { holdMs: 3500 });
+  if (speechEnabled && speechSupported && !alarmRinging) {
+    queueSpeech("pet", "音声操作オンだよ。聞いてるよ");
+  }
   startVoiceRecognitionSession();
 }
 
