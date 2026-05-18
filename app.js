@@ -655,7 +655,7 @@ function pickSpeechVoice(character) {
 }
 
 const classicPepaatennkoSpeechProfile = { pitch: 1.85, rate: 1.22, volume: 1 };
-const newStylePepaatennkoSpeechProfile = { pitch: 1.4, rate: 0.98, volume: 1 };
+const newStylePepaatennkoSpeechProfile = { pitch: 1.4, rate: 1.03, volume: 1 };
 
 function getPepaatennkoVoiceProfile() {
   return selectedPetStyle === "new" ? newStylePepaatennkoSpeechProfile : classicPepaatennkoSpeechProfile;
