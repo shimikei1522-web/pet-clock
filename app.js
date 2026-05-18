@@ -45,6 +45,9 @@ const speechToggleButton = document.querySelector("#speechToggleButton");
 const voiceCommandButton = document.querySelector("#voiceCommandButton");
 const vibrationToggleButton = document.querySelector("#vibrationToggleButton");
 const petStyleToggleButton = document.querySelector("#petStyleToggleButton");
+const stageThemeButton = document.querySelector("#stageThemeButton");
+const stageStyleButton = document.querySelector("#stageStyleButton");
+const stageSpeechButton = document.querySelector("#stageSpeechButton");
 const calculatorButton = document.querySelector("#calculatorButton");
 const calculatorPanel = document.querySelector("#calculatorPanel");
 const calculatorCloseButton = document.querySelector("#calculatorCloseButton");
@@ -601,6 +604,14 @@ function updateSpeechToggleUi() {
       ? "セリフ音声ON"
       : "セリフ音声OFF"
     : "音声非対応";
+  if (stageSpeechButton) {
+    stageSpeechButton.textContent = speechSupported
+      ? speechEnabled
+        ? "🔊 声ON"
+        : "🔇 声OFF"
+      : "🔇 非対応";
+    stageSpeechButton.classList.toggle("active", speechEnabled);
+  }
 }
 
 function refreshSpeechVoices() {
@@ -1973,6 +1984,10 @@ function updatePetStyleUi() {
   petStyleToggleButton.classList.toggle("active", isNewStyle);
   petStyleToggleButton.setAttribute("aria-pressed", String(isNewStyle));
   petStyleToggleButton.textContent = isNewStyle ? "新スタイル" : "通常スタイル";
+  if (stageStyleButton) {
+    stageStyleButton.textContent = isNewStyle ? "🐾 新スタイル" : "🐾 通常";
+    stageStyleButton.classList.toggle("active", isNewStyle);
+  }
 }
 
 function savePetStyle() {
@@ -3363,6 +3378,9 @@ calculatorKeys.addEventListener("click", (event) => {
 speechToggleButton?.addEventListener("click", toggleSpeech);
 voiceCommandButton?.addEventListener("click", startVoiceCommandRecognition);
 petStyleToggleButton?.addEventListener("click", togglePetStyle);
+stageThemeButton?.addEventListener("click", () => themeSettingsButton?.click());
+stageStyleButton?.addEventListener("click", () => petStyleToggleButton?.click());
+stageSpeechButton?.addEventListener("click", () => speechToggleButton?.click());
 bgmToggle.addEventListener("click", toggleBgm);
 bgmMode.addEventListener("change", () => {
   bgmModeValue = bgmMode.value;
