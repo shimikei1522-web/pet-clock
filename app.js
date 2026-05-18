@@ -44,6 +44,7 @@ const bgmVolume = document.querySelector("#bgmVolume");
 const speechToggleButton = document.querySelector("#speechToggleButton");
 const voiceCommandButton = document.querySelector("#voiceCommandButton");
 const vibrationToggleButton = document.querySelector("#vibrationToggleButton");
+const whimsyToggleButton = document.querySelector("#whimsyToggleButton");
 const petStyleToggleButton = document.querySelector("#petStyleToggleButton");
 const stageThemeButton = document.querySelector("#stageThemeButton");
 const stageStyleButton = document.querySelector("#stageStyleButton");
@@ -123,6 +124,17 @@ let lastVoiceCommandName = "";
 let lastVoiceCommandAt = 0;
 let lastVoiceChatAt = 0;
 let vibrationEnabled = false;
+let whimsySwapEnabled = false;
+let whimsySwapActive = false;
+let whimsyOriginStyle = "classic";
+let whimsyReturnTimerId = 0;
+let whimsyStartedAt = Date.now();
+let whimsyLastSwapAt = 0;
+let whimsyLastManualStyleAt = 0;
+let whimsyNextCheckAt = Date.now() + 10 * 60 * 1000;
+let whimsyDailyCount = 0;
+let whimsyDailyDate = "";
+let lastUserActionAt = Date.now();
 const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
 let calculatorValue = "0";
 let calculatorStoredValue = null;
@@ -143,6 +155,22 @@ let anniversaries = {};
 let selectedTheme = "fresh";
 let selectedPetStyle = "classic";
 const PET_REACTION_HOLD_MS = 9000;
+const WHIMSY_SWAP_HOLD_MIN_MS = 5000;
+const WHIMSY_SWAP_HOLD_MAX_MS = 8000;
+const WHIMSY_SWAP_IDLE_MS = 30000;
+const WHIMSY_SWAP_MIN_SESSION_MS = 3 * 60 * 1000;
+const WHIMSY_SWAP_MAX_PER_DAY = 3;
+
+const whimsySwapLines = {
+  intro: {
+    classic: ["ねえねえ、私も出たいな〜", "いつもの私も忘れないでよ〜", "ちょっとだけ交代！", "私の番もほしいな！"],
+    new: ["ちょっと成長した私も見てほしいな", "少しだけ、今の私でいくね", "新しい私にも出番ちょうだい", "ちょっとだけ交代するね"],
+  },
+  comeback: {
+    classic: ["も〜、勝手に出ないでよ〜", "私の番だったでしょ！", "はい、戻ったよ！", "びっくりした？えへへ"],
+    new: ["はいはい、戻るね", "少しだけならいいけど、今は私の番かな", "落ち着いて、元に戻るね", "ふふ、にぎやかだね"],
+  },
+};
 
 const bgmPatterns = {
   gentle: {
@@ -534,6 +562,75 @@ function toggleVibration() {
     // Confirmation pulse only when vibration is enabled.
     vibrateIfEnabled(30);
   }
+}
+
+function touchUserActivity() {
+  lastUserActionAt = Date.now();
+}
+
+function saveWhimsySwapSetting() {
+  try {
+    localStorage.setItem("pepaatennkoWhimsySwapEnabled", String(whimsySwapEnabled));
+  } catch {
+    // localStorage may be unavailable in some private browsing modes.
+  }
+}
+
+function loadWhimsySwapSetting() {
+  try {
+    whimsySwapEnabled = localStorage.getItem("pepaatennkoWhimsySwapEnabled") === "true";
+  } catch {
+    whimsySwapEnabled = false;
+  }
+  whimsySwapEnabled = Boolean(whimsySwapEnabled);
+}
+
+function updateWhimsySwapUi() {
+  if (!whimsyToggleButton) return;
+  whimsyToggleButton.classList.toggle("active", whimsySwapEnabled);
+  whimsyToggleButton.setAttribute("aria-pressed", String(whimsySwapEnabled));
+  whimsyToggleButton.textContent = whimsySwapEnabled ? "気まぐれON" : "気まぐれOFF";
+}
+
+function saveWhimsySwapDailyState() {
+  try {
+    localStorage.setItem("pepaatennkoWhimsySwapDaily", JSON.stringify({ date: whimsyDailyDate, count: whimsyDailyCount }));
+  } catch {
+    // localStorage may be unavailable in some private browsing modes.
+  }
+}
+
+function loadWhimsySwapDailyState() {
+  const today = new Date().toISOString().slice(0, 10);
+  whimsyDailyDate = today;
+  whimsyDailyCount = 0;
+  try {
+    const saved = JSON.parse(localStorage.getItem("pepaatennkoWhimsySwapDaily") || "{}");
+    if (saved && saved.date === today && Number.isFinite(saved.count)) {
+      whimsyDailyCount = clamp(Math.floor(saved.count), 0, WHIMSY_SWAP_MAX_PER_DAY);
+    }
+  } catch {
+    whimsyDailyCount = 0;
+  }
+}
+
+function markWhimsyManualStyleChange() {
+  whimsyLastManualStyleAt = Date.now();
+}
+
+function toggleWhimsySwap() {
+  whimsySwapEnabled = !whimsySwapEnabled;
+  saveWhimsySwapSetting();
+  updateWhimsySwapUi();
+  touchUserActivity();
+  if (!whimsySwapEnabled) {
+    window.clearTimeout(whimsyReturnTimerId);
+    whimsySwapActive = false;
+    whimsyReturnTimerId = 0;
+    whimsyNextCheckAt = Date.now() + 10 * 60 * 1000;
+    return;
+  }
+  whimsyNextCheckAt = Date.now() + (10 + Math.random() * 10) * 60 * 1000;
 }
 
 function showCalculatorPetMessage(text, holdMs = 6500) {
@@ -2024,6 +2121,8 @@ function loadPetStyle() {
 }
 
 function togglePetStyle() {
+  markWhimsyManualStyleChange();
+  touchUserActivity();
   applyPetStyle(selectedPetStyle === "new" ? "classic" : "new", { announce: true });
   savePetStyle();
 }
@@ -2034,9 +2133,59 @@ function setPetStyleFromVoice(style) {
     speakVoiceCommandResponse(target === "new" ? "もう新スタイルだよ" : "もう通常スタイルだよ");
     return;
   }
+  markWhimsyManualStyleChange();
+  touchUserActivity();
   applyPetStyle(target);
   savePetStyle();
   speakVoiceCommandResponse(target === "new" ? "ちょっと成長したよ！" : "いつものスタイルに戻すね");
+}
+
+function shouldBlockWhimsySwap(now = Date.now()) {
+  if (!whimsySwapEnabled || whimsySwapActive) return true;
+  if (now - whimsyStartedAt < WHIMSY_SWAP_MIN_SESSION_MS) return true;
+  if (timerRunning || isFocusTimerPaused()) return true;
+  if (alarmRinging) return true;
+  if (!calculatorPanel.hidden) return true;
+  if (voiceCommandListening) return true;
+  if (now - lastUserActionAt < WHIMSY_SWAP_IDLE_MS) return true;
+  if (now - whimsyLastManualStyleAt < 60000) return true;
+  if (now < quoteHoldUntil) return true;
+  const today = new Date().toISOString().slice(0, 10);
+  if (whimsyDailyDate !== today) {
+    whimsyDailyDate = today;
+    whimsyDailyCount = 0;
+    saveWhimsySwapDailyState();
+  }
+  return whimsyDailyCount >= WHIMSY_SWAP_MAX_PER_DAY;
+}
+
+function runWhimsySwap(now = Date.now()) {
+  whimsySwapActive = true;
+  whimsyOriginStyle = selectedPetStyle === "new" ? "new" : "classic";
+  const cameoStyle = whimsyOriginStyle === "new" ? "classic" : "new";
+  applyPetStyle(cameoStyle);
+  const intro = pickFresh(whimsySwapLines.intro[cameoStyle], recentPetLines, 6);
+  const holdMs = Math.round(WHIMSY_SWAP_HOLD_MIN_MS + Math.random() * (WHIMSY_SWAP_HOLD_MAX_MS - WHIMSY_SWAP_HOLD_MIN_MS));
+  speakVoiceCommandResponse(intro, { holdMs: holdMs + 1800 });
+  whimsyDailyCount = clamp(whimsyDailyCount + 1, 0, WHIMSY_SWAP_MAX_PER_DAY);
+  saveWhimsySwapDailyState();
+  whimsyLastSwapAt = now;
+  window.clearTimeout(whimsyReturnTimerId);
+  whimsyReturnTimerId = window.setTimeout(() => {
+    applyPetStyle(whimsyOriginStyle);
+    const comeback = pickFresh(whimsySwapLines.comeback[whimsyOriginStyle], recentPetLines, 6);
+    speakVoiceCommandResponse(comeback, { holdMs: 7000 });
+    whimsySwapActive = false;
+  }, holdMs);
+}
+
+function maybeRunWhimsySwap(now = Date.now()) {
+  if (now < whimsyNextCheckAt) return;
+  whimsyNextCheckAt = now + (10 + Math.random() * 10) * 60 * 1000;
+  if (shouldBlockWhimsySwap(now)) return;
+  if (now - whimsyLastSwapAt < 10 * 60 * 1000) return;
+  if (Math.random() > 0.28) return;
+  runWhimsySwap(now);
 }
 
 function setFocusMinutesFromVoice(minutes) {
@@ -3008,6 +3157,7 @@ function updateClock() {
   showExactTimeEvent(now);
   showSeasonEvent(now);
   maybeShowConversation();
+  maybeRunWhimsySwap(now.getTime());
   if (period !== lastPeriod && !timerRunning && !alarmRinging && Date.now() >= quoteHoldUntil) {
     lastPeriod = period;
     updateMoodDisplay();
@@ -3438,6 +3588,7 @@ calculatorKeys.addEventListener("click", (event) => {
   if (!button) return;
   handleCalculatorInput(button);
 });
+whimsyToggleButton?.addEventListener("click", toggleWhimsySwap);
 speechToggleButton?.addEventListener("click", toggleSpeech);
 voiceCommandButton?.addEventListener("click", startVoiceCommandRecognition);
 petStyleToggleButton?.addEventListener("click", togglePetStyle);
@@ -3481,6 +3632,7 @@ sheet.addEventListener("error", () => {
 });
 
 stage.addEventListener("click", (event) => {
+  touchUserActivity();
   if (event.target.closest(".animal-friend")) {
     vibrateIfEnabled([30, 40, 30]);
   } else if (event.target.closest(".friend")) {
@@ -3495,6 +3647,7 @@ stage.addEventListener("click", (event) => {
   chooseAction();
 });
 stage.addEventListener("keydown", (event) => {
+  touchUserActivity();
   if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
     if (alarmRinging) {
@@ -3509,6 +3662,7 @@ stage.tabIndex = 0;
 document.addEventListener(
   "click",
   (event) => {
+    touchUserActivity();
     const target = event.target;
     if (!(target instanceof Element)) return;
     if (!vibrationEnabled) return;
@@ -3522,11 +3676,14 @@ document.addEventListener(
 loadUserName();
 loadAnniversaries();
 loadVibrationSetting();
+loadWhimsySwapSetting();
+loadWhimsySwapDailyState();
 populateClockAlarmOptions();
 loadClockAlarm();
 loadBgmSettings();
 loadSpeechSettings();
 updateVibrationUi();
+updateWhimsySwapUi();
 loadVoiceCommandSetting();
 loadTheme();
 loadPetStyle();
