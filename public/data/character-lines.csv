@@ -1,0 +1,110 @@
+﻿id,character,style,category,text,speechText,enabled,notes
+pet_n_001,pepaatennko,normal,solo,今日もいい感じだよ。,きょうもいいかんじだよ。,TRUE,
+pet_n_002,pepaatennko,normal,solo,ひとつずつ進めよう。,ひとつずつすすめよう。,TRUE,
+pet_new_001,pepaatennko,newStyle,solo,今のペースで大丈夫。,いまのぺーすでだいじょうぶ。,TRUE,
+pet_new_002,pepaatennko,newStyle,solo,焦らず進めよう。,あせらずすすめよう。,TRUE,
+chef_001,chef,any,solo,いい手つきですね。,いいてつきですね。,TRUE,
+chef_002,chef,any,solo,その確認、大事ですよ。,そのかくにん、だいじですよ。,TRUE,
+animal_001,animal,any,solo,となりで見てるね。,となりでみてるね。,TRUE,
+animal_002,animal,any,solo,ちょこんと応援中だよ。,ちょこんとおうえんちゅうだよ。,TRUE,
+conv_001a,pepaatennko,any,conversation_pet,今日もいい感じだね,きょうもいいかんじだね,TRUE,会話ペット側
+conv_001b,chef,any,conversation_chef,その調子でいきましょう,そのちょうしでいきましょう,TRUE,会話シェフ側
+conv_002a,pepaatennko,any,conversation_pet,少しずつ進んでるね,すこしずつすすんでるね,TRUE,
+conv_002b,chef,any,conversation_chef,積み重ねが大事です,つみかさねがだいじです,TRUE,
+anniv_001,system,any,anniversary,今日は特別な日だね。おめでとう！,きょうはとくべつなひだね。おめでとう！,TRUE,
+anniv_002,system,any,anniversary,今日は大切な日だね。いい一日になりますように,きょうはたいせつなひだね。いいいちにちになりますように,TRUE,
+calc_res_001,system,any,calculatorResult,答えは {result} だよ,こたえは {result} だよ,TRUE,
+calc_res_002,system,any,calculatorResult,計算できたよ。答えは {result},けいさんできたよ。こたえは {result},TRUE,
+calc_err_001,system,any,calculatorError,0では割れないよ,ぜろではわれないよ,TRUE,
+calc_err_002,system,any,calculatorError,うまく計算できなかったみたい,うまくけいさんできなかったみたい,TRUE,
+timer_done_001,system,any,timerComplete,ひとつ終わったね。よくがんばったよ。,ひとつおわったね。よくがんばったよ。,TRUE,
+timer_done_002,system,any,timerComplete,休憩したら、また一緒に始めよう。,きゅうけいしたら、またいっしょにはじめよう。,TRUE,
+alarm_guide_001,system,any,alarmGuide,アラームの時間だよ。ペットをタップして止めてね。,あらーむのじかんだよ。ぺっとをたっぷしてとめてね。,TRUE,
+alarm_guide_002,system,any,alarmGuide,時間になったよ。まずはアラームを止めよう。,じかんになったよ。まずはあらーむをとめよう。,TRUE,
+voiceCommandOn,pet,any,voiceCommand,音声操作オンだよ。聞いてるよ,おんせいそうさおんだよ。きいてるよ,TRUE,
+voiceCommandOff,pet,any,voiceCommand,音声操作をオフにするね,おんせいそうさをおふにするね,TRUE,
+unsupported,pet,any,voiceCommand,このブラウザでは音声操作が使えないみたい,このぶらうざではおんせいそうさがつかえないみたい,TRUE,
+micPermission,pet,any,voiceCommand,マイクの許可が必要みたい,まいくのきょかがひつようみたい,TRUE,
+timerStart,pet,any,voiceCommand,タイマーを始めるね,たいまーをはじめるね,TRUE,
+timerResume,pet,any,voiceCommand,続きから始めるね,つづきからはじめるね,TRUE,
+timerPause,pet,any,voiceCommand,タイマーを止めるね,たいまーをとめるね,TRUE,
+timerReset,pet,any,voiceCommand,タイマーをリセットしたよ,たいまーをりせっとしたよ,TRUE,
+calculatorOpen,pet,any,voiceCommand,電卓を開くね,でんたくをひらくね,TRUE,
+calculatorClose,pet,any,voiceCommand,電卓を閉じるね,でんたくをとじるね,TRUE,
+speechOn,pet,any,voiceCommand,セリフ音声をオンにするね,せりふおんせいをおんにするね,TRUE,
+speechOff,pet,any,voiceCommand,音声をオフにしたよ,おんせいをおふにしたよ,TRUE,
+alarmStop,pet,any,voiceCommand,アラームを止めるね,あらーむをとめるね,TRUE,
+daily001,system,any,daily,今日も一緒に、全力で楽しもうね！,,TRUE,
+daily002,system,any,daily,無理しないで、自分のペースでボチボチがんばろ！,,TRUE,
+daily003,system,any,daily,今日もお疲れ様！がんばってるの、ちゃんと知ってるからね。,,TRUE,
+fortuneSweet001,system,any,fortuneSweet,プリン,,TRUE,
+fortuneSweet002,system,any,fortuneSweet,クロワッサン,,TRUE,
+fortuneSweet003,system,any,fortuneSweet,マドレーヌ,,TRUE,
+fortuneColor001,system,any,fortuneColor,ミントグリーン,,TRUE,
+fortuneColor002,system,any,fortuneColor,クリームイエロー,,TRUE,
+fortuneColor003,system,any,fortuneColor,さくらピンク,,TRUE,
+fortuneMsg001,system,any,fortuneMessage,今日は丁寧に進めると良い日！,,TRUE,
+fortuneMsg002,system,any,fortuneMessage,しっかり確認すると安心だね。,,TRUE,
+fortuneMsg003,system,any,fortuneMessage,次にやることを一つ決めよう。,,TRUE,
+voice_auto_001,system,any,voiceCommand,"繧ｿ繧､繝槭・縺ｮ螟ｧ逕ｻ髱｢繧偵ｄ繧√ｋ縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_002,system,any,voiceCommand,"髮・ｸｭ繧ｿ繧､繝槭・繧貞､ｧ縺阪￥陦ｨ遉ｺ縺吶ｋ縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_003,system,any,voiceCommand,"螟ｧ逕ｻ髱｢繧偵ｄ繧√ｋ縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_004,system,any,voiceCommand,"譎りｨ医ｒ螟ｧ縺阪￥陦ｨ遉ｺ縺吶ｋ縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_005,system,any,voiceCommand,"髻ｳ驥上ｒ蟆代＠荳翫￡縺溘ｈ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_006,system,any,voiceCommand,"髻ｳ驥上ｒ蟆代＠蟆上＆縺上＠縺溘ｈ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_007,system,any,voiceCommand,"髮・ｸｭ繧ｿ繧､繝槭・繧貞ｧ九ａ繧九・",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_008,system,any,voiceCommand,"繧ｿ繧､繝槭・繧呈ｭ｢繧√ｋ縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_009,system,any,voiceCommand,"莉翫・繧ｿ繧､繝槭・縺ｯ蜍輔＞縺ｦ縺・↑縺・ｈ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_010,system,any,voiceCommand,"髮ｻ蜊薙ｒ髢九￥縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_011,system,any,voiceCommand,"髮ｻ蜊薙ｒ髢峨§繧九・",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_012,system,any,voiceCommand,"縺薙・繝悶Λ繧ｦ繧ｶ縺ｧ縺ｯ髻ｳ螢ｰ謫堺ｽ懊′菴ｿ縺医↑縺・∩縺溘＞",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_013,system,any,voiceCommand,"繝槭う繧ｯ縺ｮ險ｱ蜿ｯ縺悟ｿ・ｦ√∩縺溘＞",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_014,system,any,voiceCommand,"髻ｳ螢ｰ謫堺ｽ懊ｒ蟋九ａ繧峨ｌ縺ｪ縺九▲縺溘∩縺溘＞",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_015,system,any,voiceCommand,"閭梧勹繧呈綾縺吶・",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_016,system,any,voiceCommand,"莉翫・繧｢繝ｩ繝ｼ繝縺ｯ魑ｴ縺｣縺ｦ縺・↑縺・ｈ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_017,system,any,voiceCommand,"繧ｿ繧､繝槭・縺ｮ螟ｧ逕ｻ髱｢繧偵ｄ繧√ｋ縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_018,system,any,voiceCommand,"髮・ｸｭ繧ｿ繧､繝槭・繧貞､ｧ縺阪￥陦ｨ遉ｺ縺吶ｋ縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_019,system,any,voiceCommand,"螟ｧ逕ｻ髱｢繧偵ｄ繧√ｋ縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_020,system,any,voiceCommand,"譎りｨ医ｒ螟ｧ縺阪￥陦ｨ遉ｺ縺吶ｋ縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_021,system,any,voiceCommand,"髻ｳ驥上ｒ蟆代＠荳翫￡縺溘ｈ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_022,system,any,voiceCommand,"髻ｳ驥上ｒ蟆代＠蟆上＆縺上＠縺溘ｈ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_023,system,any,voiceCommand,"莉翫・繧ｿ繧､繝槭・縺ｯ蜍輔＞縺ｦ縺・↑縺・ｈ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_024,system,any,voiceCommand,"繧｢繝ｩ繝ｼ繝繧呈ｭ｢繧√ｋ縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_025,system,any,voiceCommand,"繧ｿ繧､繝槭・繧呈ｭ｢繧√ｋ縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_026,system,any,voiceCommand,"莉翫・豁｢繧√ｋ繧ゅ・縺後↑縺・ｈ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_027,system,any,voiceCommand,"髮ｻ蜊薙・縺ｾ縺髢九＞縺ｦ縺・↑縺・ｈ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_028,system,any,voiceCommand,"髮ｻ蜊薙ｒ髢九￥縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_029,system,any,voiceCommand,"髮ｻ蜊薙ｒ髢峨§繧九・",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_030,system,any,voiceCommand,"1譁・ｭ玲ｶ医＠縺溘ｈ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_031,system,any,voiceCommand,"繧｢繝ｩ繝ｼ繝繧呈ｭ｢繧√ｋ縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_032,system,any,voiceCommand,"閭梧勹繧呈綾縺吶・",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_033,system,any,voiceCommand,"髻ｳ驥上ｒ蟆代＠荳翫￡縺溘ｈ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_034,system,any,voiceCommand,"髻ｳ驥上ｒ蟆代＠荳翫￡縺溘ｈ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_035,system,any,voiceCommand,"髻ｳ驥上ｒ蟆代＠蟆上＆縺上＠縺溘ｈ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_036,system,any,voiceCommand,"髻ｳ驥上ｒ蟆代＠蟆上＆縺上＠縺溘ｈ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_037,system,any,voiceCommand,"螟ｧ逕ｻ髱｢繧偵ｄ繧√ｋ縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_038,system,any,voiceCommand,"繧ｿ繧､繝槭・縺ｮ螟ｧ逕ｻ髱｢繧偵ｄ繧√ｋ縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_039,system,any,voiceCommand,"髮・ｸｭ繧ｿ繧､繝槭・繧貞､ｧ縺阪￥陦ｨ遉ｺ縺吶ｋ縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_040,system,any,voiceCommand,"繧ｿ繧､繝槭・縺ｮ螟ｧ逕ｻ髱｢繧偵ｄ繧√ｋ縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_041,system,any,voiceCommand,"髮・ｸｭ繧ｿ繧､繝槭・繧貞､ｧ縺阪￥陦ｨ遉ｺ縺吶ｋ縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_042,system,any,voiceCommand,"譎りｨ医ｒ螟ｧ縺阪￥陦ｨ遉ｺ縺吶ｋ縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_043,system,any,voiceCommand,"繝槭う繧ｯ縺ｮ險ｱ蜿ｯ縺悟ｿ・ｦ√∩縺溘＞",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_044,system,any,voiceCommand,"縺薙・繝悶Λ繧ｦ繧ｶ縺ｧ縺ｯ髻ｳ螢ｰ謫堺ｽ懊′菴ｿ縺医↑縺・∩縺溘＞",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_045,system,any,voiceCommand,"髻ｳ螢ｰ謫堺ｽ懊ｒ繧ｪ繝輔↓縺吶ｋ縺ｭ",,TRUE,auto-migrated from showVoiceCommandResponse
+voice_auto_046,system,any,voiceCommand,"髻ｳ螢ｰ謫堺ｽ懊が繝ｳ縺繧医り◇縺・※繧九ｈ",,TRUE,auto-migrated from showVoiceCommandResponse
+
+voice_auto_047,system,any,voiceCommand,"操作を実行したよ",,TRUE,auto-migrated fallback
+voice_auto_048,system,any,voiceCommand,"操作を実行したよ",,TRUE,auto-migrated fallback
+voice_auto_049,system,any,voiceCommand,"操作を実行したよ",,TRUE,auto-migrated fallback
+voice_auto_050,system,any,voiceCommand,"操作を実行したよ",,TRUE,auto-migrated fallback
+voice_auto_051,system,any,voiceCommand,"操作を実行したよ",,TRUE,auto-migrated fallback
+voice_auto_052,system,any,voiceCommand,"操作を実行したよ",,TRUE,auto-migrated fallback
+voice_auto_053,system,any,voiceCommand,"操作を実行したよ",,TRUE,auto-migrated fallback
+voice_auto_054,system,any,voiceCommand,"操作を実行したよ",,TRUE,auto-migrated fallback
+voice_auto_055,system,any,voiceCommand,"操作を実行したよ",,TRUE,auto-migrated fallback
+voice_auto_056,system,any,voiceCommand,"操作を実行したよ",,TRUE,auto-migrated fallback
+voice_auto_057,system,any,voiceCommand,"操作を実行したよ",,TRUE,auto-migrated fallback
+voice_auto_058,system,any,voiceCommand,"操作を実行したよ",,TRUE,auto-migrated fallback
+voice_auto_059,system,any,voiceCommand,"操作を実行したよ",,TRUE,auto-migrated fallback
+voice_auto_060,system,any,voiceCommand,"操作を実行したよ",,TRUE,auto-migrated fallback
+voice_auto_061,system,any,voiceCommand,"操作を実行したよ",,TRUE,auto-migrated fallback

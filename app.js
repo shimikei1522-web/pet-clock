@@ -43,6 +43,7 @@ const bgmMode = document.querySelector("#bgmMode");
 const bgmVolume = document.querySelector("#bgmVolume");
 const speechToggleButton = document.querySelector("#speechToggleButton");
 const voiceCommandButton = document.querySelector("#voiceCommandButton");
+const vibrationToggleButton = document.querySelector("#vibrationToggleButton");
 const petStyleToggleButton = document.querySelector("#petStyleToggleButton");
 const calculatorButton = document.querySelector("#calculatorButton");
 const calculatorPanel = document.querySelector("#calculatorPanel");
@@ -117,6 +118,7 @@ let lastVoiceCommandFailAt = 0;
 let voiceCommandFailureGuideShown = false;
 let lastVoiceCommandName = "";
 let lastVoiceCommandAt = 0;
+let vibrationEnabled = false;
 const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
 let calculatorValue = "0";
 let calculatorStoredValue = null;
@@ -449,6 +451,15 @@ function inputCalculatorEquals() {
 
 function handleCalculatorInput(button) {
   const action = button.dataset.calc;
+  if (action === "digit" || action === "decimal") {
+    vibrateIfEnabled(12);
+  } else if (action === "operator" || action === "backspace") {
+    vibrateIfEnabled(20);
+  } else if (action === "equals") {
+    vibrateIfEnabled(30);
+  } else if (action === "clear") {
+    vibrateIfEnabled(25);
+  }
   playCalculatorClick();
   if (action === "digit") inputCalculatorDigit(button.dataset.value);
   if (action === "decimal") inputCalculatorDecimal();
@@ -476,6 +487,45 @@ function playCalculatorClick() {
   gain.connect(context.destination);
   oscillator.start(now);
   oscillator.stop(now + 0.09);
+}
+
+function vibrateIfEnabled(pattern) {
+  if (!vibrationEnabled) return;
+  if (!("vibrate" in navigator) || typeof navigator.vibrate !== "function") return;
+  try {
+    navigator.vibrate(pattern);
+  } catch (error) {
+    console.warn("Vibration failed", error);
+  }
+}
+
+function saveVibrationSetting() {
+  try {
+    localStorage.setItem("pepaatennkoVibrationEnabled", String(vibrationEnabled));
+  } catch {
+    // localStorage may be unavailable in some private browsing modes.
+  }
+}
+
+function loadVibrationSetting() {
+  try {
+    vibrationEnabled = localStorage.getItem("pepaatennkoVibrationEnabled") === "true";
+  } catch {
+    vibrationEnabled = false;
+  }
+}
+
+function updateVibrationUi() {
+  if (!vibrationToggleButton) return;
+  vibrationToggleButton.classList.toggle("active", vibrationEnabled);
+  vibrationToggleButton.setAttribute("aria-pressed", String(vibrationEnabled));
+  vibrationToggleButton.textContent = vibrationEnabled ? "バイブON" : "バイブOFF";
+}
+
+function toggleVibration() {
+  vibrationEnabled = !vibrationEnabled;
+  saveVibrationSetting();
+  updateVibrationUi();
 }
 
 function showCalculatorPetMessage(text, holdMs = 6500) {
@@ -3185,6 +3235,7 @@ customMinutes.addEventListener("change", () => {
 startTimerButton.addEventListener("click", startFocusTimer);
 pauseTimerButton.addEventListener("click", pauseFocusTimer);
 resetTimerButton.addEventListener("click", resetFocusTimer);
+vibrationToggleButton?.addEventListener("click", toggleVibration);
 largeTimerToggle.addEventListener("click", toggleLargeTimer);
 largeClockToggle.addEventListener("click", toggleLargeClock);
 analogClockToggle.addEventListener("click", toggleClockDisplayMode);
@@ -3340,7 +3391,14 @@ sheet.addEventListener("error", () => {
   message.textContent = "画像が見つかりません";
 });
 
-stage.addEventListener("click", () => {
+stage.addEventListener("click", (event) => {
+  if (event.target.closest(".animal-friend")) {
+    vibrateIfEnabled([30, 40, 30]);
+  } else if (event.target.closest(".friend")) {
+    vibrateIfEnabled(60);
+  } else if (event.target.closest("#pet")) {
+    vibrateIfEnabled(40);
+  }
   if (alarmRinging) {
     stopAlarm();
     return;
@@ -3359,12 +3417,27 @@ stage.addEventListener("keydown", (event) => {
 });
 stage.tabIndex = 0;
 
+document.addEventListener(
+  "click",
+  (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (!vibrationEnabled) return;
+    if (target.closest("#calculatorPanel .calculator-keys button")) return;
+    if (target.closest(".animal-friend") || target.closest(".friend") || target.closest("#pet")) return;
+    if (target.closest("button")) vibrateIfEnabled(25);
+  },
+  true,
+);
+
 loadUserName();
 loadAnniversaries();
+loadVibrationSetting();
 populateClockAlarmOptions();
 loadClockAlarm();
 loadBgmSettings();
 loadSpeechSettings();
+updateVibrationUi();
 loadVoiceCommandSetting();
 loadTheme();
 loadPetStyle();
