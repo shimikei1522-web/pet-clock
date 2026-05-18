@@ -815,18 +815,20 @@ body.analog-clock-mode .clock-panel > .clock {
 
 .stage-quick-controls {
   position: absolute;
-  left: 50%;
+  left: 12px;
+  right: 12px;
   bottom: 66px;
-  transform: translateX(-50%);
+  transform: none;
   z-index: 5;
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .stage-quick-button {
   min-height: 30px;
-  min-width: 86px;
+  min-width: 88px;
   padding: 0 10px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.5);
@@ -1801,9 +1803,10 @@ body.theme-night .clock-alarm-label {
   }
 
   .stage-quick-controls {
-    left: 50%;
+    left: 8px;
+    right: 8px;
     bottom: 56px;
-    transform: translateX(-50%);
+    transform: none;
     gap: 6px;
   }
 
