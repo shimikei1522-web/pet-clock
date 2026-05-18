@@ -2075,6 +2075,13 @@ function setVoiceSpeechFromVoice(enabled) {
   showVoiceCommandResponse(enabled ? "セリフ音声をオンにするね" : "音声をオフにしたよ");
 }
 
+function setVibrationFromVoice(enabled) {
+  if (vibrationEnabled !== enabled) {
+    toggleVibration();
+  }
+  showVoiceCommandResponse(enabled ? "バイブをオンにするね" : "バイブをオフにするね");
+}
+
 function saveVoiceCommandSetting() {
   try {
     localStorage.setItem("pepaatennkoVoiceCommandEnabled", String(voiceCommandEnabled));
@@ -2165,6 +2172,10 @@ function normalizeContinuousVoiceCommandText(text) {
 
 function voiceIncludes(commandText, patterns) {
   return patterns.some((pattern) => commandText.includes(normalizeContinuousVoiceCommandText(pattern)));
+}
+
+function voiceEquals(commandText, patterns) {
+  return patterns.some((pattern) => commandText === normalizeContinuousVoiceCommandText(pattern));
 }
 
 function isFocusTimerPaused() {
@@ -2547,8 +2558,26 @@ function handleShortVoiceCommand(commandText) {
     setPetStyleFromVoice("new");
     return true;
   }
-  if (voiceIncludes(commandText, ["通常スタイル", "いつもの", "いつもの姿", "通常版", "元のペパーてんこ"])) {
+  if (voiceIncludes(commandText, ["通常スタイル", "いつもの", "いつもの姿", "通常版", "元のペパーてんこ"]) || voiceEquals(commandText, ["通常"])) {
     setPetStyleFromVoice("classic");
+    return true;
+  }
+
+  if (voiceIncludes(commandText, ["声オン"])) {
+    setVoiceSpeechFromVoice(true);
+    return true;
+  }
+  if (voiceIncludes(commandText, ["声オフ"])) {
+    setVoiceSpeechFromVoice(false);
+    return true;
+  }
+
+  if (voiceIncludes(commandText, ["バイブオン", "振動オン"])) {
+    setVibrationFromVoice(true);
+    return true;
+  }
+  if (voiceIncludes(commandText, ["バイブオフ", "振動オフ"])) {
+    setVibrationFromVoice(false);
     return true;
   }
 
