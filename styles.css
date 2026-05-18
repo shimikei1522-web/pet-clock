@@ -2030,8 +2030,8 @@ body.theme-night .clock-alarm-label {
   .pet-actions {
     grid-column: 1 / -1;
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 4px;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 3px;
     min-width: 0;
   }
 
@@ -2042,7 +2042,7 @@ body.theme-night .clock-alarm-label {
   .daily-quote-button,
   .name-row button {
     min-height: 31px;
-    padding: 0 4px;
+    padding: 0 3px;
     font-size: clamp(10px, 2.8vw, 12px);
     white-space: nowrap;
   }

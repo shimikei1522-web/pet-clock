@@ -526,6 +526,10 @@ function toggleVibration() {
   vibrationEnabled = !vibrationEnabled;
   saveVibrationSetting();
   updateVibrationUi();
+  if (vibrationEnabled) {
+    // Confirmation pulse only when vibration is enabled.
+    vibrateIfEnabled(30);
+  }
 }
 
 function showCalculatorPetMessage(text, holdMs = 6500) {
@@ -3235,7 +3239,11 @@ customMinutes.addEventListener("change", () => {
 startTimerButton.addEventListener("click", startFocusTimer);
 pauseTimerButton.addEventListener("click", pauseFocusTimer);
 resetTimerButton.addEventListener("click", resetFocusTimer);
-vibrationToggleButton?.addEventListener("click", toggleVibration);
+vibrationToggleButton?.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  toggleVibration();
+});
 largeTimerToggle.addEventListener("click", toggleLargeTimer);
 largeClockToggle.addEventListener("click", toggleLargeClock);
 analogClockToggle.addEventListener("click", toggleClockDisplayMode);
