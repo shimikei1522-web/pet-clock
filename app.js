@@ -121,6 +121,7 @@ let lastVoiceCommandFailAt = 0;
 let voiceCommandFailureGuideShown = false;
 let lastVoiceCommandName = "";
 let lastVoiceCommandAt = 0;
+let lastVoiceChatAt = 0;
 let vibrationEnabled = false;
 const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
 let calculatorValue = "0";
@@ -2592,6 +2593,34 @@ function executeContinuousVoiceCommand(name, action) {
   action();
 }
 
+const voiceChatReplies = [
+  { patterns: ["おはよう", "おはよ", "おはようございます"], replies: ["おはよう！今日もいっしょにがんばろうね！", "おはよう、よく眠れた？", "おはよう！今日もいい日になりますように！"] },
+  { patterns: ["こんにちは", "こんちは"], replies: ["こんにちは！少し休憩する？", "こんにちは、今日も来てくれてうれしいな。", "こんにちは！今なにしてるの？"] },
+  { patterns: ["こんばんは"], replies: ["こんばんは。今日もおつかれさま。", "こんばんは、少しゆっくりしようね。", "こんばんは。夜の時間も大切にしようね。"] },
+  { patterns: ["おやすみ", "おやすみなさい"], replies: ["おやすみ。ゆっくり休んでね。", "おやすみ、また明日ね。", "今日もおつかれさま。いい夢見てね。"] },
+  { patterns: ["ありがとう", "ありがと", "さんきゅー", "サンキュー"], replies: ["どういたしまして！うれしいな。", "ありがとうって言ってくれて、私もうれしい！", "えへへ、役に立てたならよかった。"] },
+  { patterns: ["ただいま"], replies: ["おかえり！待ってたよ。", "おかえりなさい。今日もおつかれさま。", "戻ってきてくれてうれしいな。"] },
+  { patterns: ["いってきます", "行ってきます", "いってくる", "行ってくる"], replies: ["いってらっしゃい！気をつけてね。", "がんばってきてね。応援してるよ。", "いってらっしゃい、帰ってきたらまた話そうね。"] },
+  { patterns: ["かわいい"], replies: ["えへへ、ありがとう！", "かわいいって言われるとうれしいな。", "もっとかわいくなれるようにがんばるね。"] },
+  { patterns: ["ぺぱーてんこ", "ペパーてんこ", "ペパーテンコ", "てんこちゃん", "pepaatennko"], replies: ["なあに？", "呼んだ？", "ここにいるよ！"] },
+  { patterns: ["疲れた", "つかれた"], replies: ["少し休んでもいいよ。", "無理しすぎないでね。", "深呼吸して、ちょっとだけ休もう。"] },
+  { patterns: ["眠い", "ねむい"], replies: ["眠い時は、無理しないでね。", "少し目を閉じてもいいよ。", "休むのも大事だよ。"] },
+  { patterns: ["がんばる", "頑張る"], replies: ["応援してるよ！", "その気持ち、すごくいいね。", "いっしょに少しずつ進もう。"] },
+  { patterns: ["集中したい"], replies: ["まずは5分だけ集中してみよう。", "集中タイマーを使うのもいいかも。", "まわりを整えて、ゆっくり始めよう。"] },
+  { patterns: ["休憩したい"], replies: ["いいね、少し休もう。", "休憩も大事な時間だよ。", "深呼吸して、リラックスしよう。"] },
+];
+
+function handleVoiceChatResponse(commandText) {
+  if (alarmRinging) return false;
+  const now = Date.now();
+  if (now - lastVoiceChatAt < 3500) return false;
+  const chat = voiceChatReplies.find((item) => voiceIncludes(commandText, item.patterns));
+  if (!chat) return false;
+  lastVoiceChatAt = now;
+  speakVoiceCommandResponse(randomItem(chat.replies), { holdMs: 5200 });
+  return true;
+}
+
 function runVoiceCommand(rawText) {
   const commandText = normalizeContinuousVoiceCommandText(rawText);
   if (commandText.length < 2) return;
@@ -2622,6 +2651,8 @@ function runVoiceCommand(rawText) {
     executeContinuousVoiceCommand(command.name, command.action);
     return;
   }
+
+  if (handleVoiceChatResponse(commandText)) return;
 
   handleVoiceCommandFailure("unknown");
 }
