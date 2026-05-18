@@ -1154,9 +1154,9 @@ body.theme-night .analog-clock {
 
 .animal-friend {
   position: absolute;
-  left: max(192px, calc(50% - 208px));
-  bottom: 96px;
-  width: clamp(68px, 10vw, 94px);
+  left: max(178px, calc(50% - 226px));
+  bottom: 94px;
+  width: clamp(136px, 20vw, 188px);
   z-index: 1;
   pointer-events: none;
 }
@@ -1989,9 +1989,9 @@ body.theme-night .clock-alarm-label {
   }
 
   .animal-friend {
-    left: max(72px, calc(50% - 132px));
-    bottom: 76px;
-    width: clamp(42px, 13vw, 54px);
+    left: max(56px, calc(50% - 146px));
+    bottom: 74px;
+    width: clamp(84px, 22vw, 108px);
   }
 
   .animal-friend-image {
@@ -2281,9 +2281,9 @@ body.theme-night .clock-alarm-label {
   }
 
   .animal-friend {
-    left: max(62px, calc(50% - 122px));
-    bottom: 72px;
-    width: 42px;
+    left: max(50px, calc(50% - 134px));
+    bottom: 70px;
+    width: 84px;
   }
 
   .speech-bubble {
