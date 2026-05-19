@@ -812,7 +812,18 @@ const speechReplacementDictionary = [
 ];
 
 function normalizeSpeechText(text) {
-  return speechReplacementDictionary.reduce((result, [from, to]) => result.replaceAll(from, to), text);
+  let normalized = speechReplacementDictionary.reduce((result, [from, to]) => result.replaceAll(from, to), text);
+  // Ensure "番" in current app dialogue is spoken as "ばん" at the final speech stage.
+  normalized = normalized
+    .replace(/私の番/g, "私のばん")
+    .replace(/出番/g, "出ばん")
+    .replace(/番だった/g, "ばんだった")
+    .replace(/番も/g, "ばんも")
+    .replace(/番だよ/g, "ばんだよ")
+    .replace(/番かな/g, "ばんかな")
+    .replace(/番ほしい/g, "ばんほしい")
+    .replace(/番でしょ/g, "ばんでしょ");
+  return normalized;
 }
 
 function cleanSpeechText(text) {
