@@ -1278,12 +1278,16 @@ function waitMs(ms) {
 }
 
 function speakWhimsyLineAsync(text, character = "pet", options = {}) {
+  const safeText = String(text || "").trim();
+  if (!safeText) {
+    return waitMs(options.offWaitMs || 5500);
+  }
   const holdMs = options.holdMs || 7000;
-  showVoiceCommandResponse(text, { holdMs });
+  showVoiceCommandResponse(safeText, { holdMs });
   if (!speechEnabled || !speechSupported || alarmRinging) {
     return waitMs(options.offWaitMs || 5500);
   }
-  const cleanText = cleanSpeechText(text);
+  const cleanText = cleanSpeechText(safeText);
   if (!cleanText) return waitMs(0);
   if (whimsyLastSpokenLine === cleanText) {
     return waitMs(options.sameLineWaitMs || 700);
@@ -1322,6 +1326,25 @@ function speakWhimsyLineAsync(text, character = "pet", options = {}) {
       done();
     }
   });
+}
+
+function pickWhimsyLine(kind, style) {
+  const group = whimsySwapLines?.[kind]?.[style];
+  if (Array.isArray(group) && group.length) {
+    const picked = pickFresh(group, recentPetLines, 6);
+    if (picked) return picked;
+  }
+  const fallback = {
+    intro: {
+      classic: "ねえねえ、いつもの私も出たいな〜！",
+      new: "ちょっと成長した私も見てほしいな。",
+    },
+    comeback: {
+      classic: "はい、いつもの私に戻ったよ！",
+      new: "はいはい、そろそろ戻るね。",
+    },
+  };
+  return fallback[kind]?.[style] || "ちょっとだけ交代するね。";
 }
 
 function handleVoiceCommandFailure(reason = "unknown") {
@@ -2243,7 +2266,7 @@ async function runWhimsySwap(now = Date.now()) {
   const cameoStyle = whimsyOriginStyle === "new" ? "classic" : "new";
   try {
     applyPetStyle(cameoStyle);
-    const intro = pickFresh(whimsySwapLines.intro[cameoStyle], recentPetLines, 6);
+    const intro = pickWhimsyLine("intro", cameoStyle);
     // Stable mode: keep cameo visible at least 5 seconds, regardless of speech onend/onerror timing.
     await Promise.all([
       speakWhimsyLineAsync(intro, "pet", { holdMs: 7200, offWaitMs: 5200, timeoutMs: 14000 }),
@@ -2255,7 +2278,7 @@ async function runWhimsySwap(now = Date.now()) {
     whimsyLastSwapAt = now;
 
     applyPetStyle(whimsyOriginStyle);
-    const comeback = pickFresh(whimsySwapLines.comeback[whimsyOriginStyle], recentPetLines, 6);
+    const comeback = pickWhimsyLine("comeback", whimsyOriginStyle);
     // Stable mode: keep comeback line visible at least 3 seconds.
     await Promise.all([
       speakWhimsyLineAsync(comeback, "pet", { holdMs: 4500, offWaitMs: 3200, timeoutMs: 12000 }),
@@ -3771,6 +3794,7 @@ sheet.addEventListener("error", () => {
 
 stage.addEventListener("click", (event) => {
   touchUserActivity();
+  let whimsyTriggeredByThisClick = false;
   if (event.target.closest(".animal-friend")) {
     vibrateIfEnabled([30, 40, 30]);
   } else if (event.target.closest(".friend")) {
@@ -3782,6 +3806,7 @@ stage.addEventListener("click", (event) => {
     if (whimsyPetTapCount >= 3) {
       console.log("[whimsy] force trigger by pet click");
       if (triggerWhimsySwapNow("pet-click")) {
+        whimsyTriggeredByThisClick = true;
         whimsyPetTapCount = 0;
       } else if (whimsyPetTapCount >= 6) {
         whimsyPetTapCount = 2;
@@ -3790,6 +3815,10 @@ stage.addEventListener("click", (event) => {
   }
   if (alarmRinging) {
     stopAlarm();
+    return;
+  }
+  // Prevent normal tap quote from immediately overwriting whimsy intro line.
+  if (whimsyTriggeredByThisClick || whimsySwapActive) {
     return;
   }
   chooseAction();
