@@ -160,9 +160,9 @@ let selectedPetStyle = "classic";
 const PET_REACTION_HOLD_MS = 9000;
 const WHIMSY_SWAP_HOLD_MIN_MS = 5000;
 const WHIMSY_SWAP_HOLD_MAX_MS = 8000;
-const WHIMSY_SWAP_IDLE_MS = 30000;
-const WHIMSY_SWAP_MIN_SESSION_MS = 3 * 60 * 1000;
-const WHIMSY_SWAP_MAX_PER_DAY = 3;
+const WHIMSY_SWAP_IDLE_MS = 0;
+const WHIMSY_SWAP_MIN_SESSION_MS = 30 * 1000;
+const WHIMSY_SWAP_COOLDOWN_MS = 45 * 1000;
 
 const whimsySwapLines = {
   intro: {
@@ -610,7 +610,7 @@ function loadWhimsySwapDailyState() {
   try {
     const saved = JSON.parse(localStorage.getItem("pepaatennkoWhimsySwapDaily") || "{}");
     if (saved && saved.date === today && Number.isFinite(saved.count)) {
-      whimsyDailyCount = clamp(Math.floor(saved.count), 0, WHIMSY_SWAP_MAX_PER_DAY);
+      whimsyDailyCount = clamp(Math.floor(saved.count), 0, 9999);
     }
   } catch {
     whimsyDailyCount = 0;
@@ -677,7 +677,7 @@ function showCalculatorResultMessage(isError, isDivideByZero = false) {
   showCalculatorPetMessage(randomItem(texts), 8500);
   whimsyCalculatorResultCount += 1;
   if (whimsyCalculatorResultCount >= 5) {
-    if (tryWhimsyOpportunity(0.15, { ignoreIdle: true })) {
+    if (tryWhimsyOpportunity(0.4, { ignoreIdle: true })) {
       whimsyCalculatorResultCount = 0;
     } else if (whimsyCalculatorResultCount >= 7) {
       whimsyCalculatorResultCount = 0;
@@ -2136,7 +2136,7 @@ function togglePetStyle() {
   touchUserActivity();
   applyPetStyle(selectedPetStyle === "new" ? "classic" : "new", { announce: true });
   savePetStyle();
-  tryWhimsyOpportunity(0.18, { ignoreManualCooldown: true, ignoreIdle: true });
+  tryWhimsyOpportunity(0.4, { ignoreManualCooldown: true, ignoreIdle: true });
 }
 
 function setPetStyleFromVoice(style) {
@@ -2149,28 +2149,21 @@ function setPetStyleFromVoice(style) {
   touchUserActivity();
   applyPetStyle(target);
   savePetStyle();
-  tryWhimsyOpportunity(0.18, { ignoreManualCooldown: true, ignoreIdle: true });
+  tryWhimsyOpportunity(0.4, { ignoreManualCooldown: true, ignoreIdle: true });
   speakVoiceCommandResponse(target === "new" ? "ちょっと成長したよ！" : "いつものスタイルに戻すね");
 }
 
 function shouldBlockWhimsySwap(now = Date.now(), options = {}) {
   const { ignoreManualCooldown = false, ignoreIdle = false } = options;
-  if (!whimsySwapEnabled || whimsySwapActive) return true;
-  if (now - whimsyStartedAt < WHIMSY_SWAP_MIN_SESSION_MS) return true;
-  if (timerRunning || isFocusTimerPaused()) return true;
-  if (alarmRinging) return true;
-  if (!calculatorPanel.hidden) return true;
-  if (voiceCommandListening) return true;
-  if (!ignoreIdle && now - lastUserActionAt < WHIMSY_SWAP_IDLE_MS) return true;
-  if (!ignoreManualCooldown && now - whimsyLastManualStyleAt < 60000) return true;
-  if (now < quoteHoldUntil) return true;
-  const today = new Date().toISOString().slice(0, 10);
-  if (whimsyDailyDate !== today) {
-    whimsyDailyDate = today;
-    whimsyDailyCount = 0;
-    saveWhimsySwapDailyState();
-  }
-  return whimsyDailyCount >= WHIMSY_SWAP_MAX_PER_DAY;
+  if (!whimsySwapEnabled) return console.log("[whimsy] blocked: off"), true;
+  if (whimsySwapActive) return console.log("[whimsy] blocked: active"), true;
+  if (now - whimsyStartedAt < WHIMSY_SWAP_MIN_SESSION_MS) return console.log("[whimsy] blocked: startup wait"), true;
+  if (alarmRinging) return console.log("[whimsy] blocked: alarm"), true;
+  if (voiceCommandListening) return console.log("[whimsy] blocked: voice listening"), true;
+  if (!ignoreIdle && now - lastUserActionAt < WHIMSY_SWAP_IDLE_MS) return console.log("[whimsy] blocked: idle"), true;
+  if (!ignoreManualCooldown && now - whimsyLastManualStyleAt < 2000) return console.log("[whimsy] blocked: manual style cooldown"), true;
+  if (now < quoteHoldUntil) return console.log("[whimsy] blocked: quote hold"), true;
+  return false;
 }
 
 function runWhimsySwap(now = Date.now()) {
@@ -2181,7 +2174,7 @@ function runWhimsySwap(now = Date.now()) {
   const intro = pickFresh(whimsySwapLines.intro[cameoStyle], recentPetLines, 6);
   const holdMs = Math.round(WHIMSY_SWAP_HOLD_MIN_MS + Math.random() * (WHIMSY_SWAP_HOLD_MAX_MS - WHIMSY_SWAP_HOLD_MIN_MS));
   speakVoiceCommandResponse(intro, { holdMs: holdMs + 1800 });
-  whimsyDailyCount = clamp(whimsyDailyCount + 1, 0, WHIMSY_SWAP_MAX_PER_DAY);
+  whimsyDailyCount = clamp(whimsyDailyCount + 1, 0, 9999);
   saveWhimsySwapDailyState();
   whimsyLastSwapAt = now;
   window.clearTimeout(whimsyReturnTimerId);
@@ -2204,13 +2197,19 @@ function maybeRunWhimsySwap(now = Date.now()) {
 
 function canRunWhimsyByOpportunity(now = Date.now(), options = {}) {
   if (shouldBlockWhimsySwap(now, options)) return false;
-  return now - whimsyLastSwapAt >= 10 * 60 * 1000;
+  if (now - whimsyLastSwapAt < WHIMSY_SWAP_COOLDOWN_MS) {
+    console.log("[whimsy] blocked: cooldown");
+    return false;
+  }
+  return true;
 }
 
 function tryWhimsyOpportunity(chance = 0.2, options = {}) {
   const now = Date.now();
+  console.log("[whimsy] check", { chance, options });
   if (!canRunWhimsyByOpportunity(now, options)) return false;
-  if (Math.random() > chance) return false;
+  if (Math.random() > chance) return console.log("[whimsy] miss: chance"), false;
+  console.log("[whimsy] hit: run");
   runWhimsySwap(now);
   whimsyNextCheckAt = now + (10 + Math.random() * 10) * 60 * 1000;
   return true;
@@ -2218,7 +2217,7 @@ function tryWhimsyOpportunity(chance = 0.2, options = {}) {
 
 function registerWhimsyOperation(chance = 0.2) {
   whimsyOperationCount += 1;
-  if (whimsyOperationCount < 10) return;
+  if (whimsyOperationCount < 5) return;
   const didRun = tryWhimsyOpportunity(chance);
   if (didRun || whimsyOperationCount >= 14) whimsyOperationCount = 0;
 }
@@ -2813,7 +2812,7 @@ function runVoiceCommand(rawText) {
   if (commandText.length < 2) return;
 
   if (handleShortVoiceCommand(commandText)) {
-    tryWhimsyOpportunity(0.2, { ignoreIdle: true });
+    tryWhimsyOpportunity(0.4, { ignoreIdle: true });
     return;
   }
 
@@ -2839,12 +2838,12 @@ function runVoiceCommand(rawText) {
 
   if (command) {
     executeContinuousVoiceCommand(command.name, command.action);
-    tryWhimsyOpportunity(0.2, { ignoreIdle: true });
+    tryWhimsyOpportunity(0.4, { ignoreIdle: true });
     return;
   }
 
   if (handleVoiceChatResponse(commandText)) {
-    tryWhimsyOpportunity(0.2, { ignoreIdle: true });
+    tryWhimsyOpportunity(0.4, { ignoreIdle: true });
     return;
   }
 
@@ -3286,7 +3285,7 @@ function startFocusTimer() {
   stopAlarm();
   quoteHoldUntil = 0;
   if (timerRunning) return;
-  tryWhimsyOpportunity(0.15, { ignoreIdle: true });
+  tryWhimsyOpportunity(0.3, { ignoreIdle: true });
   prepareAlarm();
   if (remainingSeconds <= 0) remainingSeconds = selectedMinutes * 60;
   timerRunning = true;
@@ -3434,7 +3433,7 @@ function stopAlarm() {
     hideChefMessage();
     setAction("cheer", stoppedMode === "clock" ? `${namePrefix()}知らせを確認できたね` : `${namePrefix()}${randomItem(extraPetReplies.timerComplete)}`);
     if (stoppedMode === "timer") {
-      tryWhimsyOpportunity(0.3, { ignoreIdle: true });
+      tryWhimsyOpportunity(0.6, { ignoreIdle: true });
     }
     if (!calculatorPanel.hidden) setCalculatorMode(true);
   }
@@ -3686,11 +3685,11 @@ stage.addEventListener("click", (event) => {
   } else if (event.target.closest("#pet")) {
     vibrateIfEnabled(40);
     whimsyPetTapCount += 1;
-    if (whimsyPetTapCount >= 5) {
-      if (tryWhimsyOpportunity(0.25, { ignoreIdle: true })) {
+    if (whimsyPetTapCount >= 3) {
+      if (tryWhimsyOpportunity(0.6, { ignoreIdle: true })) {
         whimsyPetTapCount = 0;
-      } else if (whimsyPetTapCount >= 7) {
-        whimsyPetTapCount = 3;
+      } else if (whimsyPetTapCount >= 5) {
+        whimsyPetTapCount = 2;
       }
     }
   }
@@ -3724,7 +3723,7 @@ document.addEventListener(
     if (target.closest(".animal-friend") || target.closest(".friend") || target.closest("#pet")) return;
     if (target.closest("button")) {
       vibrateIfEnabled(25);
-      registerWhimsyOperation(0.2);
+      registerWhimsyOperation(0.5);
     }
   },
   true,
