@@ -135,6 +135,9 @@ let whimsyNextCheckAt = Date.now() + 10 * 60 * 1000;
 let whimsyDailyCount = 0;
 let whimsyDailyDate = "";
 let lastUserActionAt = Date.now();
+let whimsyPetTapCount = 0;
+let whimsyOperationCount = 0;
+let whimsyCalculatorResultCount = 0;
 const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
 let calculatorValue = "0";
 let calculatorStoredValue = null;
@@ -672,6 +675,14 @@ function showCalculatorResultMessage(isError, isDivideByZero = false) {
     `\u3067\u304d\u305f\uff01\u7b54\u3048\u306f ${result}`,
   ];
   showCalculatorPetMessage(randomItem(texts), 8500);
+  whimsyCalculatorResultCount += 1;
+  if (whimsyCalculatorResultCount >= 5) {
+    if (tryWhimsyOpportunity(0.15, { ignoreIdle: true })) {
+      whimsyCalculatorResultCount = 0;
+    } else if (whimsyCalculatorResultCount >= 7) {
+      whimsyCalculatorResultCount = 0;
+    }
+  }
 }
 
 function loadSpeechSettings() {
@@ -2125,6 +2136,7 @@ function togglePetStyle() {
   touchUserActivity();
   applyPetStyle(selectedPetStyle === "new" ? "classic" : "new", { announce: true });
   savePetStyle();
+  tryWhimsyOpportunity(0.18, { ignoreManualCooldown: true, ignoreIdle: true });
 }
 
 function setPetStyleFromVoice(style) {
@@ -2137,18 +2149,20 @@ function setPetStyleFromVoice(style) {
   touchUserActivity();
   applyPetStyle(target);
   savePetStyle();
+  tryWhimsyOpportunity(0.18, { ignoreManualCooldown: true, ignoreIdle: true });
   speakVoiceCommandResponse(target === "new" ? "ちょっと成長したよ！" : "いつものスタイルに戻すね");
 }
 
-function shouldBlockWhimsySwap(now = Date.now()) {
+function shouldBlockWhimsySwap(now = Date.now(), options = {}) {
+  const { ignoreManualCooldown = false, ignoreIdle = false } = options;
   if (!whimsySwapEnabled || whimsySwapActive) return true;
   if (now - whimsyStartedAt < WHIMSY_SWAP_MIN_SESSION_MS) return true;
   if (timerRunning || isFocusTimerPaused()) return true;
   if (alarmRinging) return true;
   if (!calculatorPanel.hidden) return true;
   if (voiceCommandListening) return true;
-  if (now - lastUserActionAt < WHIMSY_SWAP_IDLE_MS) return true;
-  if (now - whimsyLastManualStyleAt < 60000) return true;
+  if (!ignoreIdle && now - lastUserActionAt < WHIMSY_SWAP_IDLE_MS) return true;
+  if (!ignoreManualCooldown && now - whimsyLastManualStyleAt < 60000) return true;
   if (now < quoteHoldUntil) return true;
   const today = new Date().toISOString().slice(0, 10);
   if (whimsyDailyDate !== today) {
@@ -2186,6 +2200,27 @@ function maybeRunWhimsySwap(now = Date.now()) {
   if (now - whimsyLastSwapAt < 10 * 60 * 1000) return;
   if (Math.random() > 0.28) return;
   runWhimsySwap(now);
+}
+
+function canRunWhimsyByOpportunity(now = Date.now(), options = {}) {
+  if (shouldBlockWhimsySwap(now, options)) return false;
+  return now - whimsyLastSwapAt >= 10 * 60 * 1000;
+}
+
+function tryWhimsyOpportunity(chance = 0.2, options = {}) {
+  const now = Date.now();
+  if (!canRunWhimsyByOpportunity(now, options)) return false;
+  if (Math.random() > chance) return false;
+  runWhimsySwap(now);
+  whimsyNextCheckAt = now + (10 + Math.random() * 10) * 60 * 1000;
+  return true;
+}
+
+function registerWhimsyOperation(chance = 0.2) {
+  whimsyOperationCount += 1;
+  if (whimsyOperationCount < 10) return;
+  const didRun = tryWhimsyOpportunity(chance);
+  if (didRun || whimsyOperationCount >= 14) whimsyOperationCount = 0;
 }
 
 function setFocusMinutesFromVoice(minutes) {
@@ -2777,7 +2812,10 @@ function runVoiceCommand(rawText) {
   const commandText = normalizeContinuousVoiceCommandText(rawText);
   if (commandText.length < 2) return;
 
-  if (handleShortVoiceCommand(commandText)) return;
+  if (handleShortVoiceCommand(commandText)) {
+    tryWhimsyOpportunity(0.2, { ignoreIdle: true });
+    return;
+  }
 
   const themeCommand = continuousVoiceThemeCommands.find((item) =>
     voiceIncludes(commandText, item.patterns),
@@ -2801,10 +2839,14 @@ function runVoiceCommand(rawText) {
 
   if (command) {
     executeContinuousVoiceCommand(command.name, command.action);
+    tryWhimsyOpportunity(0.2, { ignoreIdle: true });
     return;
   }
 
-  if (handleVoiceChatResponse(commandText)) return;
+  if (handleVoiceChatResponse(commandText)) {
+    tryWhimsyOpportunity(0.2, { ignoreIdle: true });
+    return;
+  }
 
   handleVoiceCommandFailure("unknown");
 }
@@ -3244,6 +3286,7 @@ function startFocusTimer() {
   stopAlarm();
   quoteHoldUntil = 0;
   if (timerRunning) return;
+  tryWhimsyOpportunity(0.15, { ignoreIdle: true });
   prepareAlarm();
   if (remainingSeconds <= 0) remainingSeconds = selectedMinutes * 60;
   timerRunning = true;
@@ -3390,6 +3433,9 @@ function stopAlarm() {
     message.textContent = stoppedMode === "clock" ? `${namePrefix()}予定の合図を止めたよ` : `${namePrefix()}${randomItem(extraPetReplies.timerComplete)}`;
     hideChefMessage();
     setAction("cheer", stoppedMode === "clock" ? `${namePrefix()}知らせを確認できたね` : `${namePrefix()}${randomItem(extraPetReplies.timerComplete)}`);
+    if (stoppedMode === "timer") {
+      tryWhimsyOpportunity(0.3, { ignoreIdle: true });
+    }
     if (!calculatorPanel.hidden) setCalculatorMode(true);
   }
 }
@@ -3639,6 +3685,14 @@ stage.addEventListener("click", (event) => {
     vibrateIfEnabled(60);
   } else if (event.target.closest("#pet")) {
     vibrateIfEnabled(40);
+    whimsyPetTapCount += 1;
+    if (whimsyPetTapCount >= 5) {
+      if (tryWhimsyOpportunity(0.25, { ignoreIdle: true })) {
+        whimsyPetTapCount = 0;
+      } else if (whimsyPetTapCount >= 7) {
+        whimsyPetTapCount = 3;
+      }
+    }
   }
   if (alarmRinging) {
     stopAlarm();
@@ -3668,7 +3722,10 @@ document.addEventListener(
     if (!vibrationEnabled) return;
     if (target.closest("#calculatorPanel .calculator-keys button")) return;
     if (target.closest(".animal-friend") || target.closest(".friend") || target.closest("#pet")) return;
-    if (target.closest("button")) vibrateIfEnabled(25);
+    if (target.closest("button")) {
+      vibrateIfEnabled(25);
+      registerWhimsyOperation(0.2);
+    }
   },
   true,
 );
