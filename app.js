@@ -282,6 +282,14 @@ const dailyQuotes = [
   "最後まであきらめずに走る姿、すっごく応援したくなる！",
   "今日もお疲れ様！がんばってるの、ちゃんと知ってるからね。",
   "いつも話を聞いてくれてありがとう。今日は私が元気をあげる番だよ！",
+  ["私の番", "私のばん"],
+  ["出番", "出ばん"],
+  ["番だった", "ばんだった"],
+  ["番も", "ばんも"],
+  ["番だよ", "ばんだよ"],
+  ["番かな", "ばんかな"],
+  ["番ほしい", "ばんほしい"],
+  ["番でしょ", "ばんでしょ"],
 ];
 const DAILY_QUOTE_VERSION = 3;
 const dailyQuoteFallbacks = {
@@ -2215,6 +2223,19 @@ function tryWhimsyOpportunity(chance = 0.2, options = {}) {
   return true;
 }
 
+function triggerWhimsySwapNow(source = "manual") {
+  const now = Date.now();
+  console.log("[whimsy] direct trigger request:", source);
+  if (!whimsySwapEnabled) return console.log("[whimsy] skipped because OFF"), false;
+  if (whimsySwapActive) return console.log("[whimsy] skipped because active"), false;
+  if (alarmRinging) return console.log("[whimsy] skipped because alarm"), false;
+  if (voiceCommandListening) return console.log("[whimsy] skipped because voice listening"), false;
+  if (!petStyleSources[selectedPetStyle]) return console.log("[whimsy] skipped because style invalid"), false;
+  runWhimsySwap(now);
+  console.log("[whimsy] direct trigger executed");
+  return true;
+}
+
 function registerWhimsyOperation(chance = 0.2) {
   whimsyOperationCount += 1;
   if (whimsyOperationCount < 5) return;
@@ -3685,10 +3706,12 @@ stage.addEventListener("click", (event) => {
   } else if (event.target.closest("#pet")) {
     vibrateIfEnabled(40);
     whimsyPetTapCount += 1;
+    console.log("[whimsy] pet clicked", whimsyPetTapCount);
     if (whimsyPetTapCount >= 3) {
-      if (tryWhimsyOpportunity(0.6, { ignoreIdle: true })) {
+      console.log("[whimsy] force trigger by pet click");
+      if (triggerWhimsySwapNow("pet-click")) {
         whimsyPetTapCount = 0;
-      } else if (whimsyPetTapCount >= 5) {
+      } else if (whimsyPetTapCount >= 6) {
         whimsyPetTapCount = 2;
       }
     }
