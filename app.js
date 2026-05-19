@@ -138,6 +138,7 @@ let lastUserActionAt = Date.now();
 let whimsyPetTapCount = 0;
 let whimsyOperationCount = 0;
 let whimsyCalculatorResultCount = 0;
+let whimsyLastSpokenLine = "";
 const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
 let calculatorValue = "0";
 let calculatorStoredValue = null;
@@ -1272,6 +1273,57 @@ function announcePetStyleChange(text, options = {}) {
   queueSpeech("pet", text);
 }
 
+function waitMs(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, Math.max(0, ms || 0)));
+}
+
+function speakWhimsyLineAsync(text, character = "pet", options = {}) {
+  const holdMs = options.holdMs || 7000;
+  showVoiceCommandResponse(text, { holdMs });
+  if (!speechEnabled || !speechSupported || alarmRinging) {
+    return waitMs(options.offWaitMs || 5500);
+  }
+  const cleanText = cleanSpeechText(text);
+  if (!cleanText) return waitMs(0);
+  if (whimsyLastSpokenLine === cleanText) {
+    return waitMs(options.sameLineWaitMs || 700);
+  }
+  whimsyLastSpokenLine = cleanText;
+  pendingSpeechItems = [];
+  clearSpeakingState();
+  const timeoutMs = options.timeoutMs || Math.max(7000, Math.min(16000, cleanText.length * 260));
+  return new Promise((resolve) => {
+    let settled = false;
+    const done = () => {
+      if (settled) return;
+      settled = true;
+      clearSpeakingState();
+      resolve();
+    };
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      const profile = getSpeechProfile(character);
+      const voice = pickSpeechVoice(character);
+      if (voice) utterance.voice = voice;
+      utterance.lang = voice?.lang || "ja-JP";
+      utterance.pitch = profile.pitch;
+      utterance.rate = profile.rate;
+      utterance.volume = alarmRinging ? Math.min(profile.volume, 0.55) : profile.volume;
+      utterance.onstart = () => {
+        setSpeakingState(character, true);
+        playSpeechCue(character);
+      };
+      utterance.onend = done;
+      utterance.onerror = done;
+      window.speechSynthesis.speak(utterance);
+      window.setTimeout(done, timeoutMs);
+    } catch {
+      done();
+    }
+  });
+}
+
 function handleVoiceCommandFailure(reason = "unknown") {
   if (!voiceCommandEnabled) return;
   const now = Date.now();
@@ -2185,24 +2237,33 @@ function shouldBlockWhimsySwap(now = Date.now(), options = {}) {
   return false;
 }
 
-function runWhimsySwap(now = Date.now()) {
+async function runWhimsySwap(now = Date.now()) {
   whimsySwapActive = true;
   whimsyOriginStyle = selectedPetStyle === "new" ? "new" : "classic";
   const cameoStyle = whimsyOriginStyle === "new" ? "classic" : "new";
-  applyPetStyle(cameoStyle);
-  const intro = pickFresh(whimsySwapLines.intro[cameoStyle], recentPetLines, 6);
-  const holdMs = Math.round(WHIMSY_SWAP_HOLD_MIN_MS + Math.random() * (WHIMSY_SWAP_HOLD_MAX_MS - WHIMSY_SWAP_HOLD_MIN_MS));
-  speakVoiceCommandResponse(intro, { holdMs: holdMs + 1800 });
-  whimsyDailyCount = clamp(whimsyDailyCount + 1, 0, 9999);
-  saveWhimsySwapDailyState();
-  whimsyLastSwapAt = now;
-  window.clearTimeout(whimsyReturnTimerId);
-  whimsyReturnTimerId = window.setTimeout(() => {
+  try {
+    applyPetStyle(cameoStyle);
+    const intro = pickFresh(whimsySwapLines.intro[cameoStyle], recentPetLines, 6);
+    // Stable mode: keep cameo visible at least 5 seconds, regardless of speech onend/onerror timing.
+    await Promise.all([
+      speakWhimsyLineAsync(intro, "pet", { holdMs: 7200, offWaitMs: 5200, timeoutMs: 14000 }),
+      waitMs(5000),
+    ]);
+
+    whimsyDailyCount = clamp(whimsyDailyCount + 1, 0, 9999);
+    saveWhimsySwapDailyState();
+    whimsyLastSwapAt = now;
+
     applyPetStyle(whimsyOriginStyle);
     const comeback = pickFresh(whimsySwapLines.comeback[whimsyOriginStyle], recentPetLines, 6);
-    speakVoiceCommandResponse(comeback, { holdMs: 7000 });
+    // Stable mode: keep comeback line visible at least 3 seconds.
+    await Promise.all([
+      speakWhimsyLineAsync(comeback, "pet", { holdMs: 4500, offWaitMs: 3200, timeoutMs: 12000 }),
+      waitMs(3000),
+    ]);
+  } finally {
     whimsySwapActive = false;
-  }, holdMs);
+  }
 }
 
 function maybeRunWhimsySwap(now = Date.now()) {
